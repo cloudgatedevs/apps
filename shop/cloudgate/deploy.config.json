@@ -1,0 +1,23 @@
+{
+  "tenancy": "niel-olivier-6",
+  "gateway": "http://niel-olivier-6.localhost:44301",
+  "projectId": "255d2b03-b542-4fbb-a801-08df0b45b3f7",
+  "projectPath": "shop",
+  "databases": {
+    "default": {
+      "name": "shop_db",
+      "id": "f1e731cd-d54d-4f3e-5cf7-08df0b45b72e",
+      "fileId": "bf313bd9-b888-451b-8242-1d108ddfa9a1",
+      "prodName": "shop_db_prod",
+      "prodId": "407e0975-d5cd-40db-d225-08df0bc6267c",
+      "fileProdId": "98744737-110a-4e9f-a6ee-a2132cd935f7"
+    }
+  },
+  "websockets": {
+    "shop-events": {
+      "id": "c840cbf8-174a-4b00-e396-08df0b629e67",
+      "name": "Shop events",
+      "route": "shop-events"
+    }
+  }
+}

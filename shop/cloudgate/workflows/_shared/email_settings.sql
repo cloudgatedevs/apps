@@ -1,0 +1,1 @@
+SELECT Key, Value FROM settings WHERE Key IN ('store_name', 'store_url', 'support_email', 'smtp_host', 'smtp_port', 'smtp_security', 'smtp_user', 'smtp_password', 'smtp_from_email', 'smtp_from_name');

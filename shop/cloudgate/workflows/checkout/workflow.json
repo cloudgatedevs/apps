@@ -1,0 +1,39 @@
+{
+  "name": "Checkout",
+  "route": "checkout",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Turn a cart into an order and a Cloudgate Wallet checkout session. Validates lines against live stock, reserves stock, computes totals from settings, then returns the hosted payment URL. Gateway-anonymous; IdP token optional.",
+  "entry": "IdpAuth",
+  "nodes": [
+    { "name": "IdpAuth", "type": "idp", "output": "userId", "allowAnonymous": true, "next": "Plan" },
+    { "name": "Plan", "type": "function", "script": "plan.py", "next": "LoadCart" },
+    { "name": "LoadCart", "type": "database", "script": "load_cart.sql", "next": "Compute" },
+    { "name": "Compute", "type": "function", "script": "compute.py", "next": "CreateOrder" },
+    { "name": "CreateOrder", "type": "database", "script": "create_order.sql", "next": "PayAmount" },
+    { "name": "PayAmount", "type": "function", "script": "pay_amount.py", "next": "PayCurrency" },
+    { "name": "PayCurrency", "type": "function", "script": "pay_currency.py", "next": "PayRef" },
+    { "name": "PayRef", "type": "function", "script": "pay_ref.py", "next": "PayEmail" },
+    { "name": "PayEmail", "type": "function", "script": "pay_email.py", "next": "PaySuccessUrl" },
+    { "name": "PaySuccessUrl", "type": "function", "script": "pay_success_url.py", "next": "PayCancelUrl" },
+    { "name": "PayCancelUrl", "type": "function", "script": "pay_cancel_url.py", "next": "Pay" },
+    {
+      "name": "Pay", "type": "walletpayment", "next": "SavePayment",
+      "params": {
+        "operation": "create",
+        "amount": "${PayAmount}",
+        "currency": "${PayCurrency}",
+        "description": "Order ${PayRef}",
+        "reference": "${PayRef}",
+        "customerEmail": "${PayEmail}",
+        "successUrl": "${PaySuccessUrl}",
+        "cancelUrl": "${PayCancelUrl}",
+        "idempotencyKey": "order-${PayRef}"
+      }
+    },
+    { "name": "SavePayment", "type": "function", "script": "save_payment.py", "next": "Run" },
+    { "name": "Run", "type": "database", "script": "run.sql", "next": "Shape" },
+    { "name": "Shape", "type": "function", "script": "shape.py" }
+  ]
+}

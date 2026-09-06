@@ -1,0 +1,15 @@
+{
+  "name": "Catalog",
+  "route": "catalog",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Public storefront reads: settings, categories, products (paged/filtered), product detail, featured. Gateway-anonymous: public data, no API key needed; IdP token optional.",
+  "entry": "IdpAuth",
+  "nodes": [
+    { "name": "IdpAuth", "type": "idp", "output": "userId", "allowAnonymous": true, "next": "Plan" },
+    { "name": "Plan", "type": "function", "script": "plan.py", "next": "Run" },
+    { "name": "Run", "type": "database", "script": "run.sql", "next": "Shape" },
+    { "name": "Shape", "type": "function", "script": "shape.py" }
+  ]
+}

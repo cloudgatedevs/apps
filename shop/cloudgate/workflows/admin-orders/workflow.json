@@ -1,0 +1,127 @@
+{
+  "name": "Admin Orders",
+  "route": "admin-orders",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Back office orders: list/get with items, events and payments; status changes (with tracking, a live 'order.status' event and a customer email on a thread branch), notes, and refunds through the Wallet Payment node (full or partial, optional restock). Requires API key + IdP admin.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan",
+      "role": "Admin"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "IsRefund"
+    },
+    {
+      "name": "IsRefund",
+      "type": "condition",
+      "script": "is_refund.py",
+      "positive": "RefundId",
+      "negative": "IsStatusChange"
+    },
+    {
+      "name": "RefundId",
+      "type": "function",
+      "script": "refund_id.py",
+      "next": "RefundAmount"
+    },
+    {
+      "name": "RefundAmount",
+      "type": "function",
+      "script": "refund_amount.py",
+      "next": "RefundReason"
+    },
+    {
+      "name": "RefundReason",
+      "type": "function",
+      "script": "refund_reason.py",
+      "next": "WalletRefund"
+    },
+    {
+      "name": "WalletRefund",
+      "type": "walletpayment",
+      "params": {
+        "operation": "refund",
+        "paymentId": "${RefundId}",
+        "amount": "${RefundAmount}",
+        "description": "Refund ${RefundReason}"
+      },
+      "next": "ApplyRefund"
+    },
+    {
+      "name": "ApplyRefund",
+      "type": "function",
+      "script": "apply_refund.py",
+      "next": "RunRefund"
+    },
+    {
+      "name": "RunRefund",
+      "type": "database",
+      "script": "run_refund.sql",
+      "next": "ShapeRefund"
+    },
+    {
+      "name": "ShapeRefund",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "IsStatusChange",
+      "type": "condition",
+      "script": "is_status_change.py",
+      "positive": "StatusEvent",
+      "negative": "Shape"
+    },
+    {
+      "name": "StatusEvent",
+      "type": "function",
+      "script": "status_event.py",
+      "next": "NotifyStatus",
+      "thread": "EmailSettings"
+    },
+    {
+      "name": "NotifyStatus",
+      "type": "websocket",
+      "channel": "shop-events",
+      "body": "${StatusEvent}",
+      "next": "Shape"
+    },
+    {
+      "name": "EmailSettings",
+      "type": "database",
+      "script": "../_shared/email_settings.sql",
+      "next": "OrderEmail"
+    },
+    {
+      "name": "OrderEmail",
+      "type": "function",
+      "script": "../_shared/status_email.py",
+      "next": "SendEmail"
+    },
+    {
+      "name": "SendEmail",
+      "type": "function",
+      "script": "../_shared/send_email.py"
+    }
+  ]
+}

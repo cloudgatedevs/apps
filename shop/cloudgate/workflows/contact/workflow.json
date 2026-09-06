@@ -1,0 +1,53 @@
+{
+  "name": "Contact",
+  "route": "contact",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Storefront contact form: validates and stores the message, then emails the store's support address on a thread branch. Gateway-anonymous.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userId",
+      "allowAnonymous": true,
+      "next": "Plan"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape",
+      "thread": "EmailSettings"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "EmailSettings",
+      "type": "database",
+      "script": "../_shared/email_settings.sql",
+      "next": "OrderEmail"
+    },
+    {
+      "name": "OrderEmail",
+      "type": "function",
+      "script": "notify_email.py",
+      "next": "SendEmail"
+    },
+    {
+      "name": "SendEmail",
+      "type": "function",
+      "script": "../_shared/send_email.py"
+    }
+  ]
+}

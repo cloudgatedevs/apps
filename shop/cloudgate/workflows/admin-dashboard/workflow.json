@@ -1,0 +1,56 @@
+{
+  "name": "Admin Dashboard",
+  "route": "admin-dashboard",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Back office overview: KPI stats, recent orders, low stock. Requires API key + IdP admin. 'wallet-status' asks the Wallet Payment node whether the tenant wallet can take payments (with the full reason for the owner).",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "IsWalletStatus",
+      "role": "Admin"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "IsWalletStatus",
+      "type": "condition",
+      "script": "is_wallet_status.py",
+      "positive": "WalletStatus",
+      "negative": "Plan"
+    },
+    {
+      "name": "WalletStatus",
+      "type": "walletpayment",
+      "params": {
+        "operation": "status"
+      },
+      "next": "ShapeWallet"
+    },
+    {
+      "name": "ShapeWallet",
+      "type": "function",
+      "script": "shape_wallet.py"
+    }
+  ]
+}

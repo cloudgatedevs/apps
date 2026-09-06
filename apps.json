@@ -1,0 +1,79 @@
+{
+  "apps": [
+    {
+      "id": "shop",
+      "name": "Cloudgate Shop",
+      "category": "Commerce",
+      "version": "1.0.0",
+      "description": "A complete online store: catalogue with variants and stock, cart and hosted card checkout through Cloudgate Wallet, order tracking, and a full back office for products, inventory, orders, refunds, customers, content pages, email and theme colours.",
+      "folder": "shop",
+      "framework": "React",
+      "devCommand": "npm install && npm run dev",
+      "devPort": 3000,
+      "demoUrl": "",
+      "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/shop/banner.png",
+      "adminPath": "/admin",
+      "tags": ["react", "vite", "tailwind", "ecommerce", "shop", "payments", "wallet", "idp"],
+      "features": [
+        "Card payments through Cloudgate Wallet (Stripe Connect or Paystack), sandbox and production",
+        "Products with variants, images, stock ledger and low-stock alerts",
+        "Orders with shipping, tracking, refunds and customer emails",
+        "Editable pages, contact form, newsletter, theme colours and branding",
+        "Back office for IdP users with the Admin role"
+      ],
+      "requirements": ["wallet", "idp", "smtp", "websockets"],
+      "environments": ["sandbox", "production"],
+      "terms": {
+        "version": "1",
+        "url": "https://cloudgate.dev/terms",
+        "summary": [
+          "You are the merchant of record for everything sold through this store.",
+          "Payments settle to your Cloudgate Wallet; Cloudgate fees apply per the platform terms.",
+          "You are responsible for your store's legal pages, taxes and customer support."
+        ]
+      },
+      "compliance": [
+        {
+          "key": "sandbox-notice",
+          "environment": "sandbox",
+          "label": "Test store only",
+          "text": "This copy uses the sandbox wallet and test cards. I will not share it with real customers."
+        },
+        {
+          "key": "legal-pages",
+          "environment": "production",
+          "label": "Legal pages before selling",
+          "text": "I will replace the template Terms, Privacy and Shipping & returns pages with my own wording before taking live orders."
+        },
+        {
+          "key": "support-contact",
+          "environment": "production",
+          "label": "Customer support",
+          "text": "I will set a monitored support email and my business address and hours in the store settings."
+        },
+        {
+          "key": "sandbox-tested",
+          "environment": "production",
+          "label": "Tested in sandbox",
+          "text": "I have placed and refunded a test order in a sandbox copy of this store."
+        }
+      ],
+      "build": {
+        "installCommand": "npm install",
+        "buildCommand": "npm run build",
+        "outputDir": "dist"
+      },
+      "workflows": {
+        "projectPath": "shop",
+        "file": ".template/workflow-template.json",
+        "schema": ".template/schema.sql",
+        "sampleData": ".template/sample-data.sql"
+      },
+      "configSetup": {
+        "kind": "vite-env",
+        "targets": [".env"],
+        "example": ".env.example"
+      }
+    }
+  ]
+}

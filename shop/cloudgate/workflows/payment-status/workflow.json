@@ -1,0 +1,112 @@
+{
+  "name": "Payment Status",
+  "route": "payment-status",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Order + payment state for the checkout return page. When the wallet payment is still pending it is re-read through the Wallet Payment node and, on success, the order is finalised: stock sold, ledger written, cart converted. Gateway-anonymous; access by order reference + cart token (or the signed-in owner).",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userId",
+      "allowAnonymous": true,
+      "next": "Plan"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "LoadOrder"
+    },
+    {
+      "name": "LoadOrder",
+      "type": "database",
+      "script": "load_order.sql",
+      "next": "NeedsCheck"
+    },
+    {
+      "name": "NeedsCheck",
+      "type": "condition",
+      "script": "needs_check.py",
+      "positive": "PayId",
+      "negative": "ShapeCached"
+    },
+    {
+      "name": "PayId",
+      "type": "function",
+      "script": "pay_id.py",
+      "next": "WalletGet"
+    },
+    {
+      "name": "WalletGet",
+      "type": "walletpayment",
+      "params": {
+        "operation": "get",
+        "paymentId": "${PayId}"
+      },
+      "next": "Apply"
+    },
+    {
+      "name": "Apply",
+      "type": "function",
+      "script": "apply.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "NotifyBody",
+      "thread": "EmailSettings"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "ShapeCached",
+      "type": "function",
+      "script": "shape_cached.py"
+    },
+    {
+      "name": "NotifyBody",
+      "type": "function",
+      "script": "../_shared/notify_body.py",
+      "next": "ShouldNotify"
+    },
+    {
+      "name": "ShouldNotify",
+      "type": "condition",
+      "script": "../_shared/should_notify.py",
+      "positive": "Notify",
+      "negative": "Shape"
+    },
+    {
+      "name": "Notify",
+      "type": "websocket",
+      "channel": "shop-events",
+      "body": "${NotifyBody}",
+      "next": "Shape"
+    },
+    {
+      "name": "EmailSettings",
+      "type": "database",
+      "script": "../_shared/email_settings.sql",
+      "next": "OrderEmail"
+    },
+    {
+      "name": "OrderEmail",
+      "type": "function",
+      "script": "../_shared/order_email.py",
+      "next": "SendEmail"
+    },
+    {
+      "name": "SendEmail",
+      "type": "function",
+      "script": "../_shared/send_email.py"
+    }
+  ]
+}

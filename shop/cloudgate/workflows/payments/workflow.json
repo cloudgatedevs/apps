@@ -1,0 +1,31 @@
+{
+  "name": "Payments",
+  "route": "payments",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Storefront payment readiness: 'status' asks the Wallet Payment node whether the tenant wallet can take card payments in this environment, so the shop can say 'not accepting payments yet' before a customer reaches the hosted checkout. Gateway-anonymous; exposes only the ready flag, provider and a generic reason.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userId",
+      "allowAnonymous": true,
+      "next": "WalletStatus"
+    },
+    {
+      "name": "WalletStatus",
+      "type": "walletpayment",
+      "params": {
+        "operation": "status"
+      },
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    }
+  ]
+}

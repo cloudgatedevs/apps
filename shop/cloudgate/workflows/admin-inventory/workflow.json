@@ -1,0 +1,62 @@
+{
+  "name": "Admin Inventory",
+  "route": "admin-inventory",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Back office stock: stock list, adjust/receive with ledger, movements, low-stock. Requires API key + IdP admin.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan",
+      "role": "Admin"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "StockEvent"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "StockEvent",
+      "type": "function",
+      "script": "stock_event.py",
+      "next": "ShouldNotifyStock"
+    },
+    {
+      "name": "ShouldNotifyStock",
+      "type": "condition",
+      "script": "should_notify_stock.py",
+      "positive": "NotifyStock",
+      "negative": "NoStockEvent"
+    },
+    {
+      "name": "NotifyStock",
+      "type": "websocket",
+      "channel": "shop-events",
+      "body": "${StockEvent}",
+      "next": "Shape"
+    },
+    {
+      "name": "NoStockEvent",
+      "type": "function",
+      "script": "no_event.py",
+      "next": "Shape"
+    }
+  ]
+}

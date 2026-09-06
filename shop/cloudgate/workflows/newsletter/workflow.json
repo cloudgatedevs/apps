@@ -1,0 +1,35 @@
+{
+  "name": "Newsletter",
+  "route": "newsletter",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Storefront newsletter signup: 'subscribe' records a marketing opt-in against the customer row for that email (creating a guest customer when needed); 'unsubscribe' clears it. Gateway-anonymous.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userId",
+      "allowAnonymous": true,
+      "next": "Plan"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    }
+  ]
+}

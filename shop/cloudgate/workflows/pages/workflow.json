@@ -1,0 +1,35 @@
+{
+  "name": "Pages",
+  "route": "pages",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Storefront content pages: 'nav' lists published pages for the header and footer, 'get' returns one published page by slug (markdown body). Gateway-anonymous.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userId",
+      "allowAnonymous": true,
+      "next": "Plan"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    }
+  ]
+}

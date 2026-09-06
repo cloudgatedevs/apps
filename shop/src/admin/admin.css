@@ -1,0 +1,219 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Light, dense, professional. Native controls render light too. */
+:root {
+  color-scheme: light;
+}
+
+/* Keep number-input spin buttons visible (WebKit otherwise reveals them only
+   on hover/focus). */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* The whole console is scaled from this root size: Tailwind's rem-based type
+   and spacing follow it, so 14px gives the tighter, data-dense feel of a
+   professional back office without touching every component. */
+html {
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Device safe areas ------------------------------------------------------- */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+body {
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+}
+
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+  background-color: #f5f6f8;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  background: #f5f6f8;
+}
+
+::selection {
+  background: rgba(79, 70, 229, 0.18);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cdd3dd transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #cdd3dd;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #b8c0cc;
+  background-clip: padding-box;
+}
+
+@layer components {
+  /* Shell chrome, spaced in raw CSS so the safe-area insets can be *added*. */
+  .app-bar {
+    padding-top: calc(0.375rem + var(--safe-top));
+    padding-bottom: 0.375rem;
+    padding-left: calc(0.5rem + var(--safe-left));
+    padding-right: calc(0.5rem + var(--safe-right));
+  }
+
+  .app-main {
+    padding-top: 1.25rem;
+    padding-bottom: calc(1.5rem + var(--safe-bottom));
+    padding-left: calc(1rem + var(--safe-left));
+    padding-right: calc(1rem + var(--safe-right));
+  }
+  @media (min-width: 640px) {
+    .app-main {
+      padding-top: 1.75rem;
+      padding-bottom: calc(2rem + var(--safe-bottom));
+      padding-left: calc(2rem + var(--safe-left));
+      padding-right: calc(2rem + var(--safe-right));
+    }
+  }
+
+  .app-drawer {
+    padding-top: calc(1rem + var(--safe-top));
+    padding-bottom: calc(1rem + var(--safe-bottom));
+    padding-left: calc(1rem + var(--safe-left));
+    padding-right: 1rem;
+  }
+
+  .app-sidebar {
+    padding-top: 1.25rem;
+    padding-bottom: calc(1.25rem + var(--safe-bottom));
+    padding-left: calc(0.875rem + var(--safe-left));
+    padding-right: 0.875rem;
+  }
+
+  .card {
+    @apply rounded-xl border border-ink-700 bg-white shadow-panel;
+  }
+  .input {
+    @apply rounded-lg border border-ink-600 bg-white px-3 py-2 text-sm text-mist
+      placeholder:text-mist-dim/80 outline-none transition
+      focus:border-accent focus:ring-[3px] focus:ring-accent/15 sm:py-1.5;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white
+      shadow-glow transition hover:bg-accent-600 active:bg-accent-600 disabled:opacity-50 sm:py-1.5;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-ink-600 bg-white px-3 py-2 text-sm font-medium
+      text-mist-muted shadow-panel transition hover:border-ink-500 hover:bg-ink-900 hover:text-mist disabled:opacity-50 sm:py-1.5;
+  }
+}
+
+/* ---- back office additions ------------------------------------------------ */
+@layer components {
+  .label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.1em] text-mist-dim;
+  }
+  .select {
+    @apply input appearance-none pr-8 bg-no-repeat;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-position: right 0.6rem center;
+    background-size: 1rem;
+  }
+  .textarea {
+    @apply input min-h-[6rem] leading-relaxed;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:opacity-50 sm:py-1.5;
+  }
+  .btn-sm {
+    @apply px-2.5 py-1 text-xs;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-ink-600 bg-white px-2.5 py-1 text-xs text-mist-muted;
+  }
+}
+
+/* ---- shared primitives (menus, tooltips, skeletons, toasts) ------------- */
+:root {
+  --skeleton-base: rgba(15, 23, 42, 0.06);
+  --skeleton-highlight: rgba(15, 23, 42, 0.12);
+  --focus-ring: #4f46e5;
+}
+@layer components {
+  .menu {
+    @apply rounded-lg border border-ink-700 bg-white p-1 text-sm text-mist shadow-pop;
+  }
+  .menu-label {
+    @apply px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-mist-dim;
+  }
+  .menu-item {
+    @apply flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 outline-none data-[highlighted]:bg-ink-800 data-[disabled]:opacity-40;
+  }
+  .menu-item-danger {
+    @apply text-red-700 data-[highlighted]:bg-red-50;
+  }
+  .menu-icon {
+    @apply grid h-4 w-4 place-items-center text-mist-dim;
+  }
+  .menu-hint {
+    @apply text-[11px] text-mist-dim;
+  }
+  .menu-sep {
+    @apply my-1 h-px bg-ink-700;
+  }
+  .tooltip {
+    @apply rounded-md bg-mist px-2 py-1 text-[11px] font-medium text-white shadow-pop;
+  }
+  .tooltip-arrow {
+    @apply fill-mist;
+  }
+  .chip-active {
+    @apply border-accent bg-accent-soft text-accent-600;
+  }
+  .kbd {
+    @apply rounded border border-ink-600 bg-ink-900 px-1.5 py-0.5 font-mono text-[10px] text-mist-muted;
+  }
+}
+/* Uppy inside the light theme */
+.uppy-Dashboard-inner { @apply rounded-xl border-ink-700 bg-ink-900; }
+.uppy-Dashboard-AddFiles-title { @apply text-mist-muted; }
+.uppy-StatusBar-actionBtn--upload, .uppy-DashboardContent-back, .uppy-DashboardContent-addMore { color: #4f46e5 !important; }
+.uppy-StatusBar-actionBtn--upload { background: #4f46e5 !important; color: #fff !important; border-radius: 0.5rem !important; }
+
+/* Markdown preview in the page editor */
+.prose-page { @apply text-sm leading-relaxed text-mist; }
+.prose-page h1, .prose-page h2, .prose-page h3 { @apply mt-6 mb-2 font-semibold text-mist first:mt-0; }
+.prose-page h1 { @apply text-xl; } .prose-page h2 { @apply text-lg; } .prose-page h3 { @apply text-base; }
+.prose-page p { @apply my-3; } .prose-page ul { @apply my-3 list-disc pl-5; } .prose-page ol { @apply my-3 list-decimal pl-5; }
+.prose-page a { @apply text-accent underline; } .prose-page blockquote { @apply my-3 border-l-2 border-ink-600 pl-4 text-mist-muted; }
+.prose-page code { @apply rounded bg-ink-800 px-1 py-0.5 font-mono text-[12px]; } .prose-page hr { @apply my-6 border-ink-700; }
+.prose-page table { @apply my-3 w-full text-left text-sm; } .prose-page th, .prose-page td { @apply border-b border-ink-700 px-2 py-1.5; }
+.prose-page img { @apply my-3 rounded-lg; }
+
+/* icon alignment */
+.chip, .kbd, .btn-primary, .btn-ghost, .btn-danger { display: inline-flex; align-items: center; gap: 0.375rem; }

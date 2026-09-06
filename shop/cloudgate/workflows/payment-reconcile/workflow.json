@@ -1,0 +1,110 @@
+{
+  "name": "Payment Reconcile",
+  "route": "payment-reconcile",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "schedule": {
+    "cron": "FiveMinutes",
+    "sandbox": true,
+    "production": false
+  },
+  "description": "Scheduled safety net. Cancels orders that never reached the payment page (30 min) or whose session expired (24 h), releasing reserved stock; then re-reads one pending wallet payment (oldest check first) so orders paid by customers who never returned still get finalised. Idempotent; safe to call manually.",
+  "entry": "Plan",
+  "nodes": [
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "LoadOrder"
+    },
+    {
+      "name": "LoadOrder",
+      "type": "database",
+      "script": "load_order.sql",
+      "next": "HasCandidate"
+    },
+    {
+      "name": "HasCandidate",
+      "type": "condition",
+      "script": "has_candidate.py",
+      "positive": "PayId",
+      "negative": "ShapeNone"
+    },
+    {
+      "name": "PayId",
+      "type": "function",
+      "script": "../payment-status/pay_id.py",
+      "next": "WalletGet"
+    },
+    {
+      "name": "WalletGet",
+      "type": "walletpayment",
+      "params": {
+        "operation": "get",
+        "paymentId": "${PayId}"
+      },
+      "next": "Apply"
+    },
+    {
+      "name": "Apply",
+      "type": "function",
+      "script": "../payment-status/apply.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "NotifyBody",
+      "thread": "EmailSettings"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "ShapeNone",
+      "type": "function",
+      "script": "shape_none.py"
+    },
+    {
+      "name": "NotifyBody",
+      "type": "function",
+      "script": "../_shared/notify_body.py",
+      "next": "ShouldNotify"
+    },
+    {
+      "name": "ShouldNotify",
+      "type": "condition",
+      "script": "../_shared/should_notify.py",
+      "positive": "Notify",
+      "negative": "Shape"
+    },
+    {
+      "name": "Notify",
+      "type": "websocket",
+      "channel": "shop-events",
+      "body": "${NotifyBody}",
+      "next": "Shape"
+    },
+    {
+      "name": "EmailSettings",
+      "type": "database",
+      "script": "../_shared/email_settings.sql",
+      "next": "OrderEmail"
+    },
+    {
+      "name": "OrderEmail",
+      "type": "function",
+      "script": "../_shared/order_email.py",
+      "next": "SendEmail"
+    },
+    {
+      "name": "SendEmail",
+      "type": "function",
+      "script": "../_shared/send_email.py"
+    }
+  ]
+}

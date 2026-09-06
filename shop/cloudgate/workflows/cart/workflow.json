@@ -1,0 +1,15 @@
+{
+  "name": "Cart",
+  "route": "cart",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Server-side shopping carts keyed by an opaque token: get/add/update/remove/clear. Prices and stock are re-read from the catalogue on every call. Gateway-anonymous; IdP token optional (attaches the cart to the customer).",
+  "entry": "IdpAuth",
+  "nodes": [
+    { "name": "IdpAuth", "type": "idp", "output": "userId", "allowAnonymous": true, "next": "Plan" },
+    { "name": "Plan", "type": "function", "script": "plan.py", "next": "Run" },
+    { "name": "Run", "type": "database", "script": "run.sql", "next": "Shape" },
+    { "name": "Shape", "type": "function", "script": "shape.py" }
+  ]
+}

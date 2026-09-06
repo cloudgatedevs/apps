@@ -1,0 +1,66 @@
+{
+  "name": "Admin Settings",
+  "route": "admin-settings",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Back office store settings: get all (SMTP password masked) / set many, and 'send-test' which sends a test message through the configured SMTP server. Requires API key + IdP admin.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan",
+      "role": "Admin"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "IsTest"
+    },
+    {
+      "name": "IsTest",
+      "type": "condition",
+      "script": "is_test.py",
+      "positive": "EmailSettings",
+      "negative": "Shape"
+    },
+    {
+      "name": "EmailSettings",
+      "type": "database",
+      "script": "../_shared/email_settings.sql",
+      "next": "OrderEmail"
+    },
+    {
+      "name": "OrderEmail",
+      "type": "function",
+      "script": "test_email.py",
+      "next": "SendEmail"
+    },
+    {
+      "name": "SendEmail",
+      "type": "function",
+      "script": "../_shared/send_email.py",
+      "next": "ShapeTest"
+    },
+    {
+      "name": "ShapeTest",
+      "type": "function",
+      "script": "shape_test.py"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    }
+  ]
+}

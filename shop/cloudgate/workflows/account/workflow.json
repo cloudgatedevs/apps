@@ -1,0 +1,15 @@
+{
+  "name": "Account",
+  "route": "account",
+  "method": "POST",
+  "allowAnonymous": true,
+  "enableLogging": true,
+  "description": "Signed-in customer's own data: order history and order detail. Gateway-anonymous but the IdP node requires a valid token; every query is scoped to the token's user.",
+  "entry": "IdpAuth",
+  "nodes": [
+    { "name": "IdpAuth", "type": "idp", "output": "userInfo", "allowAnonymous": false, "next": "Plan" },
+    { "name": "Plan", "type": "function", "script": "plan.py", "next": "Run" },
+    { "name": "Run", "type": "database", "script": "run.sql", "next": "Shape" },
+    { "name": "Shape", "type": "function", "script": "shape.py" }
+  ]
+}
