@@ -1,0 +1,36 @@
+{
+  "name": "Admin Suppliers",
+  "route": "admin-suppliers",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Back office suppliers: list/create/update/delete. IdP admin.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan",
+      "role": "Admin"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    }
+  ]
+}

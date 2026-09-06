@@ -1,0 +1,62 @@
+{
+  "name": "Admin Inventory",
+  "route": "admin-inventory",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Back office stock: 'levels', 'adjust' (delta or newQty), 'movements' (ledger), 'receive' (goods received), 'receipts'/'receipt', 'count' (stock take). Publishes 'stock.adjusted'. IdP admin.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan",
+      "role": "Admin"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape",
+      "thread": "NotifyBody"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "NotifyBody",
+      "type": "function",
+      "script": "notify_body.py",
+      "next": "ShouldNotify"
+    },
+    {
+      "name": "ShouldNotify",
+      "type": "condition",
+      "script": "should_notify.py",
+      "positive": "Notify",
+      "negative": "Done"
+    },
+    {
+      "name": "Notify",
+      "type": "websocket",
+      "channel": "pos-events",
+      "body": "${NotifyBody}",
+      "next": "Done"
+    },
+    {
+      "name": "Done",
+      "type": "function",
+      "script": "done.py"
+    }
+  ]
+}

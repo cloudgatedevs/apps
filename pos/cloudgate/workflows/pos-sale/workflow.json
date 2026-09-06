@@ -1,0 +1,73 @@
+{
+  "name": "POS Sale",
+  "route": "pos-sale",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "The till: 'complete' (lines + cash payments -> receipt), 'create' (open sale for a card payment), 'hold'/'held'/'recall'/'discard' (parked sales), 'get' (receipt by id/reference), 'recent' (this shift), 'refund' (cash). Prices, tax and stock are computed server-side. IdP teller role.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Load"
+    },
+    {
+      "name": "Load",
+      "type": "database",
+      "script": "load.sql",
+      "next": "Compute"
+    },
+    {
+      "name": "Compute",
+      "type": "function",
+      "script": "compute.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape",
+      "thread": "NotifyBody"
+    },
+    {
+      "name": "NotifyBody",
+      "type": "function",
+      "script": "notify_body.py",
+      "next": "ShouldNotify"
+    },
+    {
+      "name": "ShouldNotify",
+      "type": "condition",
+      "script": "should_notify.py",
+      "positive": "Notify",
+      "negative": "Done"
+    },
+    {
+      "name": "Notify",
+      "type": "websocket",
+      "channel": "pos-events",
+      "body": "${NotifyBody}",
+      "next": "Done"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    },
+    {
+      "name": "Done",
+      "type": "function",
+      "script": "done.py"
+    }
+  ]
+}

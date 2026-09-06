@@ -1,0 +1,35 @@
+{
+  "name": "POS Shift",
+  "route": "pos-shift",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Register sessions for tellers: 'registers', 'current' (my open shift with running totals), 'open' (registerId, floatCents), 'movement' (payin|payout|drop), 'close' (countedCents, note) -> cash-up. IdP teller role.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    }
+  ]
+}

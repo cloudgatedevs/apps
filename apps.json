@@ -94,6 +94,102 @@
         ],
         "example": ".env.example"
       }
+    },
+    {
+      "id": "pos",
+      "name": "Cloudgate POS",
+      "category": "Commerce",
+      "version": "1.0.0",
+      "description": "A complete point-of-sale system: a touch-friendly till that scans barcodes with the device camera or a USB scanner, cash and card payments through Cloudgate Wallet, parked sales, returns and shift cash-ups, plus a back office for products, inventory (goods received and stock takes), sales, shifts, customers, reports and receipts.",
+      "folder": "pos",
+      "framework": "React",
+      "devCommand": "npm install && npm run dev",
+      "devPort": 3001,
+      "demoUrl": "",
+      "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/pos/banner.png",
+      "adminPath": "/admin",
+      "tags": [
+        "react",
+        "vite",
+        "tailwind",
+        "pos",
+        "retail",
+        "barcode",
+        "payments",
+        "wallet",
+        "idp"
+      ],
+      "features": [
+        "Camera and USB barcode scanning at the till and when capturing inventory",
+        "Cash with change, and card payments by QR code through Cloudgate Wallet",
+        "Shifts with opening float, cash in/out and Z reports; parked sales and returns",
+        "Inventory with goods-received notes, stock takes, ledger and label printing",
+        "Back office for Admins only; tellers sign in to the till with the Teller role"
+      ],
+      "requirements": [
+        "wallet",
+        "idp",
+        "smtp",
+        "websockets"
+      ],
+      "environments": [
+        "sandbox",
+        "production"
+      ],
+      "terms": {
+        "version": "1",
+        "url": "https://cloudgate.dev/terms",
+        "summary": [
+          "You are the merchant of record for everything sold through this till.",
+          "Card payments settle to your Cloudgate Wallet; Cloudgate fees apply per the platform terms.",
+          "You are responsible for tax on receipts, refunds and the cash in your drawers."
+        ]
+      },
+      "compliance": [
+        {
+          "key": "sandbox-notice",
+          "environment": "sandbox",
+          "label": "Test till only",
+          "text": "This copy uses the sandbox wallet and test cards. I will not use it for real sales."
+        },
+        {
+          "key": "receipt-details",
+          "environment": "production",
+          "label": "Receipt details before trading",
+          "text": "I will set my business name, address, tax number and tax rate in Settings before printing receipts for customers."
+        },
+        {
+          "key": "teller-accounts",
+          "environment": "production",
+          "label": "Individual teller accounts",
+          "text": "Each cashier gets their own user with the Teller role so shifts and cash-ups are attributable."
+        },
+        {
+          "key": "sandbox-tested",
+          "environment": "production",
+          "label": "Tested in sandbox",
+          "text": "I have rung up, refunded and cashed up a test sale in a sandbox copy of this app."
+        }
+      ],
+      "build": {
+        "installCommand": "npm install",
+        "buildCommand": "npm run build",
+        "devBuildCommand": "npm run build:dev",
+        "outputDir": "dist"
+      },
+      "workflows": {
+        "projectPath": "pos",
+        "file": ".template/workflow-template.json",
+        "schema": ".template/schema.sql",
+        "sampleData": ".template/sample-data.sql"
+      },
+      "configSetup": {
+        "kind": "vite-env",
+        "targets": [
+          ".env"
+        ],
+        "example": ".env.example"
+      }
     }
   ]
 }

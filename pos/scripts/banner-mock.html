@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Cloudgate POS banner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1320px; height: 600px; overflow: hidden; font-family: Inter, system-ui, sans-serif; background: #f5f6f8; color: #0f172a; font-size: 14px; }
+  .bar { height: 56px; background: #0f172a; color: #fff; display: flex; align-items: center; gap: 12px; padding: 0 16px; }
+  .logo { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,.15); display: grid; place-items: center; font-weight: 700; }
+  .nav { display: flex; gap: 4px; margin-left: 8px; }
+  .nav span { padding: 6px 12px; border-radius: 8px; color: rgba(255,255,255,.7); font-weight: 500; font-size: 13px; }
+  .nav span.on { background: rgba(255,255,255,.15); color: #fff; }
+  .shift { margin-left: auto; font-size: 12px; background: rgba(52,211,153,.2); color: #d1fae5; border: 1px solid rgba(110,231,183,.4); padding: 4px 10px; border-radius: 999px; display: flex; align-items: center; gap: 6px; }
+  .shift i { width: 6px; height: 6px; border-radius: 50%; background: #6ee7b7; display: inline-block; }
+  .who { text-align: right; line-height: 1.2; font-size: 13px; }
+  .who small { color: rgba(255,255,255,.6); font-size: 11px; }
+  .main { display: flex; height: 544px; }
+  .cat { flex: 1; display: flex; flex-direction: column; }
+  .tools { display: flex; gap: 8px; padding: 8px 12px; background: #fff; border-bottom: 1px solid #e5e8ee; align-items: center; }
+  .search { flex: 1; height: 40px; border: 1px solid #d5dae3; border-radius: 10px; display: flex; align-items: center; padding: 0 12px; color: #6b7280; gap: 8px; }
+  .btn { height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #d5dae3; background: #fff; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .btn.on { background: #2563eb; color: #fff; border-color: transparent; }
+  .cam { background: #09090b; padding: 8px; border-bottom: 1px solid #e5e8ee; display: grid; place-items: center; }
+  .cam .view { width: 560px; height: 150px; border-radius: 14px; position: relative; overflow: hidden; background: radial-gradient(ellipse at 60% 40%, #3a3a40, #121214 70%); }
+  .cam .box { position: absolute; left: 50%; top: 50%; width: 220px; height: 80px; transform: translate(-50%,-50%); border: 2px solid rgba(52,211,153,.9); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,.35); }
+  .cam .line { position: absolute; left: 50%; top: 50%; width: 190px; height: 2px; background: rgba(239,68,68,.85); transform: translate(-50%, -6px); }
+  .cam .code { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); display: flex; gap: 2px; align-items: flex-end; height: 44px; }
+  .cam .code b { display: block; background: #e5e7eb; height: 44px; }
+  .cam .tag { position: absolute; left: 8px; bottom: 8px; font-size: 11px; color: #fff; background: rgba(0,0,0,.6); padding: 2px 8px; border-radius: 6px; }
+  .chips { display: flex; gap: 6px; padding: 8px 12px; background: #fff; border-bottom: 1px solid #e5e8ee; }
+  .chip { padding: 5px 12px; border-radius: 999px; background: #f1f3f7; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .chip.on { background: #0f172a; color: #fff; }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
+  .tile { background: #fff; border: 1px solid #e5e8ee; border-radius: 16px; padding: 12px; min-height: 88px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+  .tile .t { display: flex; gap: 8px; align-items: flex-start; }
+  .tile .sw { width: 40px; height: 40px; border-radius: 10px; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .tile .n { font-weight: 500; font-size: 13px; line-height: 1.3; }
+  .tile .p { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; font-weight: 600; }
+  .tile .p small { font-weight: 400; color: #6b7280; font-size: 11px; }
+  .cart { width: 400px; background: #fff; border-left: 1px solid #e5e8ee; display: flex; flex-direction: column; }
+  .cart h3 { font-size: 14px; padding: 10px 12px; border-bottom: 1px solid #e5e8ee; display: flex; align-items: center; gap: 8px; }
+  .cart h3 em { font-style: normal; font-size: 11px; font-weight: 500; color: #2563eb; margin-left: auto; }
+  .lines { flex: 1; padding: 0 12px; }
+  .line { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid #e5e8ee; }
+  .line .d { flex: 1; }
+  .line .d b { display: block; font-weight: 500; font-size: 13px; }
+  .line .d small { color: #6b7280; font-size: 12px; }
+  .qty { display: flex; align-items: center; border: 1px solid #d5dae3; border-radius: 8px; height: 32px; }
+  .qty span { width: 32px; display: grid; place-items: center; color: #475569; }
+  .qty b { width: 28px; text-align: center; font-size: 13px; }
+  .line .a { width: 80px; text-align: right; font-weight: 600; font-size: 13px; }
+  .tot { border-top: 1px solid #e5e8ee; padding: 12px; }
+  .tot .r { display: flex; justify-content: space-between; font-size: 13px; color: #475569; padding: 2px 0; }
+  .tot .r.g { color: #15803d; }
+  .tot .r.big { color: #0f172a; align-items: baseline; padding-top: 6px; }
+  .tot .r.big b { font-size: 24px; font-weight: 700; }
+  .acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .acts span { height: 36px; border: 1px solid #d5dae3; border-radius: 10px; display: grid; place-items: center; font-size: 13px; font-weight: 500; }
+  .pay { margin-top: 8px; height: 56px; border-radius: 16px; background: #0f172a; color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 16px; }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <div class="logo">C</div><b>Corner Café &amp; Grocer</b>
+    <div class="nav"><span class="on">▣ Register</span><span>▤ Sales</span><span>↺ Returns</span><span>◷ Shift</span></div>
+    <div class="shift"><i></i>Till 1 · 2h 14m</div>
+    <div class="who">Thandi Mokoena<br /><small>Teller</small></div>
+  </div>
+  <div class="main">
+    <div class="cat">
+      <div class="tools"><div class="search">⌕ Search or scan a barcode…</div><div class="btn on">▣ Stop camera</div></div>
+      <div class="cam"><div class="view">
+        <div class="code">
+          <b style="width:3px"></b><b style="width:1px"></b><b style="width:2px"></b><b style="width:4px"></b><b style="width:1px"></b><b style="width:2px"></b><b style="width:1px"></b><b style="width:3px"></b><b style="width:2px"></b><b style="width:1px"></b><b style="width:4px"></b><b style="width:2px"></b><b style="width:1px"></b><b style="width:2px"></b><b style="width:3px"></b><b style="width:1px"></b><b style="width:2px"></b><b style="width:4px"></b><b style="width:1px"></b><b style="width:1px"></b><b style="width:3px"></b><b style="width:2px"></b><b style="width:1px"></b><b style="width:4px"></b><b style="width:2px"></b><b style="width:1px"></b><b style="width:3px"></b><b style="width:1px"></b><b style="width:2px"></b><b style="width:2px"></b><b style="width:1px"></b><b style="width:4px"></b><b style="width:1px"></b><b style="width:3px"></b>
+        </div>
+        <div class="box"></div><div class="line"></div><div class="tag">▣ Scanning</div>
+      </div></div>
+      <div class="chips"><span class="chip on">All</span><span class="chip"><i style="background:#2563eb"></i>Drinks</span><span class="chip"><i style="background:#16a34a"></i>Fresh</span><span class="chip"><i style="background:#ea580c"></i>Bakery</span><span class="chip"><i style="background:#7c3aed"></i>Snacks</span><span class="chip"><i style="background:#0891b2"></i>Household</span></div>
+      <div class="grid">
+        <div class="tile"><div class="t"><div class="sw" style="background:#2563eb">SW</div><div class="n">Still water 500ml</div></div><div class="p">R 12,00<small>48 left</small></div></div>
+        <div class="tile"><div class="t"><div class="sw" style="background:#16a34a">BA</div><div class="n">Bananas</div></div><div class="p">R 24,99<small>/kg</small></div></div>
+        <div class="tile"><div class="t"><div class="sw" style="background:#ea580c">CR</div><div class="n">Croissant</div></div><div class="p">R 22,00<small>14 left</small></div></div>
+        <div class="tile"><div class="t"><div class="sw" style="background:#7c3aed">CH</div><div class="n">Salted chips 125g</div></div><div class="p">R 18,50<small style="color:#d97706">4 left</small></div></div>
+        <div class="tile"><div class="t"><div class="sw" style="background:#2563eb">CO</div><div class="n">Cola 330ml</div></div><div class="p">R 14,99<small>96 left</small></div></div>
+        <div class="tile"><div class="t"><div class="sw" style="background:#16a34a">AP</div><div class="n">Apples</div></div><div class="p">R 29,99<small>/kg</small></div></div>
+        <div class="tile"><div class="t"><div class="sw" style="background:#ea580c">SD</div><div class="n">Sourdough loaf</div></div><div class="p">R 48,00<small>6 left</small></div></div>
+        <div class="tile"><div class="t"><div class="sw" style="background:#0891b2">DW</div><div class="n">Dishwashing liquid 750ml</div></div><div class="p">R 39,99<small>22 left</small></div></div>
+      </div>
+    </div>
+    <div class="cart">
+      <h3>🛒 Current sale <em>Mrs Dlamini</em></h3>
+      <div class="lines">
+        <div class="line"><div class="d"><b>Cola 330ml</b><small>2 × R 14,99</small></div><div class="qty"><span>−</span><b>2</b><span>+</span></div><div class="a">R 29,98</div></div>
+        <div class="line"><div class="d"><b>Bananas</b><small>1.240 kg × R 24,99</small></div><div class="a">R 30,99</div></div>
+        <div class="line"><div class="d"><b>Croissant</b><small>3 × R 22,00 · <span style="color:#15803d">−R 6,60</span></small></div><div class="qty"><span>−</span><b>3</b><span>+</span></div><div class="a">R 59,40</div></div>
+        <div class="line"><div class="d"><b>Sourdough loaf</b><small>1 × R 48,00</small></div><div class="qty"><span>−</span><b>1</b><span>+</span></div><div class="a">R 48,00</div></div>
+      </div>
+      <div class="tot">
+        <div class="r"><span>Subtotal</span><span>R 168,37</span></div>
+        <div class="r g"><span>Discount</span><span>− R 8,42</span></div>
+        <div class="r" style="color:#6b7280"><span>Includes VAT</span><span>R 20,86</span></div>
+        <div class="r big"><span style="font-weight:600">Total</span><b>R 159,95</b></div>
+        <div class="acts"><span>% Discount</span><span>⏸ Park</span><span>↺ Recall</span></div>
+        <div class="pay">Pay R 159,95</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

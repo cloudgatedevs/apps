@@ -1,0 +1,56 @@
+{
+  "name": "Admin Dashboard",
+  "route": "admin-dashboard",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Back office dashboard: 'stats', 'by-hour' (today), 'by-day' (days), 'top' (products), 'by-teller', 'by-category', 'by-method', 'recent', 'wallet-status'. IdP admin.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan",
+      "role": "Admin"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "IsWalletStatus"
+    },
+    {
+      "name": "IsWalletStatus",
+      "type": "condition",
+      "script": "is_wallet_status.py",
+      "positive": "WalletStatus",
+      "negative": "Run"
+    },
+    {
+      "name": "WalletStatus",
+      "type": "walletpayment",
+      "params": {
+        "operation": "status"
+      },
+      "next": "ShapeWallet"
+    },
+    {
+      "name": "ShapeWallet",
+      "type": "function",
+      "script": "shape_wallet.py"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    }
+  ]
+}

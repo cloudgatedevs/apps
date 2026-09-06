@@ -1,0 +1,287 @@
+{
+  "name": "POS Payment",
+  "route": "pos-payment",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Card payments at the till through Cloudgate Wallet: 'start' (saleId -> hosted payment URL to show as a QR code), 'status' (saleId; completes the sale when the wallet reports success), 'cancel', 'refund' (saleId, items -> wallet refund), 'wallet-status'. IdP teller role.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Load"
+    },
+    {
+      "name": "Load",
+      "type": "database",
+      "script": "load.sql",
+      "next": "IsStart"
+    },
+    {
+      "name": "IsStart",
+      "type": "condition",
+      "script": "is_start.py",
+      "positive": "PayAmount",
+      "negative": "IsStatus"
+    },
+    {
+      "name": "PayAmount",
+      "type": "function",
+      "script": "pay_amount.py",
+      "next": "PayCurrency"
+    },
+    {
+      "name": "PayCurrency",
+      "type": "function",
+      "script": "pay_currency.py",
+      "next": "PayRef"
+    },
+    {
+      "name": "PayRef",
+      "type": "function",
+      "script": "pay_ref.py",
+      "next": "PayEmail"
+    },
+    {
+      "name": "PayEmail",
+      "type": "function",
+      "script": "pay_email.py",
+      "next": "PaySuccessUrl"
+    },
+    {
+      "name": "PaySuccessUrl",
+      "type": "function",
+      "script": "pay_success_url.py",
+      "next": "PayCancelUrl"
+    },
+    {
+      "name": "PayCancelUrl",
+      "type": "function",
+      "script": "pay_cancel_url.py",
+      "next": "PayKey"
+    },
+    {
+      "name": "PayKey",
+      "type": "function",
+      "script": "pay_key.py",
+      "next": "WalletCreate"
+    },
+    {
+      "name": "WalletCreate",
+      "type": "walletpayment",
+      "params": {
+        "operation": "create",
+        "amount": "${PayAmount}",
+        "currency": "${PayCurrency}",
+        "description": "Sale ${PayRef}",
+        "reference": "${PayRef}",
+        "customerEmail": "${PayEmail}",
+        "successUrl": "${PaySuccessUrl}",
+        "cancelUrl": "${PayCancelUrl}",
+        "idempotencyKey": "${PayKey}"
+      },
+      "next": "SaveStart"
+    },
+    {
+      "name": "SaveStart",
+      "type": "function",
+      "script": "save_start.py",
+      "next": "RunStart"
+    },
+    {
+      "name": "RunStart",
+      "type": "database",
+      "script": "run_start.sql",
+      "next": "ShapeStart"
+    },
+    {
+      "name": "ShapeStart",
+      "type": "function",
+      "script": "shape_start.py"
+    },
+    {
+      "name": "IsStatus",
+      "type": "condition",
+      "script": "is_status.py",
+      "positive": "PayId",
+      "negative": "IsRefund"
+    },
+    {
+      "name": "PayId",
+      "type": "function",
+      "script": "pay_id.py",
+      "next": "WalletGet"
+    },
+    {
+      "name": "WalletGet",
+      "type": "walletpayment",
+      "params": {
+        "operation": "get",
+        "paymentId": "${PayId}"
+      },
+      "next": "ApplyStatus"
+    },
+    {
+      "name": "ApplyStatus",
+      "type": "function",
+      "script": "apply_status.py",
+      "next": "RunStatus"
+    },
+    {
+      "name": "RunStatus",
+      "type": "database",
+      "script": "run_status.sql",
+      "next": "ShapeStatus",
+      "thread": "NotifyStatusBody"
+    },
+    {
+      "name": "ShapeStatus",
+      "type": "function",
+      "script": "shape_status.py"
+    },
+    {
+      "name": "NotifyStatusBody",
+      "type": "function",
+      "script": "notify_status_body.py",
+      "next": "ShouldNotifyStatus"
+    },
+    {
+      "name": "ShouldNotifyStatus",
+      "type": "condition",
+      "script": "should_notify_status.py",
+      "positive": "NotifyStatus",
+      "negative": "DoneStatus"
+    },
+    {
+      "name": "NotifyStatus",
+      "type": "websocket",
+      "channel": "pos-events",
+      "body": "${NotifyStatusBody}",
+      "next": "DoneStatus"
+    },
+    {
+      "name": "DoneStatus",
+      "type": "function",
+      "script": "done.py"
+    },
+    {
+      "name": "IsRefund",
+      "type": "condition",
+      "script": "is_refund.py",
+      "positive": "RefundId",
+      "negative": "IsWalletStatus"
+    },
+    {
+      "name": "RefundId",
+      "type": "function",
+      "script": "refund_id.py",
+      "next": "RefundAmount"
+    },
+    {
+      "name": "RefundAmount",
+      "type": "function",
+      "script": "refund_amount.py",
+      "next": "WalletRefund"
+    },
+    {
+      "name": "WalletRefund",
+      "type": "walletpayment",
+      "params": {
+        "operation": "refund",
+        "paymentId": "${RefundId}",
+        "amount": "${RefundAmount}",
+        "description": "POS refund"
+      },
+      "next": "ApplyRefund"
+    },
+    {
+      "name": "ApplyRefund",
+      "type": "function",
+      "script": "apply_refund.py",
+      "next": "RunRefund"
+    },
+    {
+      "name": "RunRefund",
+      "type": "database",
+      "script": "run_refund.sql",
+      "next": "ShapeRefund",
+      "thread": "NotifyRefundBody"
+    },
+    {
+      "name": "ShapeRefund",
+      "type": "function",
+      "script": "shape_refund.py"
+    },
+    {
+      "name": "NotifyRefundBody",
+      "type": "function",
+      "script": "notify_refund_body.py",
+      "next": "ShouldNotifyRefund"
+    },
+    {
+      "name": "ShouldNotifyRefund",
+      "type": "condition",
+      "script": "should_notify_refund.py",
+      "positive": "NotifyRefund",
+      "negative": "DoneRefund"
+    },
+    {
+      "name": "NotifyRefund",
+      "type": "websocket",
+      "channel": "pos-events",
+      "body": "${NotifyRefundBody}",
+      "next": "DoneRefund"
+    },
+    {
+      "name": "DoneRefund",
+      "type": "function",
+      "script": "done.py"
+    },
+    {
+      "name": "IsWalletStatus",
+      "type": "condition",
+      "script": "is_wallet_status.py",
+      "positive": "WalletStatus",
+      "negative": "Cancel"
+    },
+    {
+      "name": "WalletStatus",
+      "type": "walletpayment",
+      "params": {
+        "operation": "status"
+      },
+      "next": "ShapeWallet"
+    },
+    {
+      "name": "ShapeWallet",
+      "type": "function",
+      "script": "shape_wallet.py"
+    },
+    {
+      "name": "Cancel",
+      "type": "function",
+      "script": "cancel.py",
+      "next": "RunCancel"
+    },
+    {
+      "name": "RunCancel",
+      "type": "database",
+      "script": "run_cancel.sql",
+      "next": "ShapeCancel"
+    },
+    {
+      "name": "ShapeCancel",
+      "type": "function",
+      "script": "shape_cancel.py"
+    }
+  ]
+}

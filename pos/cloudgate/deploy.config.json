@@ -1,0 +1,23 @@
+{
+  "tenancy": "niel-olivier-6",
+  "gateway": "http://niel-olivier-6.localhost:44301",
+  "projectId": "c337c01d-2fa4-4913-95b3-08df0bd31f5a",
+  "projectPath": "pos",
+  "databases": {
+    "default": {
+      "name": "pos_db",
+      "id": "abbfb119-5235-439a-2538-08df0bd32cb2",
+      "fileId": "261d5222-361d-4288-9f95-3f3bf3b93526",
+      "prodName": "pos_db_prod",
+      "prodId": "edc37039-8620-42c3-2539-08df0bd32cb2",
+      "fileProdId": "8b59cc22-ac9d-4155-a903-ff1e213ad2ec"
+    }
+  },
+  "websockets": {
+    "pos-events": {
+      "id": "345d3cde-2aeb-4b3c-ffbd-08df0bd33071",
+      "name": "POS events",
+      "route": "pos-events"
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "name": "Admin Sales",
+  "route": "admin-sales",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": true,
+  "description": "Back office sales: 'list' (filters), 'get' (receipt), 'void' (open/held sale), 'refund' (items; cash, or card through the Cloudgate Wallet). IdP admin.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "Plan",
+      "role": "Admin"
+    },
+    {
+      "name": "Plan",
+      "type": "function",
+      "script": "plan.py",
+      "next": "Load"
+    },
+    {
+      "name": "Load",
+      "type": "database",
+      "script": "load.sql",
+      "next": "IsCardRefund"
+    },
+    {
+      "name": "IsCardRefund",
+      "type": "condition",
+      "script": "is_card_refund.py",
+      "positive": "RefundId",
+      "negative": "Compute"
+    },
+    {
+      "name": "RefundId",
+      "type": "function",
+      "script": "refund_id.py",
+      "next": "RefundAmount"
+    },
+    {
+      "name": "RefundAmount",
+      "type": "function",
+      "script": "refund_amount.py",
+      "next": "WalletRefund"
+    },
+    {
+      "name": "WalletRefund",
+      "type": "walletpayment",
+      "params": {
+        "operation": "refund",
+        "paymentId": "${RefundId}",
+        "amount": "${RefundAmount}",
+        "description": "Back office refund"
+      },
+      "next": "ApplyRefund"
+    },
+    {
+      "name": "ApplyRefund",
+      "type": "function",
+      "script": "apply_refund.py",
+      "next": "RunRefund"
+    },
+    {
+      "name": "RunRefund",
+      "type": "database",
+      "script": "run_refund.sql",
+      "next": "ShapeRefund"
+    },
+    {
+      "name": "ShapeRefund",
+      "type": "function",
+      "script": "shape_refund.py"
+    },
+    {
+      "name": "Compute",
+      "type": "function",
+      "script": "compute.py",
+      "next": "Run"
+    },
+    {
+      "name": "Run",
+      "type": "database",
+      "script": "run.sql",
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "shape.py"
+    }
+  ]
+}

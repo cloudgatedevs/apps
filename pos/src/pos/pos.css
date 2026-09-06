@@ -1,0 +1,38 @@
+/* Till-specific styles on top of the shared back-office tokens (admin.css). */
+html, body, #root { height: 100%; }
+body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+
+/* Store theme colours (Settings > Theme), RGB channels so Tailwind alpha still works. */
+:root {
+  --c-primary: 15 23 42;
+  --c-primary-fg: 255 255 255;
+  --c-secondary: 37 99 235;
+  --c-secondary-fg: 255 255 255;
+}
+
+/* Large touch targets for the till grid and keypad. */
+.pos-tile {
+  @apply flex min-h-[5.5rem] flex-col justify-between rounded-2xl border border-ink-700 bg-white p-3 text-left shadow-panel transition active:scale-[0.98] active:bg-ink-800;
+}
+.pos-key {
+  @apply grid h-14 place-items-center rounded-xl border border-ink-700 bg-white text-lg font-semibold text-mist shadow-panel transition active:scale-[0.97] active:bg-ink-800 select-none;
+}
+.pos-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold text-white shadow-soft transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40;
+  background: rgb(var(--c-primary));
+}
+.pos-accent { color: rgb(var(--c-secondary)); }
+.pos-accent-bg { background: rgb(var(--c-secondary)); color: rgb(var(--c-secondary-fg)); }
+
+/* Camera scan line */
+@keyframes pos-scan { 0% { transform: translate(-50%, -28px); } 100% { transform: translate(-50%, 28px); } }
+.pos-scanline { animation: pos-scan 1.4s ease-in-out infinite alternate; }
+
+/* Receipt print: only the receipt sheet prints. */
+@media print {
+  body * { visibility: hidden !important; }
+  .pos-receipt, .pos-receipt * { visibility: visible !important; }
+  .pos-receipt { position: absolute; left: 0; top: 0; width: 80mm; padding: 4mm; font-size: 12px; background: #fff; }
+  .pos-receipt .no-print { display: none !important; }
+}
+.pos-receipt { font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', monospace; }
