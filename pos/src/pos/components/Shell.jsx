@@ -33,7 +33,7 @@ const Shell = () => {
   const name = getProfileDisplayName({ name: teller?.name, surname: teller?.surname, email: teller?.emailAddress });
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-ink-950">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-ink-950">
       <header className="flex h-14 shrink-0 items-center gap-3 px-3 text-white" style={{ background: 'rgb(var(--c-primary))' }}>
         <div className="flex min-w-0 items-center gap-2">
           {settings.store_icon_url || settings.store_logo_url
