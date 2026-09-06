@@ -24,7 +24,7 @@
         "idp"
       ],
       "features": [
-        "Card payments through Cloudgate Wallet (Stripe Connect or Paystack), sandbox and production",
+        "Card payments through Cloudgate Wallet, sandbox and production",
         "Products with variants, images, stock ledger and low-stock alerts",
         "Orders with shipping, tracking, refunds and customer emails",
         "Editable pages, contact form, newsletter, theme colours and branding",

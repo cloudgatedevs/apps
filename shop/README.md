@@ -2,7 +2,7 @@
 
 An ecommerce site built entirely on **Cloudgate**: the backend is a set of Cloudgate workflow
 actions over a SQLite database, sign-in is the Cloudgate IdP, and card payments run through the
-**Cloudgate Wallet** (Stripe Connect / Paystack hosted checkout). The frontend is one Vite project
+**Cloudgate Wallet** (hosted checkout). The frontend is one Vite project
 with two entry points that build into two separate bundles:
 
 | Entry | URL | What it is |
@@ -78,7 +78,7 @@ Coming next: discount codes, storefront SEO (per-product meta, sitemap), product
 
 ## Payments
 
-Card payments run through the tenant's **Cloudgate Wallet** (Stripe Connect or Paystack). The `checkout` workflow
+Card payments run through the tenant's **Cloudgate Wallet**. The `checkout` workflow
 uses the **Wallet Payment** node (added to Cloudgate on branch `feature/shop-platform`) to create a hosted checkout
 session in-process, so no host credentials ever leave Cloudgate. The customer pays on the provider's page and returns
 to `/checkout/return?ref=…`, which polls `payment-status` until the wallet reports success. Sandbox and production

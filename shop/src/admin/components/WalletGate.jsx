@@ -40,7 +40,7 @@ const WalletGate = ({ status }) => {
         <div><dt className="label">Charges</dt><dd className="mt-0.5 text-mist">{status.chargesEnabled ? 'Enabled' : 'Off'}</dd></div>
       </dl>
       <ol className="mt-5 list-decimal space-y-1.5 pl-5 text-sm text-mist-muted">
-        <li>Open <span className="font-medium text-mist">Wallet</span> in the Cloudgate hub and choose your payment provider (Stripe or Paystack).</li>
+        <li>Open <span className="font-medium text-mist">Wallet</span> in the Cloudgate hub and choose your payment provider.</li>
         <li>Complete the provider's onboarding: business details, bank account and identity checks.</li>
         <li>Come back here. The store starts taking card payments the moment charges are enabled.</li>
       </ol>

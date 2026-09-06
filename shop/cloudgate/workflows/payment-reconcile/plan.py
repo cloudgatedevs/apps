@@ -4,7 +4,7 @@
 # payment-status handles the wallet answer, so the node after WalletGet must be named "LoadOrder"
 # here as well.
 NO_SESSION_MINUTES = 30      # order created but the wallet session was never created
-SESSION_EXPIRY_HOURS = 24    # Stripe/Paystack hosted sessions expire after a day
+SESSION_EXPIRY_HOURS = 24    # hosted checkout sessions expire after a day
 RECHECK_AFTER_MINUTES = 2    # give the customer time to come back through the return page first
 
 RELEASE = (
