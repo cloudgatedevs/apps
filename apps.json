@@ -13,7 +13,16 @@
       "demoUrl": "",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/shop/banner.png",
       "adminPath": "/admin",
-      "tags": ["react", "vite", "tailwind", "ecommerce", "shop", "payments", "wallet", "idp"],
+      "tags": [
+        "react",
+        "vite",
+        "tailwind",
+        "ecommerce",
+        "shop",
+        "payments",
+        "wallet",
+        "idp"
+      ],
       "features": [
         "Card payments through Cloudgate Wallet (Stripe Connect or Paystack), sandbox and production",
         "Products with variants, images, stock ledger and low-stock alerts",
@@ -21,8 +30,16 @@
         "Editable pages, contact form, newsletter, theme colours and branding",
         "Back office for IdP users with the Admin role"
       ],
-      "requirements": ["wallet", "idp", "smtp", "websockets"],
-      "environments": ["sandbox", "production"],
+      "requirements": [
+        "wallet",
+        "idp",
+        "smtp",
+        "websockets"
+      ],
+      "environments": [
+        "sandbox",
+        "production"
+      ],
       "terms": {
         "version": "1",
         "url": "https://cloudgate.dev/terms",
@@ -61,6 +78,7 @@
       "build": {
         "installCommand": "npm install",
         "buildCommand": "npm run build",
+        "devBuildCommand": "npm run build:dev",
         "outputDir": "dist"
       },
       "workflows": {
@@ -71,7 +89,9 @@
       },
       "configSetup": {
         "kind": "vite-env",
-        "targets": [".env"],
+        "targets": [
+          ".env"
+        ],
         "example": ".env.example"
       }
     }

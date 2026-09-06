@@ -34,8 +34,17 @@ An app only appears in the store once it is listed in [`apps.json`](./apps.json)
 | `environments[]` | `sandbox` and/or `production`. |
 | `terms` | `{ version, url, summary[] }`: must be accepted; the version is recorded on the install. |
 | `compliance[]` | `{ key, label, text, environment }` checkboxes; `environment` is `sandbox`, `production` or `all`. |
-| `build` | `installCommand`, `buildCommand`, `outputDir` for the automated build. |
+| `build` | `installCommand`, `buildCommand` (production), `devBuildCommand` (sandbox, e.g. `npm run build:dev` = Vite development mode) and `outputDir`. |
 | `workflows` | `projectPath` (controller path, suffixed when taken), `file`, `schema`, `sampleData`. |
+
+### Environment files
+
+The roll-out renders **`.env.development`** (sandbox gateway slot, `{{environment}}` = `sbx`) and
+**`.env.production`** (`prod`) from `.env.example`. Vite picks the file by build mode: `vite build`
+reads `.env.production`, `vite build --mode development` (the `build:dev` script) reads
+`.env.development`. Sandbox roll-outs therefore build with `devBuildCommand`; production with
+`buildCommand`. The same holds when you publish from Web Apps: the wizard defaults to `build:dev`
+for sandbox apps.
 
 ### `.env.example` placeholders
 
