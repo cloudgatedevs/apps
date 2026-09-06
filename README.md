@@ -63,3 +63,13 @@ npm run banner                 # captures banner.png from http://localhost:3000
 ```
 
 Production builds are served as static files from the `build.outputDir` folder.
+
+## Updating an installed app
+
+Bump `version` in `apps.json` (and the app's `template.json`) and push. Tenants that installed an
+older version see **Update to vX** on the card. The update replaces the app's source folder
+(keeping `.env*` and `node_modules`), refreshes the controller's endpoints in place (the importer
+matches by route and keeps the databases), applies `schema.sql` to the existing databases (write it
+idempotently: `IF NOT EXISTS`, guarded `ALTER TABLE`), reuses existing WebSocket channels by route,
+then rebuilds and republishes on the same web app. The wizard warns that any local changes to the
+source or the workflows are overwritten.
