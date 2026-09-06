@@ -10,6 +10,7 @@ const Keypad = ({ value = '', onChange, onEnter, decimals = 2, enterLabel = 'OK'
     if (k === 'back') v = v.slice(0, -1);
     else if (k === 'clear') v = '';
     else if (k === '.') { if (decimals > 0 && !v.includes('.')) v = (v || '0') + '.'; }
+    else if (k === '00') { if (v && v !== '0' && !v.includes('.') && v.length <= 10) v += '00'; }
     else {
       const [, frac] = v.split('.');
       if (frac !== undefined && frac.length >= decimals) return;
@@ -18,14 +19,18 @@ const Keypad = ({ value = '', onChange, onEnter, decimals = 2, enterLabel = 'OK'
     }
     onChange?.(v);
   };
-  const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3'];
+  const digit = (k) => <button key={k} type="button" className="pos-key" onClick={() => press(k)}>{k}</button>;
   return (
     <div className={`grid grid-cols-4 gap-2 ${className}`}>
-      {keys.map((k) => <button key={k} type="button" className="pos-key" onClick={() => press(k)}>{k}</button>)}
-      <button type="button" className="pos-key row-span-2 !h-auto text-mist-muted" onClick={() => press('back')} aria-label="Backspace"><Delete className="h-5 w-5" /></button>
+      {['7', '8', '9'].map(digit)}
+      <button type="button" className="pos-key text-mist-muted" onClick={() => press('back')} aria-label="Backspace"><Delete className="h-5 w-5" /></button>
+      {['4', '5', '6'].map(digit)}
       <button type="button" className="pos-key text-mist-muted" onClick={() => press('clear')}>C</button>
-      <button type="button" className="pos-key" onClick={() => press('0')}>0</button>
+      {['1', '2', '3'].map(digit)}
+      <button type="button" className="pos-key" onClick={() => press('00')} aria-label="Double zero">00</button>
+      <button type="button" className="pos-key col-span-2" onClick={() => press('0')}>0</button>
       <button type="button" className="pos-key" onClick={() => press('.')} disabled={decimals === 0}>.</button>
+      <span aria-hidden="true" />
       <button type="button" className="pos-key col-span-4 !h-12 pos-accent-bg border-transparent" onClick={onEnter}>{enterLabel}</button>
     </div>
   );

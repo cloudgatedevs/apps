@@ -5,7 +5,7 @@ Calls the published actions through the gateway exactly the way the apps do (HMA
 requests plus an IdP bearer token) and checks the response shapes. Every POS action needs a
 signed-in user, so two tokens drive the two halves:
 
-    POS_TELLER_TOKEN=<idp jwt of a Teller>  python cloudgate/smoke.py     # till flow: shift -> sale -> refund -> close
+    POS_TELLER_TOKEN=<idp jwt of any user>  python cloudgate/smoke.py     # till flow: shift -> sale -> refund -> close
     POS_ADMIN_TOKEN=<idp jwt of an Admin>   python cloudgate/smoke.py     # back office reads + a stock adjustment
     python cloudgate/smoke.py --teller <jwt> --admin <jwt> --keep          # both; --keep leaves the shift open
 

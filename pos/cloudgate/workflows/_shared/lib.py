@@ -20,6 +20,8 @@ def load_json(raw, default=None):
     """Parse text Cloudgate substituted into the script (a request body, a prior node's output)."""
     if raw is None:
         return default
+    if isinstance(raw, (list, dict)):
+        return raw  # already nested JSON (a json(...) column inside json_object)
     raw = str(raw).strip()
     if not raw or raw == 'No records found':
         return default
@@ -149,16 +151,12 @@ def require_admin(raw):
     return u
 
 
-TELLER_ROLES = ('teller', 'cashier', 'manager')
-
 def require_teller(raw):
-    """POS terminal actions: a signed-in IdP user with a teller-type role. Admins run the back
-    office only; managers may also use the till."""
+    """POS till actions: any signed-in IdP user, whatever their role (the default 'User' role is
+    enough). Only the back office is restricted, by require_admin()."""
     u = idp_user(raw)
     if not u:
         fail('Sign in required.')
-    if str(u.get('Role') or '').strip().lower() not in TELLER_ROLES:
-        fail('This screen is for tellers. Ask an administrator for the Teller role.')
     if u.get('IsActive') is False:
         fail('Account disabled.')
     return u
@@ -167,7 +165,10 @@ def user_id_of(u):
     return to_int(u.get('Id') or u.get('id'), 0)
 
 def display_name(u):
-    n = ' '.join(x for x in (str(u.get('Name') or '').strip(), str(u.get('Surname') or '').strip()) if x)
+    first = str(u.get('Name') or '').strip()
+    last = str(u.get('Surname') or '').strip()
+    # Some IdP profiles keep the full name in Name; do not repeat the surname then.
+    n = first if (last and first.lower().endswith(last.lower())) else ' '.join(x for x in (first, last) if x)
     return n or str(u.get('Email') or u.get('UserName') or 'teller')
 
 def qty_of(v, default=1.0):

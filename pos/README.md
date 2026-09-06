@@ -7,11 +7,11 @@ project with two entry points that build into two separate bundles:
 
 | Entry | URL | Who | What it is |
 | --- | --- | --- | --- |
-| `index.html` → `src/pos/` | `/` | IdP users with the **Teller** role (also `cashier`, `manager`) | The till: sign in, open a shift on a register, scan or tap products, take cash or card, print or e-mail the receipt. Parked sales, returns, cash in/out, cash-up. |
+| `index.html` → `src/pos/` | `/` | Any signed-in IdP user (the default **User** role is enough) | The till: sign in, open a shift on a register, scan or tap products, take cash or card, print or e-mail the receipt. Parked sales, returns, cash in/out, cash-up. |
 | `admin.html` → `src/admin/` | `/admin` | IdP users with the **Admin** role | The back office: dashboard, products (camera barcode capture, labels, CSV import), categories, inventory (adjustments, goods received, stock take, ledger), suppliers, sales with refunds and voids, shifts with Z reports, tellers, customers, reports with CSV export, media, settings (store, receipts, money, till rules, e-mail, theme). |
 
-Sign-in is required before either screen shows anything. Administrators are kept out of the till and
-tellers out of the back office, on the client and again in every workflow.
+Sign-in is required before either screen shows anything. Anyone with an account can use the till; only
+users with the Admin role get into the back office, enforced on the client and again in every workflow.
 
 Shared code lives in `src/shared/` (auth, API client, UI kit, money and error helpers).
 
@@ -50,15 +50,15 @@ Restart the dev server after changing `.env`.
 
 Everything under [`cloudgate/`](./cloudgate/README.md): the `pos_db` schema and seed, the deployer, and one folder
 per workflow action. Every action requires the tenant API key (the client signs each request) **and** an IdP bearer
-token; teller actions accept the teller roles, admin actions only the admin roles (`require_teller` / `require_admin`).
+token; till actions accept any signed-in user, admin actions only the admin roles (`require_teller` / `require_admin`).
 
-| Action | Role | Ops |
+| Action | Who | Ops |
 | --- | --- | --- |
-| `pos-catalog` | teller | `settings`, `categories`, `products` (category, search), `lookup` (barcode, alias barcode or SKU → product + pack quantity) |
-| `pos-shift` | teller | `registers`, `current`, `open` (register + float), `movement` (payin/payout/drop), `close` (counted cash → expected, difference), `summary` |
-| `pos-sale` | teller | `complete` (lines + cash payments, server-priced, stock checked and written), `create` (open sale for a card payment), `hold`/`held`/`recall`/`discard`, `get` (id or reference), `recent`, `refund` (cash, per item) |
-| `pos-payment` | teller | `start` (Wallet Payment `create` → hosted URL for the QR code), `status` (re-reads the wallet payment; completes the sale and sells the stock on success), `cancel`, `refund` (card, through the wallet), `wallet-status` |
-| `pos-receipt` | teller | `email` (receipt e-mail through the SMTP settings, on a thread branch) |
+| `pos-catalog` | any user | `settings`, `categories`, `products` (category, search), `lookup` (barcode, alias barcode or SKU → product + pack quantity) |
+| `pos-shift` | any user | `registers`, `current`, `open` (register + float), `movement` (payin/payout/drop), `close` (counted cash → expected, difference), `summary` |
+| `pos-sale` | any user | `complete` (lines + cash payments, server-priced, stock checked and written), `create` (open sale for a card payment), `hold`/`held`/`recall`/`discard`, `get` (id or reference), `recent`, `refund` (cash, per item) |
+| `pos-payment` | any user | `start` (Wallet Payment `create` → hosted URL for the QR code), `status` (re-reads the wallet payment; completes the sale and sells the stock on success), `cancel`, `refund` (card, through the wallet), `wallet-status` |
+| `pos-receipt` | any user | `email` (receipt e-mail through the SMTP settings, on a thread branch) |
 | `admin-products` | admin | `list`, `get`, `create`, `update`, `set-status`, `delete` (deactivates sold products), `add-barcode`, `remove-barcode`, `barcode-owner`, `labels`, `import` (CSV rows, upsert by barcode/SKU/name), `image-refs` |
 | `admin-categories`, `admin-suppliers`, `admin-registers`, `admin-customers` | admin | `list`, `create`, `update`, `delete` (+ `reorder` for categories, `get` for customers) |
 | `admin-inventory` | admin | `levels`, `movements`, `adjust` (delta or new quantity, with reason), `receive` (goods received note), `receipts`, `receipt`, `count` (stock take) |

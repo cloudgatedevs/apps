@@ -8,7 +8,7 @@ import { fmtCents } from '@/shared/lib/money';
 
 const HUB_URL = String(import.meta.env.VITE_IDP_BASE_URL ?? '').trim().replace(/\/$/, '');
 
-/** Tellers are IdP users with the Teller role; this lists everyone who has worked a shift. */
+/** Any IdP user can work the till; this lists everyone who has worked a shift. */
 const Tellers = () => {
   const { data, loading, error, reload } = useAsync(() => adminApi.tellers.list(), []);
   const settings = useAsync(() => adminApi.settings.get(), []);
@@ -19,7 +19,7 @@ const Tellers = () => {
         <button onClick={reload} className="btn-ghost">Refresh</button>
         {HUB_URL ? <a href={`${HUB_URL}/identity/users`} target="_blank" rel="noreferrer" className="btn-primary"><ExternalLink className="h-4 w-4" /> Manage users</a> : null}
       </PageHead>
-      <Notice tone="info">To add a teller, create the user in the Cloudgate hub (Identity → Users) and give them the <b>Teller</b> role. Administrators use the back office only; they cannot ring up sales.</Notice>
+      <Notice tone="info">To add a teller, create a user in the Cloudgate hub (Identity → Users). Any role can sign in to the till and sell; only users with the <b>Admin</b> role can open this back office.</Notice>
       <ErrorNote error={error} />
       {loading ? <SkeletonTable columns={6} rows={4} /> : (
         <Table rows={data ?? []} rowKey={(t) => t.TellerUserId} empty={<EmptyState icon={<UserRound className="h-5 w-5" />} title="No tellers yet" text="A teller appears here after their first shift." />}

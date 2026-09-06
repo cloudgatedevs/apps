@@ -3,6 +3,7 @@ import { Clock, LogOut, Receipt, RotateCcw, ShoppingCart, Wifi, WifiOff } from '
 import { useCallback, useState } from 'react';
 import { useAuthContext, getProfileDisplayName } from '@/shared/auth';
 import { Tooltip } from '@/shared/ui/menus';
+import { utcDate } from '@/shared/ui/ui';
 import { useTill } from '@/pos/state/TillProvider';
 import { useLiveStatus, liveEnabled } from '@/admin/services/live';
 
@@ -18,7 +19,7 @@ const navClass = ({ isActive }) =>
 
 const openedAgo = (iso) => {
   if (!iso) return '';
-  const ms = Date.now() - new Date(iso.endsWith('Z') ? iso : `${iso}Z`).getTime();
+  const ms = Date.now() - utcDate(iso).getTime();
   const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000);
   return h ? `${h}h ${m}m` : `${m}m`;
 };
@@ -58,7 +59,7 @@ const Shell = () => {
           ) : null}
           <div className="hidden min-w-0 text-right leading-tight lg:block">
             <p className="truncate text-[13px] font-medium">{name}</p>
-            <p className="truncate text-[11px] text-white/60">{teller?.role || 'Teller'}</p>
+            <p className="truncate text-[11px] text-white/60">{teller?.role || 'User'}</p>
           </div>
           <Tooltip text="Sign out">
             <button type="button" onClick={() => logout(true)} aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"><LogOut className="h-4 w-4" /></button>

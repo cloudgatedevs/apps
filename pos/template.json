@@ -27,7 +27,7 @@
     "Cash with change, and card payments by QR code through Cloudgate Wallet",
     "Shifts with opening float, cash in/out and Z reports; parked sales and returns",
     "Inventory with goods-received notes, stock takes, ledger and label printing",
-    "Back office for Admins only; tellers sign in to the till with the Teller role"
+    "Any signed-in user can run the till; the back office is for Admins only"
   ],
   "requirements": [
     "wallet",
@@ -65,7 +65,7 @@
       "key": "teller-accounts",
       "environment": "production",
       "label": "Individual teller accounts",
-      "text": "Each cashier gets their own user with the Teller role so shifts and cash-ups are attributable."
+      "text": "Each cashier gets their own user account so shifts and cash-ups are attributable."
     },
     {
       "key": "sandbox-tested",

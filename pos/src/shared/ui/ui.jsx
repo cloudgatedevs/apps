@@ -372,8 +372,12 @@ export const PageHead = ({ title, subtitle, children }) => (
 // 'Z' so JS doesn't misparse them as local time.
 export const utcDate = (v) => {
   if (v === null || v === undefined || v === '') return null;
-  const s = String(v);
-  return new Date(/[zZ]$|[+-]\d\d:?\d\d$/.test(s) || !s.includes('T') ? s : s + 'Z');
+  // Timestamps come from SQLite CURRENT_TIMESTAMP ("2026-09-06 07:06:17", UTC, no zone) or from
+  // .NET ("2026-09-06T07:06:17"); anything without an explicit zone is UTC.
+  const s = String(v).trim();
+  if (/[zZ]$|[+-]\d\d:?\d\d$/.test(s)) return new Date(s);
+  if (/^\d{4}-\d\d-\d\d$/.test(s)) return new Date(s);
+  return new Date(s.replace(' ', 'T') + 'Z');
 };
 
 export const fmtDate = (v) => {

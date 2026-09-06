@@ -52,9 +52,9 @@ updated in place (a draft is opened automatically) and republished to sandbox.
   next/positive/negative links but not the thread link, so every deployed thread pointed at a dead id and its job
   "succeeded" in a few ms without running anything. `deploy.py` now fails the deploy if any link is dangling.
 - There are no anonymous actions. Every action needs the tenant API key (the client signs every request) **and** an
-  IdP bearer: till actions (`pos-*`) accept the roles `teller`, `cashier` or `manager` (`require_teller()`), admin
-  actions the roles `admin`, `administrator` or `owner` (`require_admin()`). The IdP Authorize node carries the role
-  as well (`"role"` in `workflow.json`), so the engine rejects the wrong role before any script runs.
+  IdP bearer: till actions (`pos-*`) accept any signed-in user, whatever their role (`require_teller()`), admin
+  actions only the roles `admin`, `administrator` or `owner` (`require_admin()`). The IdP Authorize node carries the role
+  on the admin actions (`"role": "Admin"` in `workflow.json`), so the engine rejects the wrong role before any script runs.
 - Sales are priced on the server from the products table (`pos-sale/compute.py`): the client only sends product ids,
   quantities and discounts. Stock is written through `inventory_movements` and the `StockQty` cache in the same
   transaction as the sale.

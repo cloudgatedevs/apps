@@ -17,7 +17,7 @@ const ITEMS = (s, counts) => [
   { key: 'receipt', label: 'Receipt header and footer', done: has(s.receipt_footer), to: '/settings?tab=receipt', hint: 'Returns policy, thank-you line, opening hours.' },
   { key: 'registers', label: 'A register for each till', done: (counts.registers ?? 0) > 0, to: '/registers', hint: 'Tellers open a shift on a register before selling.' },
   { key: 'products', label: 'Products with barcodes', done: (counts.activeProducts ?? 0) > 0, to: '/products', hint: 'Scan them in with the camera or import a spreadsheet.' },
-  { key: 'tellers', label: 'Teller accounts', done: (counts.tellers ?? 0) > 0, to: '/tellers', hint: 'Give staff the Teller role in the Cloudgate hub.' },
+  { key: 'tellers', label: 'Teller accounts', done: (counts.tellers ?? 0) > 0, to: '/tellers', hint: 'Create a user for each cashier in the Cloudgate hub; any role can use the till.' },
   { key: 'wallet', label: 'Cloudgate Wallet activated', done: counts.walletReady === true, to: walletUrl(), external: true, hint: 'Card payments run through the tenant wallet.' },
   { key: 'url', label: 'Public address of this app', done: has(s.store_url), to: '/settings?tab=store', hint: 'Card payments return the customer here.' },
   { key: 'email', label: 'Outgoing e-mail', done: has(s.smtp_host) && s.smtp_password_set === '1', to: '/settings?tab=email', hint: 'Needed to e-mail receipts.' },

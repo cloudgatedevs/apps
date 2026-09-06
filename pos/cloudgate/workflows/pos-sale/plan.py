@@ -23,7 +23,7 @@ return (
     " FROM products p WHERE p.Id IN (" + (','.join(str(i) for i in ids) or '0') + ")) AS ProductsJson, "
     "(SELECT json_object('Id', s.Id, 'RegisterId', s.RegisterId, 'Status', s.Status) FROM shifts s WHERE s.TellerUserId = " + str(uid) + " AND s.Status = 'open' LIMIT 1) AS ShiftJson, "
     "(SELECT json_object('Id', s.Id, 'Reference', s.Reference, 'Status', s.Status, 'ShiftId', s.ShiftId, 'TellerUserId', s.TellerUserId, 'TotalCents', s.TotalCents, 'PaidCents', s.PaidCents, "
-    "   'RefundedCents', s.RefundedCents, 'Currency', s.Currency, 'ItemsJson', (SELECT json_group_array(json_object('Id', i.Id, 'ProductId', i.ProductId, 'Name', i.Name, 'Qty', i.Qty, "
-    "   'LineTotalCents', i.LineTotalCents, 'TaxCents', i.TaxCents, 'RefundedQty', i.RefundedQty)) FROM sale_items i WHERE i.SaleId = s.Id)) "
+    "   'RefundedCents', s.RefundedCents, 'Currency', s.Currency, 'ItemsJson', json((SELECT json_group_array(json_object('Id', i.Id, 'ProductId', i.ProductId, 'Name', i.Name, 'Qty', i.Qty, "
+    "   'LineTotalCents', i.LineTotalCents, 'TaxCents', i.TaxCents, 'RefundedQty', i.RefundedQty)) FROM sale_items i WHERE i.SaleId = s.Id))) "
     " FROM sales s WHERE " + sale_where + " LIMIT 1) AS SaleJson;"
 )
