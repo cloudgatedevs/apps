@@ -10,7 +10,7 @@
       "framework": "React",
       "devCommand": "npm install && npm run dev",
       "devPort": 3000,
-      "demoUrl": "",
+      "demoUrl": "https://shop.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/shop/banner.png",
       "adminPath": "/admin",
       "tags": [
@@ -105,7 +105,7 @@
       "framework": "React",
       "devCommand": "npm install && npm run dev",
       "devPort": 3001,
-      "demoUrl": "",
+      "demoUrl": "https://pos.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/pos/banner.png",
       "adminPath": "/admin",
       "tags": [
