@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Clock, LogOut, Receipt, RotateCcw, ShoppingCart, Wifi, WifiOff } from 'lucide-react';
+import { Clock, LayoutDashboard, LogOut, Receipt, RotateCcw, ShoppingCart, Wifi, WifiOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { useAuthContext, getProfileDisplayName } from '@/shared/auth';
+import { useAuthContext, getProfileDisplayName, isAdminRole } from '@/shared/auth';
 import { Tooltip } from '@/shared/ui/menus';
 import { utcDate } from '@/shared/ui/ui';
 import { useTill } from '@/pos/state/TillProvider';
@@ -31,6 +31,8 @@ const Shell = () => {
   const [live, setLive] = useState('idle');
   useLiveStatus(useCallback((s) => setLive(s), []));
   const name = getProfileDisplayName({ name: teller?.name, surname: teller?.surname, email: teller?.emailAddress });
+  // Admins get a shortcut to the back office (its own entry page, so a full navigation).
+  const isAdmin = isAdminRole(teller?.role);
 
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-ink-950">
@@ -61,6 +63,11 @@ const Shell = () => {
             <p className="truncate text-[13px] font-medium">{name}</p>
             <p className="truncate text-[11px] text-white/60">{teller?.role || 'User'}</p>
           </div>
+          {isAdmin ? (
+            <Tooltip text="Back office">
+              <a href="/admin" aria-label="Back office" className="grid h-9 w-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"><LayoutDashboard className="h-4 w-4" /></a>
+            </Tooltip>
+          ) : null}
           <Tooltip text="Sign out">
             <button type="button" onClick={() => logout(true)} aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"><LogOut className="h-4 w-4" /></button>
           </Tooltip>

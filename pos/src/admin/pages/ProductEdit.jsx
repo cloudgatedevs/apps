@@ -172,7 +172,7 @@ const ProductEdit = () => {
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={() => setChoosing(true)} className="btn-ghost btn-sm">Choose…</button>
                 <button type="button" onClick={() => setUploading(true)} className="btn-ghost btn-sm">Upload…</button>
-                {form.imageUrl ? <button type="button" onClick={() => setForm((f) => ({ ...f, imageUrl: '', imageFileId: '' }))} className="btn-ghost btn-sm">Remove</button> : null}
+                {form.imageUrl ? <button type="button" onClick={() => setForm((f) => ({ ...f, imageUrl: '', imageFileId: '' }))} className="btn-ghost btn-sm" aria-label="Remove image" title="Remove image"><Trash2 className="h-4 w-4" aria-hidden="true" /></button> : null}
               </div>
             </div>
             <Field label="Tile colour" hint="Used when there is no image." htmlFor="p-color" className="mt-4">

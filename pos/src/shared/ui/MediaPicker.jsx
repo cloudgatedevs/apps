@@ -80,7 +80,7 @@ export const MediaPicker = ({ open, onClose, onPick, multiple = false, preferFol
       {state.loading ? (
         <SkeletonTiles count={12} />
       ) : shown.length ? (
-        <div className="grid max-h-[55vh] grid-cols-3 gap-3 overflow-y-auto pr-1 sm:grid-cols-4 md:grid-cols-5">
+        <div className="-mx-1 grid max-h-[55vh] grid-cols-3 gap-3 overflow-y-auto p-1 sm:grid-cols-4 md:grid-cols-5">
           {shown.map((f) => {
             const on = picked.has(f.id);
             return (

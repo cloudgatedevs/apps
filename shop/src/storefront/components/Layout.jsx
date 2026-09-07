@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { useAuthContext, redirectToLogin } from '@/shared/auth';
+import { useAuthContext, redirectToLogin, isAdminRole } from '@/shared/auth';
 import { useStore } from '@/storefront/store/StoreProvider';
 import { useCart, CART_BUMP_EVENT } from '@/storefront/cart/CartProvider';
 import { CartDrawer } from '@/storefront/components/CartDrawer';
@@ -18,6 +18,7 @@ const IconMenu = icon(<path d="M4 7h16M4 12h16M4 17h16" />);
 const IconClose = icon(<path d="M6 6l12 12M18 6L6 18" />);
 const IconUser = icon(<><circle cx="12" cy="8" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></>);
 const IconArrow = icon(<path d="M5 12h14M13 6l6 6-6 6" />);
+const IconGear = icon(<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>);
 
 // Cloudgate's public home page for the "Powered by" credit (fixed on purpose: it is the platform's
 // address, not this deployment's hub).
@@ -25,7 +26,7 @@ const CLOUDGATE_HOME = 'https://cloudgate.dev';
 
 const SOCIAL_LABEL = { instagram: 'Instagram', facebook: 'Facebook', x: 'X', tiktok: 'TikTok' };
 
-const AccountMenu = ({ user, onLogout }) => {
+const AccountMenu = ({ user, isAdmin, onLogout }) => {
   const navigate = useNavigate();
   if (!user) return <button type="button" onClick={() => redirectToLogin(window.location.href)} className="nav-link hidden items-center gap-1.5 sm:inline-flex"><IconUser className="h-4 w-4" />Sign in</button>;
   return (
@@ -38,6 +39,7 @@ const AccountMenu = ({ user, onLogout }) => {
           <DropdownMenu.Label className="menu-label truncate normal-case tracking-normal">{user.emailAddress}</DropdownMenu.Label>
           <DropdownMenu.Item onSelect={() => navigate('/account')} className="menu-item">Your orders</DropdownMenu.Item>
           <DropdownMenu.Item onSelect={() => navigate('/contact')} className="menu-item">Contact us</DropdownMenu.Item>
+          {isAdmin ? <DropdownMenu.Item onSelect={() => window.location.assign('/admin')} className="menu-item">Back office</DropdownMenu.Item> : null}
           <DropdownMenu.Separator className="menu-sep" />
           <DropdownMenu.Item onSelect={onLogout} className="menu-item">Sign out</DropdownMenu.Item>
         </DropdownMenu.Content>
@@ -75,6 +77,8 @@ const Layout = () => {
   };
 
   const user = currentUser?.user;
+  // Admins get a shortcut to the back office in the top bar (the workflows gate it server-side too).
+  const isAdmin = isAdminRole(user?.role);
   const top = categories.filter((c) => !c.ParentId);
   const navPages = pages.nav ?? [];
   const footerPages = pages.footer ?? [];
@@ -111,7 +115,8 @@ const Layout = () => {
               <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} onBlur={() => !q && setSearchOpen(false)} placeholder="Search products" aria-label="Search products" className="input h-10 py-0" />
             </form>
             <button type="button" onClick={() => (searchOpen && q ? submitSearch({ preventDefault() {} }) : setSearchOpen((o) => !o))} aria-label="Search" className="hidden h-10 w-10 place-items-center rounded-lg text-zinc-800 transition hover:bg-zinc-100 md:grid"><IconSearch className="h-5 w-5" /></button>
-            <AccountMenu user={user} onLogout={() => logout(false)} />
+            {isAdmin ? <a href="/admin" aria-label="Back office" title="Back office" className="hidden h-10 w-10 place-items-center rounded-lg text-zinc-800 transition hover:bg-zinc-100 sm:grid"><IconGear className="h-5 w-5" /></a> : null}
+            <AccountMenu user={user} isAdmin={isAdmin} onLogout={() => logout(false)} />
             <button type="button" onClick={() => setOpen(true)} aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`} className={`relative grid h-10 w-10 place-items-center rounded-lg text-zinc-800 transition hover:bg-zinc-100 ${bump ? 'ui-bounce-once' : ''}`}>
               <IconBag className="h-5 w-5" />
               {count > 0 ? <span key={count} className="ui-pulse-once absolute -right-0.5 -top-0.5 grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-secondary px-1 text-[11px] font-semibold text-white">{count}</span> : null}
@@ -140,6 +145,7 @@ const Layout = () => {
               {user ? (
                 <>
                   <NavLink to="/account" className="block rounded-xl px-3 py-2.5 text-[15px] text-zinc-800 hover:bg-zinc-100">Your orders</NavLink>
+                  {isAdmin ? <a href="/admin" className="block rounded-xl px-3 py-2.5 text-[15px] text-zinc-800 hover:bg-zinc-100">Back office</a> : null}
                   <button type="button" onClick={() => logout(false)} className="block w-full rounded-xl px-3 py-2.5 text-left text-[15px] text-zinc-800 hover:bg-zinc-100">Sign out</button>
                 </>
               ) : (

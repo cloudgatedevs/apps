@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { adminApi } from '@/admin/services/adminApi';
@@ -131,7 +132,7 @@ const ImageField = ({ id, label, hint, value, onChange, onUpload, onChoose, shap
         <div className="flex gap-2">
           <button type="button" onClick={onChoose} className="btn-ghost btn-sm">Choose…</button>
           <button type="button" onClick={onUpload} className="btn-ghost btn-sm">Upload…</button>
-          {value ? <button type="button" onClick={() => onChange('')} className="btn-ghost btn-sm">Remove</button> : null}
+          {value ? <button type="button" onClick={() => onChange('')} className="btn-ghost btn-sm" aria-label="Remove image" title="Remove image"><Trash2 className="h-4 w-4" aria-hidden="true" /></button> : null}
         </div>
       </div>
     </div>

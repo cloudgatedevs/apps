@@ -2,7 +2,7 @@
   "id": "shop",
   "name": "Cloudgate Shop",
   "category": "Commerce",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A complete online store: catalogue with variants and stock, cart and hosted card checkout through Cloudgate Wallet, order tracking, and a full back office for products, inventory, orders, refunds, customers, content pages, email and theme colours.",
   "folder": "shop",
   "framework": "React",

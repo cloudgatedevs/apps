@@ -1,9 +1,9 @@
 import { Outlet } from 'react-router-dom';
 import { useAuthContext } from '@/shared/auth';
 
-const ADMIN_ROLES = ['admin', 'administrator', 'owner'];
+import { isAdminRole } from '@/shared/auth/roles';
 
-export const isAdminRole = (role) => ADMIN_ROLES.includes(String(role ?? '').trim().toLowerCase());
+export { isAdminRole };
 
 /**
  * Gate the back office on the IdP role. The workflows enforce the same rule

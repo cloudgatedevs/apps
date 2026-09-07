@@ -11,7 +11,7 @@ import { MediaPicker } from '@/shared/ui/MediaPicker';
 import { fmtCents, fromCents, toCents } from '@/shared/lib/money';
 import { errorMessage } from '@/shared/lib/errors';
 import { productStatusTone } from '@/admin/pages/Products';
-import { ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { ExternalLink, Image as ImageIcon, Trash2 } from 'lucide-react';
 
 // ---------------------------------------------------------------- helpers
 const emptyProduct = {
@@ -394,8 +394,8 @@ const ProductEdit = () => {
                       <Img src={img.ThumbUrl || img.Url} alt={img.Alt ?? ''} wrapClassName="h-full w-full" className="h-full w-full object-cover" />
                       {i === 0 ? <span className="absolute left-1 top-1 rounded-md bg-accent/90 px-1.5 py-0.5 text-[10px] font-semibold text-white">Primary</span> : null}
                       <div className="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-gradient-to-t from-slate-900/70 to-transparent p-1.5 opacity-0 transition group-hover:opacity-100">
-                        {i !== 0 ? <button type="button" onClick={() => makePrimary(img.Id)} className="rounded-md bg-white/90 px-1.5 py-0.5 text-[11px] font-medium text-mist">Primary</button> : <span />}
-                        <button type="button" onClick={() => removeImage(img.Id)} className="rounded-md bg-white/90 px-1.5 py-0.5 text-[11px] font-medium text-red-700">Remove</button>
+                        {i !== 0 ? <button type="button" onClick={() => makePrimary(img.Id)} className="truncate rounded-md bg-white/90 px-1.5 py-0.5 text-[11px] font-medium text-mist transition hover:bg-white">Primary</button> : <span />}
+                        <button type="button" onClick={() => removeImage(img.Id)} className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-white/90 text-red-700 transition hover:bg-white" aria-label="Remove image" title="Remove image"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button>
                       </div>
                     </li>
                   ))}

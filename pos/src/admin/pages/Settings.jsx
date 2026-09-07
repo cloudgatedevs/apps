@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Store, Receipt as ReceiptIcon, Coins, Monitor, Mail, Palette } from 'lucide-react';
+import { Store, Receipt as ReceiptIcon, Coins, Monitor, Mail, Palette, Trash2 } from 'lucide-react';
 import { adminApi } from '@/admin/services/adminApi';
 import { announceSettingsChanged } from '@/admin/services/storeBrand';
 import { useAsync, ErrorNote, PageHead, Img } from '@/shared/ui/ui';
@@ -83,7 +83,7 @@ const ImageField = ({ id, label, hint, value, onChange, onUpload, onChoose, shap
       {value ? <Img src={value} alt="" wrapClassName={`h-14 w-14 shrink-0 ${shape} border border-ink-700`} className="h-14 w-14 object-contain" /> : <span className={`grid h-14 w-14 shrink-0 place-items-center ${shape} border border-dashed border-ink-600 text-[10px] text-mist-dim`}>none</span>}
       <div className="flex min-w-0 grow flex-col gap-2">
         <input id={id} value={value} onChange={(e) => onChange(e.target.value)} className="input" placeholder="https://… or upload" />
-        <div className="flex gap-2"><button type="button" onClick={onChoose} className="btn-ghost btn-sm">Choose…</button><button type="button" onClick={onUpload} className="btn-ghost btn-sm">Upload…</button>{value ? <button type="button" onClick={() => onChange('')} className="btn-ghost btn-sm">Remove</button> : null}</div>
+        <div className="flex gap-2"><button type="button" onClick={onChoose} className="btn-ghost btn-sm">Choose…</button><button type="button" onClick={onUpload} className="btn-ghost btn-sm">Upload…</button>{value ? <button type="button" onClick={() => onChange('')} className="btn-ghost btn-sm" aria-label="Remove image" title="Remove image"><Trash2 className="h-4 w-4" aria-hidden="true" /></button> : null}</div>
       </div>
     </div>
   </Field>

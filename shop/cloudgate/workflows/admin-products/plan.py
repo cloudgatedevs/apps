@@ -272,7 +272,8 @@ if op == 'image-refs':
     return (
         "SELECT FileId, Url, ThumbUrl, 'product' AS Kind, ProductId AS OwnerId FROM product_images "
         "UNION ALL SELECT NULL, ImageUrl, NULL, 'category', Id FROM categories WHERE ImageUrl IS NOT NULL AND ImageUrl <> '' "
-        "UNION ALL SELECT NULL, Value, NULL, 'setting', NULL FROM settings WHERE Key = 'store_logo_url' AND Value <> '';"
+        "UNION ALL SELECT NULL, Value, NULL, 'setting', NULL FROM settings WHERE Key IN ('store_logo_url', 'store_icon_url') AND Value <> '' "
+        "UNION ALL SELECT NULL, BodyMarkdown, NULL, 'page', Id FROM pages WHERE BodyMarkdown LIKE '%http%';"
     )
 
 if op == 'add-image':

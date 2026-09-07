@@ -8,7 +8,7 @@ import { ImageUploader } from '@/shared/ui/ImageUploader';
 import { MediaPicker } from '@/shared/ui/MediaPicker';
 import { errorMessage } from '@/shared/lib/errors';
 import { IconCategories } from '@/admin/components/navConfig';
-import { ArrowDown, ArrowUp, CornerDownRight } from 'lucide-react';
+import { ArrowDown, ArrowUp, CornerDownRight, Trash2 } from 'lucide-react';
 
 const empty = { name: '', slug: '', description: '', parentId: '', imageUrl: '', isActive: true };
 
@@ -142,7 +142,7 @@ const Categories = () => {
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setChoosing(true)} className="btn-ghost btn-sm">Choose…</button>
                     <button type="button" onClick={() => setUploading(true)} className="btn-ghost btn-sm">Upload…</button>
-                    {editing.imageUrl ? <button type="button" onClick={() => setEditing((f) => ({ ...f, imageUrl: '' }))} className="btn-ghost btn-sm">Remove</button> : null}
+                    {editing.imageUrl ? <button type="button" onClick={() => setEditing((f) => ({ ...f, imageUrl: '' }))} className="btn-ghost btn-sm" aria-label="Remove image" title="Remove image"><Trash2 className="h-4 w-4" aria-hidden="true" /></button> : null}
                   </div>
                 </div>
               </div>

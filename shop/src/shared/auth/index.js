@@ -6,3 +6,4 @@ export * from './idpProfileApi';
 export { AuthContext, AuthProvider } from './AuthProvider';
 export { useAuthContext } from './useAuthContext';
 export { RequireAuth } from './RequireAuth';
+export { ADMIN_ROLES, isAdminRole } from './roles';

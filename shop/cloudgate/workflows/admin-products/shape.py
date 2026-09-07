@@ -10,9 +10,12 @@ if op == 'list':
     return out({'items': rows, 'total': total})
 
 if op == 'image-refs':
+    # Page bodies are markdown; the back office matches image URLs inside them by substring.
+    texts = [str(r.get('Url')) for r in rows if r.get('Kind') == 'page' and r.get('Url')]
+    rows = [r for r in rows if r.get('Kind') != 'page']
     file_ids = sorted({str(r.get('FileId')) for r in rows if r.get('FileId')})
     urls = sorted({str(u) for r in rows for u in (r.get('Url'), r.get('ThumbUrl')) if u})
-    return out({'fileIds': file_ids, 'urls': urls, 'items': rows})
+    return out({'fileIds': file_ids, 'urls': urls, 'texts': texts, 'items': rows})
 
 if op == 'delete':
     r = rows[0] if rows else {}

@@ -1,8 +1,9 @@
 import { Outlet } from 'react-router-dom';
 import { useAuthContext } from '@/shared/auth';
 
-const ADMIN_ROLES = ['admin', 'administrator', 'owner'];
-export const isAdminRole = (role) => ADMIN_ROLES.includes(String(role ?? '').trim().toLowerCase());
+import { isAdminRole } from '@/shared/auth/roles';
+
+export { isAdminRole };
 
 /**
  * Any signed-in IdP user can run the till, whatever their role (a plain "User" is enough, and so

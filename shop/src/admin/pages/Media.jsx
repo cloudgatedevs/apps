@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { adminApi } from '@/admin/services/adminApi';
@@ -7,10 +8,13 @@ import { useAsync, ErrorNote, Badge, PageHead, EmptyState, Img, SelectionBar, fm
 import { SkeletonTiles } from '@/shared/ui/skeleton';
 import { ImageUploader } from '@/shared/ui/ImageUploader';
 import { errorMessage } from '@/shared/lib/errors';
+import { ConfirmButton } from '@/shared/ui/forms';
 import { IconMedia } from '@/admin/components/navConfig';
 
 const PAGE = 200;
 const FOLDER_LABEL = { 'shop/products': 'Products', 'shop/branding': 'Branding', 'shop/categories': 'Categories', uploads: 'Uploads' };
+const APP_FOLDER_PREFIX = 'shop/';
+const folderLabel = (p) => FOLDER_LABEL[p] ?? p.slice(APP_FOLDER_PREFIX.length);
 
 // Every stored image next to what the shop still references, so images left behind by
 // deleted products or replaced photos can be removed without touching anything in use.
@@ -19,20 +23,33 @@ const Media = () => {
   const [selected, setSelected] = useState(() => new Set());
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  // Tile whose trash button is armed ("Delete?"); disarms on its own after a moment.
+  const [armedId, setArmedId] = useState(null);
+  useEffect(() => {
+    if (armedId === null) return undefined;
+    const t = setTimeout(() => setArmedId(null), 3500);
+    return () => clearTimeout(t);
+  }, [armedId]);
 
-  const [folder, setFolder] = useState('');
+  // null = every folder.
+  const [folder, setFolder] = useState(null);
   const files = useAsync(() => listImages({ path: '*', take: PAGE }), []);
   const refs = useAsync(() => adminApi.products.imageRefs(), []);
 
   const rows = useMemo(() => {
-    const items = files.data?.items ?? [];
+    // Only this app's folders (shop/...). Files at the root or in other apps' folders belong to the
+    // tenant's wider library and are never listed here.
+    const items = (files.data?.items ?? []).filter((f) => String(f.path || '').startsWith(APP_FOLDER_PREFIX));
     const fileIds = new Set(refs.data?.fileIds ?? []);
     const urls = new Set(refs.data?.urls ?? []);
-    // "In use" is only tracked for product photos; branding and category images are always kept.
-    return items.map((f) => ({ ...f, product: (f.path || '') === 'shop/products', inUse: (f.path || '') !== 'shop/products' || fileIds.has(String(f.id)) || urls.has(f.url) || urls.has(f.thumbUrl) }));
+    const texts = refs.data?.texts ?? [];
+    // A file is in use when a product, category, page or setting still points at it (by file id
+    // or URL), whatever folder it was uploaded to. Anything else can be cleaned up.
+    const referenced = (f) => fileIds.has(String(f.id)) || urls.has(f.url) || urls.has(f.thumbUrl) || texts.some((t) => (f.url && t.includes(f.url)) || (f.thumbUrl && t.includes(f.thumbUrl)));
+    return items.map((f) => ({ ...f, folder: f.path || '', inUse: referenced(f) }));
   }, [files.data, refs.data]);
-  const folders = useMemo(() => [...new Set(rows.map((r) => r.path || ''))].sort(), [rows]);
-  const shown = rows.filter((r) => (!folder || (r.path || '') === folder) && (filter === 'unused' ? !r.inUse : filter === 'used' ? r.inUse : true));
+  const folders = useMemo(() => [...new Set(rows.map((r) => r.folder))].sort(), [rows]);
+  const shown = rows.filter((r) => (folder === null || r.folder === folder) && (filter === 'unused' ? !r.inUse : filter === 'used' ? r.inUse : true));
   const unusedCount = rows.filter((r) => !r.inUse).length;
 
   const toggle = (id) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -56,15 +73,16 @@ const Media = () => {
   };
 
   const loading = files.loading || refs.loading;
-  const selectedUnused = [...selected].filter((id) => rows.find((r) => r.id === id && !r.inUse));
+  const selectedRows = rows.filter((r) => selected.has(r.id));
+  const selectedInUse = selectedRows.filter((r) => r.inUse).length;
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHead title="Media" subtitle={`Every image the store has uploaded to Cloudgate: product photos, branding and category tiles. ${rows.length ? `${rows.length} file${rows.length === 1 ? '' : 's'}, ${unusedCount} product photo${unusedCount === 1 ? '' : 's'} not used by any product.` : ''}`}>
+      <PageHead title="Media" subtitle={`Every image the store has uploaded to Cloudgate: product photos, branding and category tiles. ${rows.length ? `${rows.length} file${rows.length === 1 ? '' : 's'}, ${unusedCount} not used anywhere.` : ''}`}>
         {folders.length > 1 ? (
           <div className="flex rounded-lg border border-ink-600 bg-white p-0.5">
-            <button type="button" onClick={() => setFolder('')} className={`rounded-md px-3 py-1 text-sm ${!folder ? 'bg-accent-soft text-accent-600' : 'text-mist-muted'}`} aria-pressed={!folder}>All folders</button>
-            {folders.map((p) => <button key={p} type="button" onClick={() => setFolder(p)} className={`rounded-md px-3 py-1 text-sm ${folder === p ? 'bg-accent-soft text-accent-600' : 'text-mist-muted'}`} aria-pressed={folder === p}>{FOLDER_LABEL[p] ?? p}</button>)}
+            <button type="button" onClick={() => setFolder(null)} className={`rounded-md px-3 py-1 text-sm ${folder === null ? 'bg-accent-soft text-accent-600' : 'text-mist-muted'}`} aria-pressed={folder === null}>All folders</button>
+            {folders.map((p) => <button key={p} type="button" onClick={() => setFolder(p)} className={`rounded-md px-3 py-1 text-sm ${folder === p ? 'bg-accent-soft text-accent-600' : 'text-mist-muted'}`} aria-pressed={folder === p}>{folderLabel(p)}</button>)}
           </div>
         ) : null}
         <div className="flex rounded-lg border border-ink-600 bg-white p-0.5">
@@ -87,26 +105,36 @@ const Media = () => {
               <Img src={f.thumbUrl} alt={f.name} wrapClassName="aspect-square w-full" className="aspect-square w-full object-cover" />
               <div className="flex flex-col gap-1 p-2.5">
                 <p className="truncate text-xs font-medium text-mist" title={f.name}>{f.name}</p>
-                <div className="flex items-center justify-between gap-2">
-                  {f.product ? <Badge tone={f.inUse ? 'green' : 'amber'}>{f.inUse ? 'in use' : 'unused'}</Badge> : <Badge tone="blue">{FOLDER_LABEL[f.path] ?? f.path}</Badge>}
-                  <span className="text-[11px] text-mist-dim">{fmtDateShort(f.createdAt)}</span>
-                </div>
+                <p className="text-[11px] text-mist-dim">{fmtDateShort(f.createdAt)}</p>
+                <div className="flex flex-wrap items-center gap-1"><Badge tone="blue">{folderLabel(f.folder)}</Badge>{f.inUse ? null : <Badge tone="amber">unused</Badge>}</div>
               </div>
-              {!f.inUse ? (
-                <input type="checkbox" checked={selected.has(f.id)} onChange={() => toggle(f.id)} className="absolute left-2 top-2 h-4 w-4 accent-accent" aria-label={`Select ${f.name}`} />
-              ) : null}
-              <a href={f.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="absolute right-2 top-2 rounded-md bg-white/90 px-1.5 py-0.5 text-[11px] font-medium text-mist-muted opacity-0 shadow-panel transition group-hover:opacity-100">Open</a>
+              <input type="checkbox" checked={selected.has(f.id)} onChange={() => toggle(f.id)} className={`absolute left-2 top-2 h-4 w-4 accent-accent transition ${selected.has(f.id) ? '' : 'opacity-0 group-hover:opacity-100'}`} aria-label={`Select ${f.name}`} />
+              <span className={`absolute right-2 top-2 flex items-center gap-1 transition ${armedId === f.id ? '' : 'opacity-0 group-hover:opacity-100'}`}>
+                <a href={f.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="rounded-md bg-white/90 px-1.5 py-0.5 text-[11px] font-medium text-mist-muted shadow-panel">Open</a>
+                {armedId === f.id ? (
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setArmedId(null); remove([f.id]); }} className="rounded-md bg-red-600 px-1.5 py-0.5 text-[11px] font-semibold text-white shadow-panel" title={f.inUse ? 'This image is still in use' : undefined}>{f.inUse ? 'In use, delete?' : 'Delete?'}</button>
+                ) : (
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setArmedId(f.id); }} className="grid h-6 w-6 place-items-center rounded-md bg-white/90 text-red-700 shadow-panel transition hover:bg-white" aria-label={`Delete ${f.name}`} title="Delete image"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button>
+                )}
+              </span>
             </label>
           ))}
         </div>
       ) : filter === 'unused' ? (
-        <EmptyState compact title="Every stored image is in use" text="Nothing to clean up." />
+        <EmptyState compact title="Every stored image is in use" text="Nothing to clean up in this folder." />
       ) : (
         <EmptyState icon={<IconMedia className="h-5 w-5" />} title="No images yet" text="Upload product photos here or from a product page. Each one opens in the crop tool first." action={<><button type="button" onClick={() => setUploading(true)} className="btn-primary">Upload images</button><Link to="/products" className="btn-ghost">Go to products</Link></>} />
       )}
 
-      <SelectionBar count={selectedUnused.length} onClear={() => setSelected(new Set())}>
-        <button type="button" disabled={busy} onClick={() => remove(selectedUnused)} className="btn-danger btn-sm">{busy ? 'Deleting…' : 'Delete selected'}</button>
+      <SelectionBar count={selectedRows.length} onClear={() => setSelected(new Set())}>
+        <ConfirmButton
+          onConfirm={() => remove(selectedRows.map((r) => r.id))}
+          confirmLabel={selectedInUse ? `${selectedInUse} still in use. Delete anyway?` : 'Delete?'}
+          className="btn-danger btn-sm"
+          disabled={busy}
+        >
+          {busy ? 'Deleting…' : 'Delete selected'}
+        </ConfirmButton>
       </SelectionBar>
 
       <ImageUploader open={uploading} onClose={() => setUploading(false)} path="shop/products" aspect={1} title="Upload to media" note="Uploaded here, images are stored but not attached to a product yet; attach them from the product editor."
