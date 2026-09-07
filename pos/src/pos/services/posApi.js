@@ -40,7 +40,7 @@ export const posApi = {
     discard: (saleId) => call('/pos-sale', 'discard', { saleId }),
     get: (saleId) => call('/pos-sale', 'get', { saleId }),
     byReference: (reference) => call('/pos-sale', 'get', { reference }),
-    recent: (take = 20) => call('/pos-sale', 'recent', { take }).then((r) => r?.items ?? []),
+    recent: ({ skip = 0, take = 20 } = {}) => call('/pos-sale', 'recent', { skip, take }).then((r) => ({ items: r?.items ?? [], total: Number(r?.total ?? (r?.items?.length ?? 0)) })),
     refundCash: (saleId, items, reason) => call('/pos-sale', 'refund', { saleId, items, method: 'cash', reason }),
   },
 

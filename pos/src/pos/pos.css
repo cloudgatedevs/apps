@@ -28,11 +28,5 @@ body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
 @keyframes pos-scan { 0% { transform: translate(-50%, -28px); } 100% { transform: translate(-50%, 28px); } }
 .pos-scanline { animation: pos-scan 1.4s ease-in-out infinite alternate; }
 
-/* Receipt print: only the receipt sheet prints. */
-@media print {
-  body * { visibility: hidden !important; }
-  .pos-receipt, .pos-receipt * { visibility: visible !important; }
-  .pos-receipt { position: absolute; left: 0; top: 0; width: 80mm; padding: 4mm; font-size: 12px; background: #fff; }
-  .pos-receipt .no-print { display: none !important; }
-}
+/* Print rules live in admin/admin.css (shared by the till and the back office). */
 .pos-receipt { font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', monospace; }

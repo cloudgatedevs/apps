@@ -6,6 +6,7 @@ import { adminApi } from '@/admin/services/adminApi';
 import { useAsync, ErrorNote, PageHead, fmtDate } from '@/shared/ui/ui';
 import { SkeletonDetail } from '@/shared/ui/skeleton';
 import { Field } from '@/shared/ui/forms';
+import { useConfirm } from '@/shared/ui/confirm';
 import { fmtCents, fromCents, toCents } from '@/shared/lib/money';
 import { errorMessage } from '@/shared/lib/errors';
 import { ProductPicker } from '@/admin/components/ProductPicker';
@@ -78,6 +79,7 @@ const ReceiveStock = () => {
 /** Stock take: scan or pick products, enter the counted quantity, and the differences are booked as count movements. */
 const StockTake = () => {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const currency = useCurrency();
   const [lines, setLines] = useState([]);
   const [reference, setReference] = useState('');
@@ -89,7 +91,7 @@ const StockTake = () => {
   const save = async () => {
     const items = lines.filter((l) => l.counted !== '').map((l) => ({ productId: l.productId, countedQty: Number(l.counted) }));
     if (!items.length) { toast.error('Enter at least one counted quantity.'); return; }
-    if (!window.confirm(`Apply the count for ${items.length} product${items.length === 1 ? '' : 's'}? Differences are written to the stock ledger.`)) return;
+    if (!(await confirm({ title: 'Apply stock count', text: `Apply the count for ${items.length} product${items.length === 1 ? '' : 's'}? Differences are written to the stock ledger.`, confirmLabel: 'Apply count' }))) return;
     setBusy(true);
     try { const r = await adminApi.inventory.count({ items, reference: reference || undefined }); toast.success(`Count applied. ${r.counted} product${r.counted === 1 ? '' : 's'} adjusted.`); navigate('/inventory?tab=movements'); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };

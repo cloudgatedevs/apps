@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { PauseCircle, Trash2 } from 'lucide-react';
 import { Modal, Field, ConfirmButton } from '@/shared/ui/forms';
+import { useConfirm } from '@/shared/ui/confirm';
 import { EmptyState, fmtRelative, useAsync, Spinner } from '@/shared/ui/ui';
 import { fmtCents } from '@/shared/lib/money';
 import { errorMessage } from '@/shared/lib/errors';
@@ -34,9 +35,10 @@ const HoldDialog = ({ open, onClose }) => {
 /** List of parked sales to recall or discard. */
 const RecallDialog = ({ open, onClose }) => {
   const { loadSale, currency, cart } = useTill();
+  const confirm = useConfirm();
   const { data, loading, error, reload } = useAsync(() => (open ? posApi.sale.held() : Promise.resolve([])), [open]);
   const recall = async (id) => {
-    if (cart.lines.length && !window.confirm('Replace the items currently on the till with this parked sale?')) return;
+    if (cart.lines.length && !(await confirm({ title: 'Replace the current sale?', text: 'The items on the till now will be dropped and replaced with this parked sale.', confirmLabel: 'Replace', tone: 'danger' }))) return;
     try { loadSale(await posApi.sale.recall(id)); onClose(); } catch (err) { toast.error(errorMessage(err)); }
   };
   const discard = async (id) => { try { await posApi.sale.discard(id); reload(); } catch (err) { toast.error(errorMessage(err)); } };

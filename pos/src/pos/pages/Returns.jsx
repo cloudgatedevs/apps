@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Banknote, CreditCard, RotateCcw, Search } from 'lucide-react';
+import { Banknote, Camera, CameraOff, CreditCard, RotateCcw, Search } from 'lucide-react';
 import { Notice, Field } from '@/shared/ui/forms';
+import { useConfirm } from '@/shared/ui/confirm';
 import { Badge } from '@/shared/ui/ui';
 import { fmtCents } from '@/shared/lib/money';
 import { errorMessage } from '@/shared/lib/errors';
 import { posApi } from '@/pos/services/posApi';
 import { useTill } from '@/pos/state/TillProvider';
 import { useScannerInput } from '@/pos/components/useScannerInput';
+import { BarcodeScanner } from '@/pos/components/BarcodeScanner';
 import { Receipt } from '@/pos/components/Receipt';
 
 /**
@@ -15,22 +17,27 @@ import { Receipt } from '@/pos/components/Receipt';
  * to the customer's card through the Cloudgate Wallet payment the sale was paid with.
  */
 const Returns = () => {
-  const { currency, shift, requireShift } = useTill();
+  const { currency, shift, requireShift, reloadShift } = useTill();
+  const confirm = useConfirm();
   const [ref, setRef] = useState('');
   const [sale, setSale] = useState(null);
   const [qty, setQty] = useState({});
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(null);
+  const [camera, setCamera] = useState(false);
+  const [finding, setFinding] = useState(false);
 
   const find = async (reference) => {
     const r = String(reference || ref).trim().toUpperCase();
     if (!r) return;
     setDone(null);
+    setFinding(true);
     try {
       const s = await posApi.sale.byReference(r);
       setSale(s); setQty({}); setRef(r);
-    } catch (err) { toast.error(errorMessage(err)); }
+      setCamera(false);
+    } catch (err) { toast.error(errorMessage(err)); } finally { setFinding(false); }
   };
   useScannerInput((code) => find(code));
 
@@ -44,21 +51,29 @@ const Returns = () => {
   const refund = async (method) => {
     if (!chosen.length) { toast.error('Choose the items to refund.'); return; }
     if (method === 'cash' && requireShift && !shift) { toast.error('Open a shift to refund cash from the till.'); return; }
-    if (!window.confirm(`Refund ${fmtCents(estimate, currency)} ${method === 'cash' ? 'in cash' : 'to the card'}?`)) return;
+    if (!(await confirm({ title: 'Confirm refund', text: `Refund ${fmtCents(estimate, currency)} ${method === 'cash' ? 'in cash from the till' : 'to the original card'}?`, confirmLabel: 'Refund' }))) return;
     setBusy(true);
     try {
       const s = method === 'cash' ? await posApi.sale.refundCash(sale.Id, chosen, reason) : await posApi.payment.refundCard(sale.Id, chosen, reason);
       setDone(s); setSale(null); setQty({}); setReason('');
       toast.success('Refund recorded');
+      void reloadShift();
     } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
 
   return (
     <div className="mx-auto flex h-full max-w-3xl flex-col overflow-y-auto p-3 sm:p-5">
-      <form onSubmit={(e) => { e.preventDefault(); find(); }} className="relative mb-4 shrink-0">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mist-dim" />
-        <input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="Scan the receipt barcode or type its number" className="input h-11 pl-9 font-mono" autoFocus />
+      {/* The receipt slip carries the sale number as a CODE128 barcode: a USB scanner types it
+          here, the camera reads it, or the teller keys in the number printed under it. */}
+      <form onSubmit={(e) => { e.preventDefault(); find(); }} className="mb-4 flex shrink-0 gap-2">
+        <div className="relative min-w-0 grow">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mist-dim" />
+          <input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="Scan the receipt barcode or type its number (R-100001)" className="input h-11 w-full pl-9 font-mono" autoFocus disabled={finding} />
+        </div>
+        <button type="button" onClick={() => setCamera((v) => !v)} className={`btn-ghost h-11 shrink-0 ${camera ? 'pos-accent-bg border-transparent' : ''}`} aria-pressed={camera}>{camera ? <CameraOff className="h-4 w-4" /> : <Camera className="h-4 w-4" />}<span className="hidden sm:inline">{camera ? 'Stop camera' : 'Scan with camera'}</span></button>
+        <button type="submit" className="btn-primary h-11 shrink-0" disabled={finding || !ref.trim()}>{finding ? 'Finding…' : 'Find'}</button>
       </form>
+      {camera ? <div className="mb-4 shrink-0 overflow-hidden rounded-xl bg-zinc-950 p-2"><BarcodeScanner active={camera} onScan={(code) => find(code)} compact className="mx-auto max-w-xl" /></div> : null}
 
       {done ? (
         <div className="card p-4">

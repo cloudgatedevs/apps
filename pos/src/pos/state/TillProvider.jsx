@@ -8,6 +8,7 @@ import { posApi } from '@/pos/services/posApi';
 import { useAuthContext } from '@/shared/auth';
 import { errorMessage } from '@/shared/lib/errors';
 import { ScreenLoader } from '@/shared/ui/ScreenLoader';
+import { useLiveEvents } from '@/admin/services/live';
 
 const TillContext = createContext(null);
 export const useTill = () => useContext(TillContext);
@@ -33,7 +34,7 @@ const applyTheme = (primary, secondary) => {
 
 /** Cart line: { key, productId, name, sku, barcode, unit, isWeighed, unitPriceCents, qty, discountCents, stockQty, trackInventory } */
 const TillProvider = () => {
-  const { currentUser } = useAuthContext();
+  const { currentUser, logout } = useAuthContext();
   const [settings, setSettings] = useState(null);
   const [categories, setCategories] = useState([]);
   const [shift, setShift] = useState(undefined); // undefined = loading, null = none
@@ -43,6 +44,9 @@ const TillProvider = () => {
   const reloadShift = useCallback(async () => {
     try { setShift(await posApi.shift.current()); } catch (err) { setShift(null); toast.error(errorMessage(err)); }
   }, []);
+  // Shift totals (sales, takings, expected cash) change with every sale and refund, including
+  // card payments confirmed by webhook: refetch on the live events so the Shift screen is current.
+  useLiveEvents(useCallback(() => { void reloadShift(); }, [reloadShift]), ['sale.completed', 'sale.refunded', 'sale.voided']);
 
   useEffect(() => {
     let alive = true;
@@ -114,7 +118,12 @@ const TillProvider = () => {
         <div className="card max-w-md p-6 text-center">
           <p className="font-semibold text-mist">The till could not load its settings.</p>
           <p className="mt-2 text-sm text-mist-muted">{errorMessage(error)}</p>
-          <button type="button" onClick={() => window.location.reload()} className="btn-primary mt-4">Try again</button>
+          <div className="mt-4 flex justify-center gap-2">
+            <button type="button" onClick={() => window.location.reload()} className="btn-primary">Try again</button>
+            {/* A token from another environment (e.g. after switching API hosts) keeps failing
+                on every retry; signing out clears it and starts a fresh login. */}
+            <button type="button" onClick={() => logout(true)} className="btn-ghost">Sign out</button>
+          </div>
         </div>
       </div>
     );

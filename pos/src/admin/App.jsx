@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from '@/shared/ui/menus';
+import { ConfirmProvider } from '@/shared/ui/confirm';
 import { AuthProvider, RequireAuth } from '@/shared/auth';
 import { Layout } from '@/admin/components/Layout';
 import { RequireAdmin } from '@/admin/components/RequireAdmin';
@@ -28,6 +29,7 @@ const App = () => (
   <BrowserRouter basename="/admin">
     <AuthProvider>
       <TooltipProvider>
+      <ConfirmProvider>
         <Toaster position="top-right" richColors closeButton toastOptions={{ duration: 3500, style: { fontFamily: 'inherit', fontSize: '13px' } }} />
         <Routes>
           <Route element={<RequireAuth />}>
@@ -60,6 +62,7 @@ const App = () => (
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+      </ConfirmProvider>
       </TooltipProvider>
     </AuthProvider>
   </BrowserRouter>

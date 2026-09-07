@@ -78,7 +78,7 @@ const ShiftDetail = () => {
         {s.Status === 'open' ? <button type="button" onClick={() => setClosing(true)} className="btn-danger"><Lock className="h-4 w-4" /> Force close</button> : null}
       </PageHead>
       <div className="grid gap-5 lg:grid-cols-2">
-        <section className="card pos-receipt p-5">
+        <section className="card pos-print p-5">
           <h2 className="text-[15px] font-semibold text-mist">Z report</h2>
           <div className="mt-2 divide-y divide-ink-700">
             <Row l="Sales" r={`${s.SalesCount} · ${fmtCents(s.SalesTotalCents, currency)}`} bold />

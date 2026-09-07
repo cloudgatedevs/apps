@@ -31,7 +31,11 @@ function normalizeProfile(raw) {
 
 /** @returns {string} */
 export function getProfileDisplayName(profile) {
-  const namePart = [profile?.name, profile?.surname].filter(Boolean).join(' ').trim();
+  const name = String(profile?.name ?? '').trim();
+  const surname = String(profile?.surname ?? '').trim();
+  // Some IdP profiles store the full name in `name` and the surname again in `surname`
+  // ("Niel Olivier" + "Olivier"): do not append a surname the name already ends with.
+  const namePart = surname && !name.toLowerCase().endsWith(surname.toLowerCase()) ? `${name} ${surname}`.trim() : name;
   return namePart || profile?.email || 'User';
 }
 
@@ -45,12 +49,20 @@ export function getProfilePictureSrc(profile) {
  * @param {string} accessToken
  * @param {string} [tenancyName]
  */
+export const PROFILE_REJECTED = Symbol('profile-rejected');
+
+/**
+ * Resolves the profile, `null` when it is unavailable (network, server error), or
+ * PROFILE_REJECTED when the IdP refused the token (401/403), e.g. a session from another
+ * API host after switching environments. Callers must sign out on PROFILE_REJECTED.
+ */
 export async function getIdpProfile(accessToken, tenancyName = auth.tenancyName) {
   if (!idpApiUrl || !tenancyName || !accessToken) return null;
   try {
     const res = await fetch(profileUrl(tenancyName), {
       headers: { Accept: 'application/json', Authorization: `Bearer ${accessToken}` },
     });
+    if (res.status === 401 || res.status === 403) return PROFILE_REJECTED;
     if (!res.ok) return null;
     const profile = normalizeProfile(await res.json());
     return profile && profile.id != null ? profile : null;

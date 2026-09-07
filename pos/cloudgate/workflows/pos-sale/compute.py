@@ -161,13 +161,16 @@ if op == 'discard':
     return ("UPDATE sales SET Status = 'discarded', UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(sale['Id']) + " AND Status = 'held';\n" + detail("s.Id = " + str(sale['Id'])))
 
 if op == 'recent':
+    # Paged newest-first; every row carries the total so the till can show "1-20 of 137".
     take = clamp(d.get('take'), 1, 100, 20)
+    skip = clamp(d.get('skip'), 0, 1000000, 0)
     where = "s.Status IN ('completed','refunded','partially_refunded','voided')"
     where += " AND s.ShiftId = " + str(shift['Id']) if shift else " AND s.TellerUserId = " + str(uid)
     return ("SELECT s.Id, s.Reference, s.Status, s.TotalCents, s.PaidCents, s.CustomerName, s.CompletedAt, s.CreatedAt, "
             "(SELECT COUNT(*) FROM sale_items i WHERE i.SaleId = s.Id) AS ItemCount, "
-            "(SELECT group_concat(DISTINCT Method) FROM sale_payments p WHERE p.SaleId = s.Id AND p.Status = 'succeeded') AS Methods "
-            "FROM sales s WHERE " + where + " ORDER BY s.Id DESC LIMIT " + str(take) + ";")
+            "(SELECT group_concat(DISTINCT Method) FROM sale_payments p WHERE p.SaleId = s.Id AND p.Status = 'succeeded') AS Methods, "
+            "(SELECT COUNT(*) FROM sales t WHERE " + where.replace('s.', 't.') + ") AS Total "
+            "FROM sales s WHERE " + where + " ORDER BY s.Id DESC LIMIT " + str(take) + " OFFSET " + str(skip) + ";")
 
 if op == 'refund':
     if not sale or sale.get('Status') not in ('completed', 'partially_refunded'):

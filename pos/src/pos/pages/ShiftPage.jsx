@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ArrowDownToLine, ArrowUpFromLine, Clock, Lock, Vault } from 'lucide-react';
 import { Modal, Field, Notice } from '@/shared/ui/forms';
+import { useConfirm } from '@/shared/ui/confirm';
 import { Spinner, fmtDate, useAsync } from '@/shared/ui/ui';
 import { fmtCents, toCents } from '@/shared/lib/money';
 import { errorMessage } from '@/shared/lib/errors';
@@ -75,6 +76,7 @@ const MovementDialog = ({ type, onClose }) => {
 
 const CloseDialog = ({ open, onClose, onClosed }) => {
   const { shift, currency } = useTill();
+  const confirm = useConfirm();
   const [counted, setCounted] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -82,7 +84,7 @@ const CloseDialog = ({ open, onClose, onClosed }) => {
   const diff = (toCents(counted) ?? 0) - expected;
   const close = async () => {
     if (toCents(counted) === null) { toast.error('Count the cash in the drawer first.'); return; }
-    if (!window.confirm('Close this shift? You will not be able to ring up sales until you open a new one.')) return;
+    if (!(await confirm({ title: 'Close this shift?', text: 'You will not be able to ring up sales until you open a new one.', confirmLabel: 'Close shift', tone: 'danger' }))) return;
     setBusy(true);
     try { onClosed(await posApi.shift.close(toCents(counted), note)); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
@@ -100,8 +102,10 @@ const CloseDialog = ({ open, onClose, onClosed }) => {
 
 /** Open / run / close the teller's shift, with a Z-style summary once it is closed. */
 const ShiftPage = () => {
-  const { shift, setShift, currency } = useTill();
+  const { shift, setShift, currency, reloadShift } = useTill();
   const navigate = useNavigate();
+  // The provider's copy can be stale (sales rung up since it loaded); refresh on entry.
+  useEffect(() => { void reloadShift(); }, [reloadShift]);
   const [movement, setMovement] = useState(null);
   const [closing, setClosing] = useState(false);
   const [closed, setClosed] = useState(null);
@@ -110,7 +114,7 @@ const ShiftPage = () => {
     const s = closed;
     return (
       <div className="mx-auto max-w-lg p-3 sm:p-5">
-        <div className="card p-5">
+        <div className="card pos-print p-5">
           <h2 className="flex items-center gap-2 text-base font-semibold text-mist"><Lock className="h-4 w-4" /> Shift closed · {s.RegisterName}</h2>
           <p className="text-xs text-mist-dim">{fmtDate(s.OpenedAt)} → {fmtDate(s.ClosedAt)}</p>
           <div className="mt-3 divide-y divide-ink-700">
@@ -124,7 +128,7 @@ const ShiftPage = () => {
             <Row l="Counted" r={fmtCents(s.CountedCashCents, currency)} bold />
             <Row l="Difference" r={fmtCents(s.DifferenceCents, currency)} bold tone={Number(s.DifferenceCents) === 0 ? 'text-emerald-700' : 'text-amber-700'} />
           </div>
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex gap-2 no-print">
             <button type="button" className="btn-ghost" onClick={() => window.print()}>Print</button>
             <button type="button" className="btn-primary" onClick={() => { setClosed(null); }}>Open a new shift</button>
           </div>

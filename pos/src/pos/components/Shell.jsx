@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Clock, LayoutDashboard, LogOut, Receipt, RotateCcw, ShoppingCart, Wifi, WifiOff } from 'lucide-react';
+import { Clock, LogOut, Receipt, RotateCcw, Settings, ShoppingCart, Wifi, WifiOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useAuthContext, getProfileDisplayName, isAdminRole } from '@/shared/auth';
 import { Tooltip } from '@/shared/ui/menus';
@@ -65,7 +65,7 @@ const Shell = () => {
           </div>
           {isAdmin ? (
             <Tooltip text="Back office">
-              <a href="/admin" aria-label="Back office" className="grid h-9 w-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"><LayoutDashboard className="h-4 w-4" /></a>
+              <a href="/admin" aria-label="Back office" className="grid h-9 w-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"><Settings className="h-4 w-4" /></a>
             </Tooltip>
           ) : null}
           <Tooltip text="Sign out">

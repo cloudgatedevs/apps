@@ -15,7 +15,10 @@ def shape_sale(r):
     s['OutstandingCents'] = max(0, to_int(s.get('TotalCents'), 0) - to_int(s.get('PaidCents'), 0))
     return s
 
-if op in ('held', 'recent'):
+if op == 'recent':
+    items = [{k: v for k, v in dict(r).items() if k != 'Total'} for r in rows]
+    return out({'items': items, 'total': to_int(rows[0].get('Total'), 0) if rows else 0})
+if op == 'held':
     return out({'items': rows})
 s = shape_sale(rows[0] if rows else None)
 if not s:

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Camera, CameraOff, Clock, Minus, PauseCircle, Percent, Plus, RotateCcw, ScanLine, Search, ShoppingCart, Trash2, User, X } from 'lucide-react';
 import { EmptyState, Img, useAsync } from '@/shared/ui/ui';
 import { Modal } from '@/shared/ui/forms';
+import { useConfirm } from '@/shared/ui/confirm';
 import { fmtCents } from '@/shared/lib/money';
 import { errorMessage } from '@/shared/lib/errors';
 import { posApi } from '@/pos/services/posApi';
@@ -57,7 +58,8 @@ const CartLine = ({ l, currency, onEdit, onInc, onDec }) => {
 /** Main till screen: catalogue on the left, the sale on the right, scanners feeding both. */
 const Register = () => {
   const till = useTill();
-  const { settings, categories, currency, shift, requireShift, cart, totals, addProduct, setLine, removeLine, clearCart } = till;
+  const confirm = useConfirm();
+  const { settings, categories, currency, shift, requireShift, cart, totals, addProduct, setLine, removeLine, clearCart, reloadShift } = till;
   const [categoryId, setCategoryId] = useState(null);
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
@@ -111,7 +113,7 @@ const Register = () => {
     if (list.length === 1) { pick(list[0]); setSearch(''); }
   };
 
-  const completed = (sale) => { setDialog(null); clearCart(); setReceipt(sale); };
+  const completed = (sale) => { setDialog(null); clearCart(); setReceipt(sale); void reloadShift(); };
 
   const noShift = requireShift && !shift;
   const cartEmpty = cart.lines.length === 0;
@@ -165,7 +167,7 @@ const Register = () => {
           <ShoppingCart className="h-4 w-4 text-mist-dim" />
           <p className="grow text-sm font-semibold text-mist">Current sale {cart.heldSaleId ? <span className="chip ml-1">recalled</span> : null}</p>
           <button type="button" onClick={() => setDialog('customer')} className={`btn-ghost btn-sm ${cart.customer ? 'text-secondary' : ''}`}><User className="h-4 w-4" />{cart.customer?.name ? <span className="max-w-[7rem] truncate">{cart.customer.name}</span> : null}</button>
-          <button type="button" disabled={cartEmpty} onClick={() => { if (window.confirm('Clear all items from this sale?')) clearCart(); }} className="btn-ghost btn-sm text-red-600" aria-label="Clear sale"><Trash2 className="h-4 w-4" /></button>
+          <button type="button" disabled={cartEmpty} onClick={async () => { if (await confirm({ title: 'Clear this sale?', text: 'All items on the till are removed.', confirmLabel: 'Clear sale', tone: 'danger' })) clearCart(); }} className="btn-ghost btn-sm text-red-600" aria-label="Clear sale"><Trash2 className="h-4 w-4" /></button>
         </div>
         <div className="min-h-0 grow overflow-y-auto px-3">
           {cartEmpty ? (

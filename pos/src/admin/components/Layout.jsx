@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
+import { ArrowUpRight, ShoppingCart } from 'lucide-react';
 import { useAuthContext } from '@/shared/auth';
 import { getProfileDisplayName } from '@/shared/auth';
 import { Tooltip } from '@/shared/ui/menus';
@@ -97,7 +98,14 @@ const Layout = () => {
           <IconSearch className="h-3.5 w-3.5" /><span className="grow">Search…</span><span className="kbd">Ctrl K</span>
         </button>
         <div className="mt-5 min-h-0 grow overflow-y-auto"><NavLinks /></div>
-        <div className="mt-auto"><UserCard user={user} displayName={displayName} onLogout={() => logout(true)} /></div>
+        <div className="mt-auto flex flex-col gap-2">
+          <a href="/" className="flex items-center gap-3 rounded-xl border border-ink-700 bg-white px-3 py-2.5 shadow-panel transition hover:border-accent hover:bg-accent-soft/40" title="Back to the register">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent"><ShoppingCart className="h-4 w-4" aria-hidden="true" /></span>
+            <span className="min-w-0"><span className="block truncate text-[13px] font-medium text-mist">Open the till</span><span className="block truncate text-xs text-mist-dim">Back to the register</span></span>
+            <ArrowUpRight className="ml-auto h-4 w-4 shrink-0 text-mist-dim" aria-hidden="true" />
+          </a>
+          <UserCard user={user} displayName={displayName} onLogout={() => logout(true)} />
+        </div>
       </aside>
 
       {/* Mobile flyout: an animated Radix dialog so the backdrop, focus trap and Escape come for free */}

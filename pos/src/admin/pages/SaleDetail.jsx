@@ -6,6 +6,7 @@ import { adminApi } from '@/admin/services/adminApi';
 import { useAsync, ErrorNote, PageHead, Badge, fmtDate } from '@/shared/ui/ui';
 import { SkeletonDetail } from '@/shared/ui/skeleton';
 import { Modal, Field, Notice } from '@/shared/ui/forms';
+import { useConfirm } from '@/shared/ui/confirm';
 import { fmtCents } from '@/shared/lib/money';
 import { errorMessage } from '@/shared/lib/errors';
 import { Receipt } from '@/pos/components/Receipt';
@@ -44,6 +45,7 @@ const RefundDialog = ({ sale, open, onClose, onDone }) => {
 };
 
 const SaleDetail = () => {
+  const confirm = useConfirm();
   const { id } = useParams();
   const { data, loading, error, setData } = useAsync(() => adminApi.sales.get(Number(id)), [id]);
   const [refunding, setRefunding] = useState(false);
@@ -55,7 +57,7 @@ const SaleDetail = () => {
   const refundable = ['completed', 'partially_refunded'].includes(s.Status);
   const voidable = ['open', 'held'].includes(s.Status);
   const doVoid = async () => {
-    const reason = window.prompt('Reason for voiding this sale?') ?? null;
+    const reason = await confirm({ title: 'Void this sale', text: 'The sale is cancelled and any held stock is released.', confirmLabel: 'Void sale', tone: 'danger', input: { label: 'Reason', placeholder: 'Why is this sale being voided?' } });
     if (reason === null) return;
     setBusy(true);
     try { setData(await adminApi.sales.void(s.Id, reason)); toast.success('Sale voided.'); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }

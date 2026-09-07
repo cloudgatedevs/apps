@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from '@/shared/ui/menus';
+import { ConfirmProvider } from '@/shared/ui/confirm';
 import { AuthProvider, RequireAuth } from '@/shared/auth';
 import { RequireTeller } from '@/pos/components/RequireTeller';
 import { TillProvider } from '@/pos/state/TillProvider';
@@ -17,6 +18,7 @@ const App = () => (
   <BrowserRouter>
     <AuthProvider>
       <TooltipProvider>
+      <ConfirmProvider>
         <Toaster position="top-center" richColors closeButton toastOptions={{ duration: 3000, style: { fontFamily: 'inherit', fontSize: '14px' } }} />
         <Routes>
           <Route path="/pay/done" element={<PayDone kind="done" />} />
@@ -35,6 +37,7 @@ const App = () => (
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+      </ConfirmProvider>
       </TooltipProvider>
     </AuthProvider>
   </BrowserRouter>

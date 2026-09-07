@@ -41,7 +41,7 @@ const LabelSheet = ({ open, onClose, products, defaultSize = 'medium' }) => {
         <label className="flex flex-col gap-1 text-xs text-mist-muted">Copies of each<input type="number" min="1" max="50" value={copies} onChange={(e) => setCopies(e.target.value)} className="input w-24" /></label>
         <p className="text-xs text-mist-dim">Use the browser print dialog to pick the label printer and set margins to none.</p>
       </div>
-      <div className="pos-receipt pos-labels flex flex-wrap gap-[2mm] bg-ink-900 p-2">
+      <div className="pos-print pos-labels flex flex-wrap gap-[2mm] bg-ink-900 p-2">
         {list.map((p, i) => <Label key={`${p.Id}-${i}`} p={p} size={s} currency={currency} />)}
       </div>
     </Modal>

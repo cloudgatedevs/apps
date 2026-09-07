@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isTokenValid } from '@cloudgatedevs/cloudgate-client';
 import { auth as cloudgateAuth, redirectToLogin } from '@/shared/services/auth';
-import { getIdpProfile, getProfilePictureSrc, updateIdpProfile } from './idpProfileApi';
+import { getIdpProfile, PROFILE_REJECTED, getProfilePictureSrc, updateIdpProfile } from './idpProfileApi';
 
 const AuthContext = createContext(null);
 
@@ -50,6 +50,12 @@ const AuthProvider = ({ children }) => {
 
   const loadProfile = useCallback(async (accessToken) => {
     const profile = await getIdpProfile(accessToken);
+    if (profile === PROFILE_REJECTED) {
+      // The IdP does not know this token (session from another environment): retrying and
+      // refreshing can never succeed, so drop the session and go to the login page.
+      logoutRef.current(true);
+      return;
+    }
     if (profile) {
       setCurrentUser(buildCurrentUser(profile));
       return;
