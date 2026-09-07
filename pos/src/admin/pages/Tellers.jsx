@@ -17,9 +17,9 @@ const Tellers = () => {
     <div className="flex flex-col gap-5">
       <PageHead title="Tellers" subtitle="Staff who have signed in to the till. Accounts and roles are managed in the Cloudgate hub.">
         <button onClick={reload} className="btn-ghost">Refresh</button>
-        {HUB_URL ? <a href={`${HUB_URL}/identity/users`} target="_blank" rel="noreferrer" className="btn-primary"><ExternalLink className="h-4 w-4" /> Manage users</a> : null}
+        {HUB_URL ? <a href={`${HUB_URL}/flows/identity`} target="_blank" rel="noreferrer" className="btn-primary"><ExternalLink className="h-4 w-4" /> Manage users</a> : null}
       </PageHead>
-      <Notice tone="info">To add a teller, create a user in the Cloudgate hub (Identity → Users). Any role can sign in to the till and sell; only users with the <b>Admin</b> role can open this back office.</Notice>
+      <Notice tone="info">To add a teller, create a user in the Cloudgate hub (App Users). Any role can sign in to the till and sell; only users with the <b>Admin</b> role can open this back office.</Notice>
       <ErrorNote error={error} />
       {loading ? <SkeletonTable columns={6} rows={4} /> : (
         <Table rows={data ?? []} rowKey={(t) => t.TellerUserId} empty={<EmptyState icon={<UserRound className="h-5 w-5" />} title="No tellers yet" text="A teller appears here after their first shift." />}

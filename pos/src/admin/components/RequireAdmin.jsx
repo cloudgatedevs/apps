@@ -24,7 +24,7 @@ const RequireAdmin = () => {
           You are signed in as <span className="text-mist">{currentUser?.user?.emailAddress || 'this account'}</span>
           {role ? <> with the role <span className="text-mist">{role}</span></> : ' without a role'}.
           Ask an administrator to give your IdP account the <span className="font-mono text-accent">admin</span> role in the
-          Cloudgate hub (Identity → Users), then sign in again.
+          Cloudgate hub (App Users), then sign in again.
         </p>
         <div className="mt-6 flex justify-center gap-2">
           <a href="/" className="btn-ghost">Go to the till</a>
