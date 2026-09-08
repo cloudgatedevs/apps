@@ -178,7 +178,7 @@ def load_config():
 SHARED_LIB = os.path.join(WORKFLOWS_DIR, "_shared", "lib.py")
 
 
-def read_script(folder, name, with_lib=False):
+def read_script(folder, name, with_lib=False, libraries=None):
     path = os.path.join(folder, name)
     with open(path, encoding="utf-8") as f:
         text = f.read().replace("\r\n", "\n")
@@ -188,6 +188,12 @@ def read_script(folder, name, with_lib=False):
         with open(SHARED_LIB, encoding="utf-8") as f:
             lib = f.read().replace("\r\n", "\n")
         text = lib.rstrip("\n") + "\n\n# ---- node script ----\n" + text
+    if libraries:
+        sources = []
+        for library in libraries:
+            with open(os.path.join(folder, library), encoding="utf-8") as f:
+                sources.append(f.read().replace("\r\n", "\n"))
+        text = "\n".join(sources) + "\n" + text
     return text
 
 
@@ -225,7 +231,7 @@ def compile_workflow(folder, config, endpoint_id=None):
         kind = n["type"]
         node = base_node(n["name"], kind, endpoint_id, 240 + 340 * i, (i % 2) * 260 if n.get("stagger") else 0)
         if kind in ("function", "condition"):
-            node["MainScript"] = read_script(folder, n["script"], with_lib=not n.get("noLib"))
+            node["MainScript"] = read_script(folder, n["script"], with_lib=not n.get("noLib"), libraries=n.get("libraries"))
         if kind == "database":
             node["MainScript"] = read_script(folder, n["script"])
         if kind == "database":

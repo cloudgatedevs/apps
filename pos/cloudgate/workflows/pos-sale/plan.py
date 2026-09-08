@@ -3,6 +3,8 @@
 user = require_teller('''${IdpAuth}''')
 uid = user_id_of(user)
 d = body()
+if op_of(d, '') in ('refund','refund-status','retry'):
+    fail('Use the refunds action with a stable requestKey. Update the app template.')
 op = op_of(d, 'complete')
 
 ids = sorted({to_int((ln or {}).get('productId'), 0) for ln in (d.get('lines') or []) if isinstance(ln, dict)})

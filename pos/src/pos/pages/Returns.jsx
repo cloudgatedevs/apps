@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { RefundRequests } from '@/shared/ui/RefundRequests';
+import { refundMessage } from '@/shared/services/refunds';
 import { Banknote, Camera, CameraOff, CreditCard, RotateCcw, Search } from 'lucide-react';
 import { Notice, Field } from '@/shared/ui/forms';
 import { useConfirm } from '@/shared/ui/confirm';
@@ -55,8 +57,9 @@ const Returns = () => {
     setBusy(true);
     try {
       const s = method === 'cash' ? await posApi.sale.refundCash(sale.Id, chosen, reason) : await posApi.payment.refundCard(sale.Id, chosen, reason);
-      setDone(s); setSale(null); setQty({}); setReason('');
-      toast.success('Refund recorded');
+      if (s.RefundResult?.Status === 'succeeded') { setDone(s); setSale(null); setQty({}); setReason(''); }
+      else setSale(s);
+      toast[s.RefundResult?.Status === 'succeeded' ? 'success' : 'info'](refundMessage(s.RefundResult));
       void reloadShift();
     } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
@@ -75,6 +78,7 @@ const Returns = () => {
       </form>
       {camera ? <div className="mb-4 shrink-0 overflow-hidden rounded-xl bg-zinc-950 p-2"><BarcodeScanner active={camera} onScan={(code) => find(code)} compact className="mx-auto max-w-xl" /></div> : null}
 
+      {sale ? <RefundRequests id={sale.Id} onResolved={async () => { setSale(await posApi.sale.get(sale.Id)); setQty({}); void reloadShift(); }} /> : null}
       {done ? (
         <div className="card p-4">
           <Notice tone="success" className="mb-4">Refund of {fmtCents(Number(done.Refunds?.slice(-1)[0]?.AmountCents || 0), currency)} recorded on {done.Reference}.</Notice>

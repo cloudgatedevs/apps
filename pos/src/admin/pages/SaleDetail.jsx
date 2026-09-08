@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { RefundRequests } from '@/shared/ui/RefundRequests';
+import { refundMessage } from '@/shared/services/refunds';
 import { Banknote, CreditCard, Ban } from 'lucide-react';
 import { adminApi } from '@/admin/services/adminApi';
 import { useAsync, ErrorNote, PageHead, Badge, fmtDate } from '@/shared/ui/ui';
@@ -25,7 +27,7 @@ const RefundDialog = ({ sale, open, onClose, onDone }) => {
   const refund = async (method) => {
     if (!chosen.length) { toast.error('Choose the items to refund.'); return; }
     setBusy(true);
-    try { const s = await adminApi.sales.refund(sale.Id, { items: chosen, reason, method }); toast.success('Refund recorded.'); onDone(s); onClose(); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
+    try { const s = await adminApi.sales.refund(sale.Id, { items: chosen, reason, method }); toast[s.RefundResult?.Status === 'succeeded' ? 'success' : 'info'](refundMessage(s.RefundResult)); onDone(s); onClose(); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
   return (
     <Modal open={open} onClose={busy ? undefined : onClose} title={`Refund ${sale.Reference}`} size="md"
@@ -97,6 +99,7 @@ const SaleDetail = () => {
         </div>
         <div><Receipt sale={s} /></div>
       </div>
+      <RefundRequests id={s.Id} onResolved={async () => setData(await adminApi.sales.get(s.Id))} />
       <RefundDialog sale={s} open={refunding} onClose={() => setRefunding(false)} onDone={setData} />
     </div>
   );

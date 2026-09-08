@@ -1,0 +1,96 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const browser=await chromium.launch({headless:true});
+const page=await browser.newPage({viewport:{width:1440,height:1000}});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
+// Newer browsers can return a Promise from scrolling. React effects must not
+// accidentally return it as their cleanup function when the route changes.
+await page.addInitScript(()=>{
+ const scroll=window.scrollTo.bind(window);
+ window.scrollTo=(...args)=>{scroll(...args);return Promise.resolve();};
+});
+const base=process.env.BOOKING_TEST_URL||'http://127.0.0.1:3002';
+fs.mkdirSync('.local',{recursive:true});
+try{
+ await page.goto(base);
+ await page.getByRole('link',{name:'Book a moment',exact:true}).click();
+ await page.getByRole('heading',{name:'What would you like to book?'}).waitFor();
+ assert(await page.getByRole('button',{name:'Find a time'}).isDisabled());
+ await page.getByRole('link',{name:'My appointments',exact:true}).click();
+ await page.getByRole('heading',{name:'Your appointments.'}).waitFor();
+ await page.getByRole('link',{name:'The studio',exact:true}).click();
+ await page.getByRole('link',{name:'Make time for this',exact:true}).first().click();
+ await page.locator('.service-option.selected').waitFor();
+ await page.getByRole('button',{name:'Find a time'}).click();
+ await page.locator('.slots button').first().waitFor();
+ await page.locator('.slots button').first().click();
+ await page.getByRole('button',{name:'Continue',exact:true}).click();
+ await page.getByLabel('Full name',{exact:true}).fill('Browser Test Client');
+ await page.getByLabel('Email address',{exact:true}).fill('browser-'+Date.now()+'@example.com');
+ await page.getByLabel('Phone number',{exact:true}).fill('+27 82 555 0101');
+ await page.getByRole('button',{name:'Review & pay'}).click();
+ await page.getByRole('button',{name:'Your details',exact:true}).click();
+ await page.getByRole('button',{name:'Review & pay'}).click();
+ await page.getByRole('heading',{name:'One last thing. Then, exhale.'}).waitFor();
+ await page.getByText('Browser Test Client',{exact:true}).waitFor();
+ await page.getByRole('checkbox').check();
+ await page.getByRole('button',{name:'Continue to secure payment'}).click();
+ await page.waitForURL('**/test-checkout?*');
+ await page.getByRole('button',{name:'Simulate successful payment'}).click();
+ await page.waitForURL('**/checkout/return?*');
+ await page.locator('.appointment-card .badge.confirmed').waitFor();
+ const reference=new URL(page.url()).searchParams.get('ref');
+ assert(reference?.startsWith('ST-'));
+ await page.screenshot({path:'.local/confirmation.png',fullPage:true});
+ await page.getByRole('button',{name:'Reschedule',exact:true}).click();
+ await page.getByRole('dialog').locator('.slots button').last().waitFor();
+ await page.getByRole('dialog').locator('.slots button').last().click();
+ await page.getByRole('button',{name:'Confirm new time'}).click();
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ await page.goto(base+'/admin');
+ await page.getByRole('button',{name:'Appointments',exact:true}).click();
+ await page.getByPlaceholder('Search name, email, or reference…').fill(reference);
+ await page.getByRole('button',{name:'Browser Test Client',exact:true}).click();
+ await page.getByRole('button',{name:'Check in',exact:true}).click();
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ await page.getByRole('button',{name:'Browser Test Client',exact:true}).click();
+ await page.getByRole('button',{name:'Complete visit',exact:true}).click();
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ await page.locator('td .badge.completed').waitFor();
+ await page.getByRole('button',{name:'Browser Test Client',exact:true}).click();
+ await page.getByRole('button',{name:'Refund',exact:true}).click();
+ await page.getByLabel('Amount (ZAR)',{exact:true}).fill('100');
+ await page.getByRole('button',{name:'Confirm refund',exact:true}).click();
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ for(const label of ['Calendar','Clients','Services','Team & hours','Rooms & resources','Waitlist','Promotions','Reports','Notifications','Settings']){
+  await page.getByRole('button',{name:label,exact:label!=='Waitlist'}).click();
+  await page.locator('.admin-title h1').waitFor();
+ }
+ await page.getByRole('button',{name:'Services',exact:true}).click();
+ await page.getByRole('button',{name:'Add service',exact:true}).click();
+ await page.getByLabel('Name',{exact:true}).fill('Browser test treatment');
+ await page.getByRole('button',{name:'Save changes'}).click();
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ await page.getByRole('heading',{name:'Browser test treatment',exact:true}).last().waitFor();
+ // Hide the test-created treatment to keep the public sample menu clean.
+ const card=page.locator('article').filter({has:page.getByRole('heading',{name:'Browser test treatment',exact:true})}).last();
+ await card.getByRole('button',{name:'Edit treatment'}).click();
+ await page.getByLabel('Active / visible for booking').uncheck();
+ await page.getByRole('button',{name:'Save changes'}).click();
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ await page.setViewportSize({width:390,height:844});
+ await page.goto(base);
+ await page.getByText('What feels right today?').waitFor();
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'Mobile page must not overflow horizontally');
+ await page.screenshot({path:'.local/mobile.png',fullPage:true});
+ await page.getByRole('button',{name:'Join the waitlist',exact:true}).click();
+ await page.getByLabel('Preferred date').fill(new Date(Date.now()+4*86400000).toISOString().slice(0,10));
+ await page.getByLabel('Full name',{exact:true}).fill('Waitlist Test');
+ await page.getByLabel('Email',{exact:true}).fill('waitlist@example.com');
+ await page.getByRole('dialog').getByRole('button',{name:'Join the waitlist',exact:true}).click();
+ await page.getByText("You're on the list").waitFor();
+ assert.deepEqual(errors,[],'No browser runtime errors');
+ console.log(JSON.stringify({passed:true,reference,checks:['home-to-book navigation','appointments navigation','service deep link','booking wizard','test payment','confirmation','reschedule','admin check-in','complete visit','partial refund','all admin screens','service create and hide','mobile layout','waitlist'],browserErrors:errors},null,2));
+}finally{await browser.close();}

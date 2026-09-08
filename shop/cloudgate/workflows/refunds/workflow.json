@@ -1,0 +1,148 @@
+{
+  "name": "Shop Refunds",
+  "route": "refunds",
+  "method": "POST",
+  "allowAnonymous": false,
+  "enableLogging": false,
+  "description": "Durable card/cash refunds: claim, confirmed application, list, read-only refund-status and retry with the original requestKey.",
+  "entry": "IdpAuth",
+  "nodes": [
+    {
+      "name": "IdpAuth",
+      "type": "idp",
+      "output": "userInfo",
+      "allowAnonymous": false,
+      "next": "ReadPlan",
+      "role": "Admin"
+    },
+    {
+      "name": "ReadPlan",
+      "type": "function",
+      "script": "ReadPlan.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ],
+      "next": "Load"
+    },
+    {
+      "name": "Load",
+      "type": "database",
+      "script": "Load.sql",
+      "next": "ClaimPlan"
+    },
+    {
+      "name": "ClaimPlan",
+      "type": "function",
+      "script": "ClaimPlan.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ],
+      "next": "ClaimRun"
+    },
+    {
+      "name": "ClaimRun",
+      "type": "database",
+      "script": "ClaimRun.sql",
+      "next": "NeedsWallet"
+    },
+    {
+      "name": "NeedsWallet",
+      "type": "condition",
+      "script": "NeedsWallet.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ],
+      "positive": "PaymentId",
+      "negative": "Shape"
+    },
+    {
+      "name": "PaymentId",
+      "type": "function",
+      "script": "PaymentId.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ],
+      "next": "Amount"
+    },
+    {
+      "name": "Amount",
+      "type": "function",
+      "script": "Amount.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ],
+      "next": "RefundKey"
+    },
+    {
+      "name": "RefundKey",
+      "type": "function",
+      "script": "RefundKey.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ],
+      "next": "Operation"
+    },
+    {
+      "name": "Operation",
+      "type": "function",
+      "script": "Operation.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ],
+      "next": "WalletRefund"
+    },
+    {
+      "name": "WalletRefund",
+      "type": "walletpayment",
+      "params": {
+        "operation": "${Operation}",
+        "amount": "${Amount}",
+        "paymentId": "${PaymentId}",
+        "idempotencyKey": "shop-refund-${RefundKey}",
+        "description": "Shop refund"
+      },
+      "next": "ApplyPlan"
+    },
+    {
+      "name": "ApplyPlan",
+      "type": "function",
+      "script": "ApplyPlan.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ],
+      "next": "ApplyRun"
+    },
+    {
+      "name": "ApplyRun",
+      "type": "database",
+      "script": "ApplyRun.sql",
+      "next": "Shape"
+    },
+    {
+      "name": "Shape",
+      "type": "function",
+      "script": "Shape.py",
+      "noLib": true,
+      "libraries": [
+        "../../refund_bridge.py",
+        "../../refunds.py"
+      ]
+    }
+  ]
+}

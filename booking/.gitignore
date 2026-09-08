@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.local/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.log
+cloudgate/deploy.config.json
+cloudgate/deployed-actions.json
+cloudgate/live-controller-export.json

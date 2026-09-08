@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { RefundRequests } from '@/shared/ui/RefundRequests';
+import { refundMessage } from '@/shared/services/refunds';
 import { adminApi } from '@/admin/services/adminApi';
 import { useAsync, ErrorNote, Badge, PageHead, Img, fmtDate, fmtRelative } from '@/shared/ui/ui';
 import { SkeletonDetail } from '@/shared/ui/skeleton';
@@ -50,7 +52,8 @@ const OrderDetail = () => {
     try {
       const next = await fn();
       if (next) order.setData(next);
-      if (success) toast.success(success);
+      if (next?.RefundResult) toast[next.RefundResult.Status === 'succeeded' ? 'success' : 'info'](refundMessage(next.RefundResult));
+      else if (success) toast.success(success);
       return true;
     } catch (err) {
       order.setData(previous);
@@ -191,6 +194,7 @@ const OrderDetail = () => {
         ) : null}
       </Modal>
 
+      <RefundRequests id={o.Id} onResolved={async () => order.setData(await adminApi.orders.get(o.Id))} />
       <Modal open={!!refund} title={`Refund ${o.Reference}`} onClose={() => setRefund(null)} size="sm"
         footer={(
           <>
@@ -199,12 +203,12 @@ const OrderDetail = () => {
           </>
         )}
       >
-        {refund ? (
+        {refund && refundable ? (
           <form id="refund-form" className="flex flex-col gap-4" onSubmit={(e) => {
             e.preventDefault();
             const cents = toCents(refund.amount);
             if (!cents || cents <= 0 || cents > remainingCents) { toast.error(`Enter an amount up to ${fmtCents(remainingCents, o.Currency)}.`); return; }
-            run(() => adminApi.orders.refund(o.Id, { amountCents: cents === remainingCents ? undefined : cents, reason: refund.reason, restock: refund.restock }), { success: `Refund of ${fmtCents(cents, o.Currency)} sent to the card.` }).then((ok) => ok && setRefund(null));
+            run(() => adminApi.orders.refund(o.Id, { amountCents: cents === remainingCents ? undefined : cents, reason: refund.reason, restock: refund.restock })).then((ok) => ok && setRefund(null));
           }}>
             <p className="text-sm text-mist-muted">Paid {fmtCents(refundable.AmountCents, o.Currency)}{refundable.RefundedCents ? <>, already refunded {fmtCents(refundable.RefundedCents, o.Currency)}</> : null}. The money goes back to the customer's card through Cloudgate Wallet; the wallet ledger updates when the provider confirms.</p>
             <Field label={`Amount (${o.Currency}) — max ${fmtCents(remainingCents, o.Currency)}`} htmlFor="r-amount"><input id="r-amount" value={refund.amount} onChange={(e) => setRefund((r) => ({ ...r, amount: e.target.value }))} className="input tabular-nums" inputMode="decimal" required autoFocus /></Field>

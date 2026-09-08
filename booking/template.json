@@ -1,0 +1,84 @@
+{
+  "id": "booking",
+  "name": "Cloudgate Booking",
+  "category": "Appointments",
+  "version": "1.3.0",
+  "description": "A branded appointment booking site and studio back office: services, staff, rooms, availability, full payments or deposits, cancellations, refunds, client records and reminders.",
+  "folder": "booking",
+  "framework": "React",
+  "devCommand": "npm install && npm run dev",
+  "devPort": 3002,
+  "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/booking/banner.png",
+  "adminPath": "/admin",
+  "tags": [
+    "react",
+    "booking",
+    "appointments",
+    "wellness",
+    "salon",
+    "payments",
+    "wallet",
+    "idp"
+  ],
+  "features": [
+    "Service discovery with search, category filters and a responsive photo-led design",
+    "Customer login and signup, saved contact details, appointment history and secure guest-booking claims",
+    "Custom app name, logo, icon, favicon and theme colours with image uploads and live preview",
+    "Front-desk reservations for existing or new clients with private payment links and safe recovery",
+    "Weekly calendar and server-verified promotion, deposit and balance quotes",
+    "Multi-service booking with qualified therapists, room availability and cleanup buffers",
+    "Full payments or deposits through Cloudgate Wallet; confirmation after verified payment",
+    "Self-service rescheduling, cancellation, booking access links and calendar downloads",
+    "Back office calendar, clients, staff hours, resources, waitlist, promotions and reports",
+    "Email outbox and scheduled reminders; payment recovery and protected refunds"
+  ],
+  "requirements": [
+    "wallet",
+    "idp",
+    "smtp"
+  ],
+  "environments": [
+    "sandbox",
+    "production"
+  ],
+  "terms": {
+    "version": "1",
+    "url": "https://cloudgate.dev/terms",
+    "summary": [
+      "Payments are processed through your Cloudgate Wallet.",
+      "Configure your booking policy, business information and outgoing email before serving customers."
+    ]
+  },
+  "compliance": [
+    {
+      "key": "sandbox-notice",
+      "environment": "sandbox",
+      "label": "Test appointments only",
+      "text": "I understand this environment uses sandbox payments."
+    },
+    {
+      "key": "booking-policy",
+      "environment": "production",
+      "label": "Booking rules configured",
+      "text": "I have configured services, working hours, cancellation rules, payment requirements and customer support details."
+    },
+    {
+      "key": "sandbox-tested",
+      "environment": "production",
+      "label": "Booking and refund tested",
+      "text": "I have tested a hosted sandbox booking, payment confirmation, cancellation and refund."
+    }
+  ],
+  "build": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "devBuildCommand": "npm run build:dev",
+    "outputDir": "dist"
+  },
+  "workflows": {
+    "projectPath": "booking",
+    "file": ".template/workflow-template.json",
+    "schema": ".template/schema.sql",
+    "sampleData": ".template/sample-data.sql"
+  }
+}

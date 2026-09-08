@@ -1,7 +1,7 @@
 # Admin Orders — shape rows.
 d = body()
 op = op_of(d, 'list')
-rows = rows_of('''${RunRefund}''') if op == 'refund' else rows_of('''${Run}''')
+rows = rows_of('''${Run}''')
 
 if op == 'list':
     total = to_int(rows[0].get('TotalCount'), 0) if rows else 0

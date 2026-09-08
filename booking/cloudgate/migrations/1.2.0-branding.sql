@@ -1,0 +1,1 @@
+INSERT OR IGNORE INTO settings(key,value) VALUES ('app_name',''),('app_short_name',''),('logo_url',''),('icon_url',''),('favicon_url',''),('logo_show_name','1'),('theme_primary','#294e3c'),('theme_accent','#7c896e'),('theme_background','#faf9f5');

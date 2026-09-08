@@ -2,6 +2,8 @@
 user = require_teller('''${IdpAuth}''')
 uid = user_id_of(user)
 d = body()
+if op_of(d, '') in ('refund','refund-status','retry'):
+    fail('Use the refunds action with a stable requestKey. Update the app template.')
 op = op_of(d, 'status')
 if op not in ('start', 'status', 'cancel', 'refund', 'wallet-status'):
     fail('Unknown op.')

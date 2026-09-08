@@ -1,6 +1,8 @@
 # Admin Sales / Plan — load the target sale (for get/void/refund) and the settings in one row.
 user = require_admin('''${IdpAuth}''')
 d = body()
+if op_of(d, '') in ('refund','refund-status','retry'):
+    fail('Use the refunds action with a stable requestKey. Update the app template.')
 op = op_of(d, 'list')
 sid = to_int(d.get('id') or d.get('saleId'), 0)
 ref = str(d.get('reference') or '').strip()

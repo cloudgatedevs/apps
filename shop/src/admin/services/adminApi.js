@@ -4,6 +4,7 @@
 // These actions require the gateway API key (signed by the client) AND an IdP
 // bearer token whose user has the admin role; the workflow rejects anything else.
 import { api } from '@/shared/services/api';
+import { refundApi } from '@/shared/services/refunds';
 
 const call = (route, op, params = {}) => api.post(route, { op, ...params });
 
@@ -91,7 +92,7 @@ export const adminApi = {
     addNote: (id, note) => call('/admin-orders', 'add-note', { id, note }),
     /** Full refund when amountCents is omitted; restock puts the sold units back with a ledger entry. */
     refund: (id, { amountCents, reason, restock } = {}) =>
-      call('/admin-orders', 'refund', { id, ...(amountCents ? { amountCents } : {}), reason, restock: !!restock }),
+      refundApi.submit(id, { amountCents, reason, restock: !!restock, method: 'card' }).then(async (r) => { const detail = await call('/admin-orders', 'get', { id }); refundApi.acknowledge(id, r.request?.RequestKey); return { ...detail, RefundResult: r.request }; }),
   },
 
   customers: {

@@ -41,7 +41,7 @@ admin token and are guarded again inside the workflow.
 | `admin-products` | admin | `list`, `get`, `create`, `update`, `set-status`, `delete`, `add-image`, `remove-image`, `reorder-images`, `image-refs` (every file id / URL still referenced, for the Media clean-up page) |
 | `admin-categories` | admin | `list`, `create`, `update`, `reorder`, `delete` |
 | `admin-inventory` | admin | `stock`, `low-stock`, `adjust`, `set-threshold`, `movements` |
-| `admin-orders` | admin | `list`, `get`, `set-status` (shipped takes carrier/tracking; publishes `order.status` and emails the customer on a thread branch unless `notifyCustomer` is false), `add-note`, `refund` (full or partial through the Wallet Payment node, optional restock with ledger entry) |
+| `admin-orders` | admin | `list`, `get`, `set-status` (shipped takes carrier/tracking; publishes `order.status` and emails the customer on a thread branch unless `notifyCustomer` is false), `add-note`; refunds use `refunds` |
 | `admin-customers` | admin | `list` (search, accounts/guests, sort by recent/spend/name), `get` (profile, lifetime value, orders) |
 | `admin-dashboard` | admin | `stats`, `recent-orders`, `sales-by-day`, `top-products` |
 | `admin-settings` | admin | `get` (SMTP password masked), `set`, `send-test` (sends a test message through the saved SMTP settings). Also holds the storefront chrome: announcement bar, cookie notice, contact details, social links |
@@ -138,3 +138,7 @@ src/
   admin/             main.jsx, App.jsx, admin.css, components/ (Layout, nav, RequireAdmin), pages/, services/adminApi.js
 cloudgate/           schema.sql, deploy.py, deploy.config.json, workflows/<route>/
 ```
+
+### Template 1.1.1 — refund safety
+
+Refunds now use the durable `refunds` action with stable request keys, confirmed-status accounting, and recovery controls. The package contains the schema upgrade and matching callers. See [cloudgate/REFUNDS.md](cloudgate/REFUNDS.md) for the contract and checks.

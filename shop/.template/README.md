@@ -1,7 +1,7 @@
 # Cloudgate Shop workflow bundle
 
 Import payload the App Store uses to create the shop's backend on a tenant. Regenerate with
-`python cloudgate/bundle.py` after every `npm run cloudgate:deploy`.
+`npm run cloudgate:package-refunds` for the 1.1.1 refund changes. This rebuilds the affected graphs and upgrade-safe schema locally without deploying.
 
 | File | Purpose |
 | --- | --- |

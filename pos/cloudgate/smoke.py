@@ -211,9 +211,12 @@ def run_teller(gw, state, keep):
         expect(s["Id"] == state["sale"]["Id"], "get by reference should return the sale")
 
     def refund_cash():
+        import uuid
         s = state["sale"]
         item = s["Items"][0]
-        _, r = gw.post("pos-sale", {"op": "refund", "saleId": s["Id"], "method": "cash", "items": [{"saleItemId": item["Id"], "qty": 1}], "reason": "smoke"})
+        _, claim = gw.post("refunds", {"op": "refund", "id": s["Id"], "requestKey": str(uuid.uuid4()), "method": "cash", "items": [{"saleItemId": item["Id"], "qty": 1}], "reason": "smoke"})
+        expect(claim["request"]["Status"] == "succeeded", "Cash refund must be confirmed")
+        _, r = gw.post("pos-sale", {"op": "get", "saleId": s["Id"]})
         expect(r["Status"] == "partially_refunded", f"one of two units refunded should be partially_refunded, got {r['Status']}")
         expect(r["RefundedCents"] > 0 and r["Refunds"], "refund should be recorded")
         return f"refunded {r['RefundedCents']}"

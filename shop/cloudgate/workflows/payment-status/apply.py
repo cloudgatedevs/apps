@@ -27,7 +27,7 @@ if status == 1:
     return '\n'.join([
         "BEGIN;",
         "CREATE TEMP TABLE IF NOT EXISTS _ctx (k TEXT PRIMARY KEY, v INTEGER);", "DELETE FROM _ctx;",
-        "UPDATE orders SET Status = 'paid', PaymentStatus = 'paid', PaidAt = CURRENT_TIMESTAMP, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(oid) + " AND PaymentStatus <> 'paid';",
+        "UPDATE orders SET Status = 'paid', PaymentStatus = 'paid', PaidAt = CURRENT_TIMESTAMP, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(oid) + " AND PaymentStatus = 'pending';",
         "INSERT INTO _ctx (k, v) VALUES ('fin', changes());",
         "UPDATE payments SET Status = 'succeeded', PaidAt = CURRENT_TIMESTAMP, RawJson = " + raw + ", UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(pid) + " AND (SELECT v FROM _ctx WHERE k = 'fin') = 1;",
         "UPDATE product_variants SET "
@@ -55,7 +55,7 @@ if status in (2, 3):
         "CREATE TEMP TABLE IF NOT EXISTS _ctx (k TEXT PRIMARY KEY, v INTEGER);", "DELETE FROM _ctx;",
         "UPDATE orders SET Status = 'cancelled', PaymentStatus = 'failed', CancelledAt = CURRENT_TIMESTAMP, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(oid) + " AND Status = 'pending';",
         "INSERT INTO _ctx (k, v) VALUES ('fin', changes());",
-        "UPDATE payments SET Status = " + q(label) + ", RawJson = " + raw + ", UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(pid) + ";",
+        "UPDATE payments SET Status = " + q(label) + ", RawJson = " + raw + ", UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(pid) + " AND Status = 'pending';",
         "UPDATE product_variants SET ReservedQty = MAX(0, ReservedQty - (SELECT COALESCE(SUM(Qty), 0) FROM order_items WHERE OrderId = " + str(oid) + " AND VariantId = product_variants.Id)), UpdatedAt = CURRENT_TIMESTAMP "
         "WHERE Id IN (SELECT VariantId FROM order_items WHERE OrderId = " + str(oid) + ") AND (SELECT v FROM _ctx WHERE k = 'fin') = 1 "
         "  AND EXISTS (SELECT 1 FROM products p WHERE p.Id = product_variants.ProductId AND p.TrackInventory = 1);",

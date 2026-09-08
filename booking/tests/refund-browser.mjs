@@ -1,0 +1,31 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true});
+try {
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const response=await page.request.post('http://127.0.0.1:3002/api/booking',{headers:{'X-Studio-Preview':'1','X-Preview-Role':'admin'},data:{op:'admin-data'}});
+ const data=await response.json();
+ const booking=data.bookings.find(b=>b.paid>0);
+ assert(booking,'Run the booking browser journey first to create a test appointment.');
+ const ref='UI-REFUND-TEST',key='ui-refund-stable-request-key';
+ data.bookings=[{...booking,reference:ref,refunded:0,status:'completed',customer:{...booking.customer,name:'Refund UI Test'}}];
+ data.refund_requests=[{Id:999999,booking_ref:ref,request_key:key,amount:10000,status:'pending',provider_id:'re_ui'}];
+ const requests=[];
+ await page.route('**/api/booking',route=>route.fulfill({json:data}));
+ await page.route('**/api/refund',route=>{requests.push(route.request().postDataJSON());return route.fulfill({json:{ok:true,status:'pending'}});});
+ await page.goto('http://127.0.0.1:3002/admin#appointments');
+ await page.getByRole('button',{name:'Refund UI Test',exact:true}).click();
+ await page.getByRole('heading',{name:'Refund history',exact:true}).waitFor();
+ assert.equal(await page.getByRole('button',{name:'Refund',exact:true}).count(),0);
+ await page.screenshot({path:'.local/refund-pending.png',fullPage:true});
+ await page.getByRole('button',{name:'Check refund status'}).click();
+ await page.getByText('Refund submitted. Waiting for confirmation.').waitFor();
+ assert.equal(requests[0].op,'refund-status');assert.equal(requests[0].request_key,key);
+ await page.getByRole('button',{name:'Refund UI Test',exact:true}).click();
+ await page.getByRole('button',{name:'Retry this request'}).click();
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ assert.equal(requests[1].op,'refund');assert.equal(requests[1].request_key,key);assert.equal(requests[1].amount,10000);
+ assert.deepEqual(errors,[]);
+ console.log('Pending refund UI, read-only status lookup and stable-key retry passed.');
+} finally {await browser.close();}

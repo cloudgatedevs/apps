@@ -2,6 +2,8 @@
 user = require_admin('''${IdpAuth}''')
 actor = str(user.get('Email') or user.get('Id') or 'admin')
 d = body()
+if op_of(d, '') in ('refund','refund-status','retry'):
+    fail('Use the refunds action with a stable requestKey. Update the app template.')
 op = op_of(d, 'list')
 
 STATUSES = ('pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded')
@@ -108,21 +110,6 @@ if op == 'add-note':
         "UPDATE orders SET InternalNote = " + qs(note, 2000) + ", UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(oid) + ";\n"
         "INSERT INTO order_events (OrderId, Type, Message, CreatedBy) VALUES (" + str(oid) + ", 'note', " + qs(note, 2000) + ", " + q(actor) + ");\n"
         "COMMIT;\n" + detail_sql('o.Id = ' + str(oid))
-    )
-
-if op == 'refund':
-    # Phase 1 of a refund: load the order + its refundable payment for validation. The Wallet
-    # Payment node then refunds, and ApplyRefund records the result on the shop side.
-    oid = to_int(d.get('id'), 0)
-    if oid <= 0:
-        fail('id is required.')
-    if d.get('amountCents') not in (None, '') and to_int(d.get('amountCents'), 0) <= 0:
-        fail('amountCents must be positive (or omitted for a full refund).')
-    return (
-        "SELECT o.Id, o.Reference, o.TotalCents, o.Currency, o.Status, o.PaymentStatus, "
-        "p.Id AS PaymentRowId, p.ConnectPaymentId, p.Status AS PaymentRowStatus, p.AmountCents, p.RefundedCents "
-        "FROM orders o JOIN payments p ON p.Id = (SELECT Id FROM payments WHERE OrderId = o.Id AND Status IN ('succeeded','partially_refunded') ORDER BY Id DESC LIMIT 1) "
-        "WHERE o.Id = " + str(oid) + " LIMIT 1;"
     )
 
 fail('Unknown op: ' + op)

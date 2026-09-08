@@ -4,6 +4,7 @@
 // require the gateway API key (signed by the client) AND an IdP bearer token whose user has
 // the Admin role; the workflow rejects anything else (require_admin).
 import { api } from '@/shared/services/api';
+import { refundApi } from '@/shared/services/refunds';
 
 const call = (route, op, params = {}) => api.post(route, { op, ...params });
 const items = (r) => r?.items ?? [];
@@ -84,7 +85,7 @@ export const adminApi = {
     byReference: (reference) => call('/admin-sales', 'get', { reference }),
     void: (id, reason) => call('/admin-sales', 'void', { id, reason }),
     /** items [{ saleItemId, qty }]; method cash|card (card goes back through the wallet payment). */
-    refund: (id, { items: lines, reason, method = 'cash' }) => call('/admin-sales', 'refund', { id, items: lines, reason, method }),
+    refund: (id, { items: lines, reason, method = 'cash' }) => refundApi.submit(id, { items: lines, reason, method, backOffice: true }).then(async (r) => { const detail = await call('/admin-sales', 'get', { id }); refundApi.acknowledge(id, r.request?.RequestKey); return { ...detail, RefundResult: r.request }; }),
   },
 
   shifts: {

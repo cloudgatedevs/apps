@@ -4,7 +4,7 @@
   "method": "POST",
   "allowAnonymous": false,
   "enableLogging": true,
-  "description": "Back office orders: list/get with items, events and payments; status changes (with tracking, a live 'order.status' event and a customer email on a thread branch), notes, and refunds through the Wallet Payment node (full or partial, optional restock). Requires API key + IdP admin.",
+  "description": "Back office orders: list/get, status changes with tracking and customer notifications, and notes. Refunds use /refunds with a stable requestKey. Requires IdP admin.",
   "entry": "IdpAuth",
   "nodes": [
     {
@@ -25,60 +25,7 @@
       "name": "Run",
       "type": "database",
       "script": "run.sql",
-      "next": "IsRefund"
-    },
-    {
-      "name": "IsRefund",
-      "type": "condition",
-      "script": "is_refund.py",
-      "positive": "RefundId",
-      "negative": "IsStatusChange"
-    },
-    {
-      "name": "RefundId",
-      "type": "function",
-      "script": "refund_id.py",
-      "next": "RefundAmount"
-    },
-    {
-      "name": "RefundAmount",
-      "type": "function",
-      "script": "refund_amount.py",
-      "next": "RefundReason"
-    },
-    {
-      "name": "RefundReason",
-      "type": "function",
-      "script": "refund_reason.py",
-      "next": "WalletRefund"
-    },
-    {
-      "name": "WalletRefund",
-      "type": "walletpayment",
-      "params": {
-        "operation": "refund",
-        "paymentId": "${RefundId}",
-        "amount": "${RefundAmount}",
-        "description": "Refund ${RefundReason}"
-      },
-      "next": "ApplyRefund"
-    },
-    {
-      "name": "ApplyRefund",
-      "type": "function",
-      "script": "apply_refund.py",
-      "next": "RunRefund"
-    },
-    {
-      "name": "RunRefund",
-      "type": "database",
-      "script": "run_refund.sql",
-      "next": "ShapeRefund"
-    },
-    {
-      "name": "ShapeRefund",
-      "type": "function",
-      "script": "shape.py"
+      "next": "IsStatusChange"
     },
     {
       "name": "Shape",

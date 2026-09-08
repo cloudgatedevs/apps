@@ -173,41 +173,6 @@ if op == 'recent':
             "FROM sales s WHERE " + where + " ORDER BY s.Id DESC LIMIT " + str(take) + " OFFSET " + str(skip) + ";")
 
 if op == 'refund':
-    if not sale or sale.get('Status') not in ('completed', 'partially_refunded'):
-        fail('Only a completed sale can be refunded.')
-    method = str(d.get('method') or 'cash').lower()
-    if method != 'cash':
-        fail('Card refunds go through the payment screen.')
-    wanted = {to_int((x or {}).get('saleItemId'), 0): qty_of((x or {}).get('qty'), 0) for x in (d.get('items') or []) if isinstance(x, dict)}
-    amount = 0
-    lines = []
-    for it in sale['Items']:
-        q_ = wanted.get(to_int(it.get('Id'), 0), 0)
-        if q_ <= 0:
-            continue
-        avail = float(it.get('Qty') or 0) - float(it.get('RefundedQty') or 0)
-        if q_ > avail + 1e-9:
-            fail('Refund quantity exceeds what was sold for ' + str(it.get('Name')) + '.')
-        line_amt = money_round(to_int(it.get('LineTotalCents'), 0) * q_ / float(it.get('Qty') or 1))
-        amount += line_amt
-        lines.append({'saleItemId': to_int(it.get('Id'), 0), 'productId': to_int(it.get('ProductId'), 0), 'qty': q_, 'amountCents': line_amt})
-    if not lines:
-        fail('Choose the items to refund.')
-    max_refund = to_int(sale.get('TotalCents'), 0) - to_int(sale.get('RefundedCents'), 0)
-    amount = min(amount, max_refund)
-    parts = list(CTX_TABLE)
-    parts.append("INSERT INTO _ctx (k, v) VALUES ('sid', " + str(sale['Id']) + ");")
-    parts.append("INSERT INTO refunds (SaleId, Reference, Method, AmountCents, Reason, ItemsJson, ShiftId, CreatedBy) VALUES ("
-                 + str(sale['Id']) + ", " + q(str(sale.get('Reference')) + '-RF') + ", 'cash', " + str(amount) + ", " + qs(d.get('reason'), 300) + ", " + q(out(lines)) + ", " + (str(shift['Id']) if shift else 'NULL') + ", " + q(actor) + ");")
-    for ln in lines:
-        parts.append("UPDATE sale_items SET RefundedQty = RefundedQty + " + repr(float(ln['qty'])) + " WHERE Id = " + str(ln['saleItemId']) + ";")
-        parts.append("UPDATE products SET StockQty = StockQty + " + repr(float(ln['qty'])) + ", UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(ln['productId']) + " AND TrackInventory = 1;")
-        parts.append("INSERT INTO inventory_movements (ProductId, Delta, Reason, Reference, Note, CreatedBy) SELECT " + str(ln['productId']) + ", " + repr(float(ln['qty'])) + ", 'refund', " + q(str(sale.get('Reference'))) + ", 'Refund', " + q(actor) + " WHERE EXISTS (SELECT 1 FROM products WHERE Id = " + str(ln['productId']) + " AND TrackInventory = 1);")
-    parts.append("UPDATE sales SET RefundedCents = RefundedCents + " + str(amount) + ", Status = CASE WHEN RefundedCents + " + str(amount) + " >= TotalCents THEN 'refunded' ELSE 'partially_refunded' END, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(sale['Id']) + ";")
-    parts.append("INSERT INTO sale_events (SaleId, Type, Message, DataJson, CreatedBy) VALUES (" + str(sale['Id']) + ", 'refund', 'Cash refund', " + q(out(lines)) + ", " + q(actor) + ");")
-    parts.append("COMMIT;")
-    parts.append(detail("s.Id = " + str(sale['Id'])))
-    parts.append("DROP TABLE IF EXISTS _ctx;")
-    return "\n".join(parts)
+    fail('Use the refunds action with a stable requestKey. Update the app template.')
 
 fail('Unknown op.')

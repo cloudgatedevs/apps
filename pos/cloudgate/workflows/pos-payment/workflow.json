@@ -4,7 +4,7 @@
   "method": "POST",
   "allowAnonymous": false,
   "enableLogging": true,
-  "description": "Card payments at the till through Cloudgate Wallet: 'start' (saleId -> hosted payment URL to show as a QR code), 'status' (saleId; completes the sale when the wallet reports success), 'cancel', 'refund' (saleId, items -> wallet refund), 'wallet-status'. IdP teller role.",
+  "description": "Card checkout: start, status, cancel and wallet-status. Refunds use /refunds with a stable requestKey. Requires a signed-in IdP user.",
   "entry": "IdpAuth",
   "nodes": [
     {
@@ -113,7 +113,7 @@
       "type": "condition",
       "script": "is_status.py",
       "positive": "PayId",
-      "negative": "IsRefund"
+      "negative": "IsWalletStatus"
     },
     {
       "name": "PayId",
@@ -170,79 +170,6 @@
     },
     {
       "name": "DoneStatus",
-      "type": "function",
-      "script": "done.py"
-    },
-    {
-      "name": "IsRefund",
-      "type": "condition",
-      "script": "is_refund.py",
-      "positive": "RefundId",
-      "negative": "IsWalletStatus"
-    },
-    {
-      "name": "RefundId",
-      "type": "function",
-      "script": "refund_id.py",
-      "next": "RefundAmount"
-    },
-    {
-      "name": "RefundAmount",
-      "type": "function",
-      "script": "refund_amount.py",
-      "next": "WalletRefund"
-    },
-    {
-      "name": "WalletRefund",
-      "type": "walletpayment",
-      "params": {
-        "operation": "refund",
-        "paymentId": "${RefundId}",
-        "amount": "${RefundAmount}",
-        "description": "POS refund"
-      },
-      "next": "ApplyRefund"
-    },
-    {
-      "name": "ApplyRefund",
-      "type": "function",
-      "script": "apply_refund.py",
-      "next": "RunRefund"
-    },
-    {
-      "name": "RunRefund",
-      "type": "database",
-      "script": "run_refund.sql",
-      "next": "ShapeRefund",
-      "thread": "NotifyRefundBody"
-    },
-    {
-      "name": "ShapeRefund",
-      "type": "function",
-      "script": "shape_refund.py"
-    },
-    {
-      "name": "NotifyRefundBody",
-      "type": "function",
-      "script": "notify_refund_body.py",
-      "next": "ShouldNotifyRefund"
-    },
-    {
-      "name": "ShouldNotifyRefund",
-      "type": "condition",
-      "script": "should_notify_refund.py",
-      "positive": "NotifyRefund",
-      "negative": "DoneRefund"
-    },
-    {
-      "name": "NotifyRefund",
-      "type": "websocket",
-      "channel": "pos-events",
-      "body": "${NotifyRefundBody}",
-      "next": "DoneRefund"
-    },
-    {
-      "name": "DoneRefund",
       "type": "function",
       "script": "done.py"
     },

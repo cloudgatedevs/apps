@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS abandoned_booking_requests (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, request_key TEXT NOT NULL UNIQUE, created INTEGER NOT NULL);
+CREATE TRIGGER IF NOT EXISTS prevent_abandoned_booking BEFORE INSERT ON bookings WHEN EXISTS(SELECT 1 FROM abandoned_booking_requests WHERE request_key=NEW.request_key) BEGIN SELECT RAISE(ABORT,'This reservation request was released. Start a new booking.'); END;

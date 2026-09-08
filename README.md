@@ -8,6 +8,7 @@ accepted terms, imports the app's workflows and databases, builds the app and pu
 | App | Folder | What it is | Requirements |
 | --- | --- | --- | --- |
 | [Cloudgate Shop](./shop/) | [`shop/`](./shop/) | Online store with hosted card checkout through Cloudgate Wallet and a full back office. | Wallet, IdP, SMTP (configured in the back office), WebSockets |
+| [Cloudgate Booking](./booking/) | [`booking/`](./booking/) | Service appointments, staff and room scheduling, paid booking confirmation, customer management and a studio back office. | Wallet, IdP, SMTP |
 
 An app only appears in the store once it is listed in [`apps.json`](./apps.json).
 

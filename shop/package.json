@@ -11,7 +11,9 @@
     "cloudgate:deploy": "python cloudgate/deploy.py",
     "cloudgate:list": "python cloudgate/deploy.py --list",
     "cloudgate:smoke": "python cloudgate/smoke.py",
-    "banner": "node scripts/banner.mjs"
+    "banner": "node scripts/banner.mjs",
+    "test:refunds": "python -B -X utf8 cloudgate/test_refunds.py && node --test tests/refunds-client.mjs",
+    "cloudgate:package-refunds": "python -B -X utf8 cloudgate/package_refunds.py"
   },
   "dependencies": {
     "@cloudgatedevs/cloudgate-client": "^0.5.0",

@@ -4,6 +4,8 @@
 // gateway API key (signed by the client) AND an IdP bearer token whose user has a teller role;
 // prices, tax, stock and totals are always computed server-side.
 import { api } from '@/shared/services/api';
+import { refundApi } from '@/shared/services/refunds';
+const recordRefund = (id, items, reason, method) => refundApi.submit(id, { items, reason, method }).then(async (r) => { const detail = await api.post('/pos-sale', { op: 'get', saleId: id }); refundApi.acknowledge(id, r.request?.RequestKey); return { ...detail, RefundResult: r.request }; });
 
 const call = (route, op, params = {}) => api.post(route, { op, ...params });
 
@@ -41,7 +43,7 @@ export const posApi = {
     get: (saleId) => call('/pos-sale', 'get', { saleId }),
     byReference: (reference) => call('/pos-sale', 'get', { reference }),
     recent: ({ skip = 0, take = 20 } = {}) => call('/pos-sale', 'recent', { skip, take }).then((r) => ({ items: r?.items ?? [], total: Number(r?.total ?? (r?.items?.length ?? 0)) })),
-    refundCash: (saleId, items, reason) => call('/pos-sale', 'refund', { saleId, items, method: 'cash', reason }),
+    refundCash: (saleId, items, reason) => recordRefund(saleId, items, reason, 'cash'),
   },
 
   payment: {
@@ -49,7 +51,7 @@ export const posApi = {
     start: (saleId) => call('/pos-payment', 'start', { saleId, returnBase: window.location.origin }),
     status: (saleId) => call('/pos-payment', 'status', { saleId }),
     cancel: (saleId) => call('/pos-payment', 'cancel', { saleId }),
-    refundCard: (saleId, items, reason) => call('/pos-payment', 'refund', { saleId, items, reason }),
+    refundCard: (saleId, items, reason) => recordRefund(saleId, items, reason, 'card'),
     walletStatus: () => call('/pos-payment', 'wallet-status'),
   },
 
