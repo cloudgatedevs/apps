@@ -14,7 +14,7 @@ test('public cache excludes credentials and image URLs reject unsafe schemes', (
   for (const value of ['javascript:alert(1)','data:image/svg+xml,test','//evil.test/img','/\\evil.test','https://user:pass@host/img','http://public.test/x','https://host/x y']) assert.equal(imageUrl(value), '');
   for (const value of ['/api/image.png','https://cdn.test/logo.png?size=512','http://127.0.0.1:3002/logo.png']) assert.equal(imageUrl(value), value);
   const cached = brandSettings({smtp_password:'secret',_revision:'12',theme_primary:'red'});
-  assert.equal(cached.smtp_password,undefined); assert.equal(cached._revision,undefined); assert.equal(cached.theme_primary,'#294e3c');
+  assert.equal(cached.smtp_password,undefined); assert.equal(cached._revision,undefined); assert.equal(cached.theme_primary,'#000000');
 });
 const luminance = hex => {
   const rgb=hex.slice(1).match(/../g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);

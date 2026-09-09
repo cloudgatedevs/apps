@@ -103,7 +103,7 @@ const Products = () => {
   const columns = useMemo(() => [
     { key: 'Name', label: 'Product', mobile: 'title', render: (p) => (
       <span className="flex items-center gap-3">
-        {p.ImageUrl ? <Img src={p.ImageUrl} alt="" wrapClassName="h-9 w-9 shrink-0 rounded-lg border border-ink-700" className="h-9 w-9 object-cover" /> : <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ink-800 text-mist-dim"><Package className="h-4 w-4" /></span>}
+        {p.ImageUrl ? <Img small src={p.ImageUrl} alt="" wrapClassName="h-9 w-9 shrink-0 rounded-lg border border-ink-700" className="h-9 w-9 object-cover" /> : <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ink-800 text-mist-dim"><Package className="h-4 w-4" /></span>}
         <span className="min-w-0"><Link to={`/products/${p.Id}`} className="block truncate font-medium text-mist hover:text-accent">{p.Name}</Link><span className="block truncate font-mono text-[11px] text-mist-dim">{[p.Sku, p.Barcode].filter(Boolean).join(' · ') || '—'}</span></span>
       </span>) },
     { key: 'CategoryName', label: 'Category', mobile: 'meta', render: (p) => <span className="text-mist-muted">{p.CategoryName || '—'}</span> },

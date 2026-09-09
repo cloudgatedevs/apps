@@ -1,11 +1,13 @@
 /* Saved tenant palette and the scoped settings preview share these tokens. */
-:root{--on-primary:#fff;--brand-accent:#7c896e;--surface:#fffefa;--color-scheme:light;color:var(--ink);background:var(--cream);color-scheme:var(--color-scheme)}
+:root{--on-primary:#fff;--brand-accent:#737373;--surface:#f6f6f6;--color-scheme:light;color:var(--ink);background:var(--cream);color-scheme:var(--color-scheme)}
 body,.admin-app,.admin-main{background:var(--cream);color:var(--ink)}
 .button{color:var(--on-primary)}
 .button:hover:not(:disabled){background:var(--green);filter:brightness(.94)}
 .button.secondary{border-color:var(--line);color:var(--ink)}
 .button.secondary:hover:not(:disabled){background:var(--sage);filter:none}
 input:not([type=checkbox]),textarea,select{background:var(--surface);border-color:var(--line);color:var(--ink)}
+select{appearance:auto;color-scheme:var(--color-scheme)}
+select option,select optgroup{background:var(--surface);color:var(--ink)}
 input[type=checkbox],input[type=range]{accent-color:var(--green)}
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline-color:var(--ink)}
 input::placeholder,textarea::placeholder{color:var(--muted);opacity:1}
@@ -24,7 +26,7 @@ em{color:var(--brand-accent)}
 .days-strip .selected small,.slots .selected small{color:var(--on-primary)}
 td,.checklist-row{border-color:var(--line)}
 .calendar-column{background:repeating-linear-gradient(to bottom,transparent 0,transparent 63px,var(--line) 63px,var(--line) 64px)}
-.visual-tag,.hero-art,.service-visual,.avatar-stack span{color:#273c32}
+.visual-tag,.hero-art,.service-visual,.avatar-stack span{color:#202020}
 .brand{max-width:100%;letter-spacing:-.045em;min-width:0}
 .brand-name{overflow-wrap:anywhere;line-height:1.15}
 .brand-mark{flex-shrink:0}
@@ -61,7 +63,7 @@ td,.checklist-row{border-color:var(--line)}
 .brand-preview-body p{color:var(--muted);font-size:12px;max-width:420px}
 .brand-preview-tag{display:inline-flex;align-items:center;gap:7px;background:var(--sage);color:var(--ink);border-left:3px solid var(--brand-accent);padding:10px 12px;border-radius:5px;font-size:11px}
 .brand-preview-note{margin:12px 0 0}
-.brand-crop-stage{position:relative;height:320px;border-radius:8px;overflow:hidden;background:#202420;margin:20px 0}
+.brand-crop-stage{position:relative;height:320px;border-radius:8px;overflow:hidden;background:#202020;margin:20px 0}
 .brand-media-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
 .brand-media-grid button{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:10px;display:flex;flex-direction:column;gap:9px;min-width:0;text-align:left}
 .brand-media-grid img{height:100px;width:100%;object-fit:contain}

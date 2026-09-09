@@ -6,6 +6,8 @@ import json
 import re
 import struct
 from pathlib import Path
+from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 MAX_BYTES = 4 * 1024 * 1024
 
@@ -33,21 +35,43 @@ def validate_png(data):
         offset = end
     if not ended or not pixels: raise ValueError('Incomplete PNG image.')
 
-def upload(directory, content, name):
+def upload(directory, content, name, path='booking/branding'):
+    if not re.fullmatch(r'booking/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+', str(path)):
+        raise ValueError('Choose a Booking media folder.')
     try: data = base64.b64decode(content, validate=True)
     except (ValueError, TypeError, binascii.Error): raise ValueError('Invalid image encoding.')
     validate_png(data)
     directory = Path(directory); directory.mkdir(parents=True, exist_ok=True)
-    key = hashlib.sha256(data).hexdigest()
-    item = {'id': key, 'name': str(name or 'Brand image')[:120], 'url': '/api/branding-media/'+key+'.png', 'size': len(data)}
+    key = hashlib.sha256(path.encode()+b'\x00'+data).hexdigest()
+    item = {'id': key, 'name': str(name or 'Image')[:120], 'path': path, 'createdAt': datetime.now(timezone.utc).isoformat(), 'url': '/api/branding-media/'+key+'.png', 'size': len(data)}
     (directory/(key+'.png')).write_bytes(data)
     (directory/(key+'.json')).write_text(json.dumps(item), encoding='utf-8')
     return item
 
-def listing(directory, skip=0, take=36):
+def listing(directory, skip=0, take=36, path='*'):
     files = sorted(Path(directory).glob('*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
     skip, take = max(0, int(skip)), max(1, min(100, int(take)))
-    return {'total': len(files), 'items': [json.loads(p.read_text(encoding='utf-8')) for p in files[skip:skip+take]]}
+    items = []
+    for file in files:
+        item = json.loads(file.read_text(encoding='utf-8'))
+        item.setdefault('path', 'booking/branding')
+        if path in ('', '*') or item['path'] == path: items.append(item)
+    return {'total': len(items), 'items': items[skip:skip+take]}
+
+
+def delete(directory, key, references=()):
+    if not re.fullmatch(r'[a-f0-9]{64}', str(key)): raise ValueError('Invalid image identifier.')
+    directory = Path(directory)
+    metadata = directory/(key+'.json')
+    if not metadata.is_file(): raise ValueError('Image not found.')
+    item = json.loads(metadata.read_text(encoding='utf-8'))
+    if not str(item.get('path', 'booking/branding')).startswith('booking/'):
+        raise ValueError('Only Booking images can be deleted here.')
+    if any(urlparse(str(value or '')).path == item['url'] for value in references):
+        raise ValueError('This image is in use. Remove it from its service or branding setting first.')
+    (directory/(key+'.png')).unlink(missing_ok=True)
+    metadata.unlink()
+    return {'id': key, 'deleted': True}
 
 def read_image(directory, route):
     match = re.fullmatch(r'/api/branding-media/([a-f0-9]{64}\.png)', route)

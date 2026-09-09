@@ -12,3 +12,8 @@ INSERT OR IGNORE INTO staff(Id,name,title,bio,color,service_ids,hours) VALUES
 (1,'Maya Daniels','Massage & skin therapist','A calming approach and a gift for finding exactly where you hold tension.','#b6c6b2','[1,2,5,6]','{"0":[["09:00","13:00"],["14:00","18:00"]],"1":[["09:00","13:00"],["14:00","18:00"]],"2":[["09:00","13:00"],["14:00","18:00"]],"3":[["09:00","13:00"],["14:00","18:00"]],"4":[["09:00","13:00"],["14:00","18:00"]],"5":[["09:00","14:00"]]}'),
 (2,'Leah Jacobs','Nail artist','Considered details, beautiful colour, and nails that feel like you.','#ddc1b4','[3,4]','{"0":[["09:00","13:00"],["14:00","18:00"]],"1":[["09:00","13:00"],["14:00","18:00"]],"2":[["09:00","13:00"],["14:00","18:00"]],"3":[["09:00","13:00"],["14:00","18:00"]],"4":[["09:00","13:00"],["14:00","18:00"]],"5":[["09:00","14:00"]]}'),
 (3,'Zoe Williams','Wellness therapist','Restorative treatments with a thoughtful, personal touch.','#d6cda9','[1,2,3,4,5,6]','{"0":[["10:00","14:00"],["15:00","19:00"]],"1":[["10:00","14:00"],["15:00","19:00"]],"2":[["10:00","14:00"],["15:00","19:00"]],"3":[["10:00","14:00"],["15:00","19:00"]],"4":[["10:00","14:00"],["15:00","19:00"]],"5":[["09:00","14:00"]]}');
+
+-- Preserve the original example photos as per-service data, never as category rules.
+INSERT OR IGNORE INTO service_metadata(service_id,image_url,deleted)
+SELECT Id,CASE Id WHEN 3 THEN '/images/nails.png' WHEN 4 THEN '/images/nails.png' WHEN 5 THEN '/images/facial.png' ELSE '/images/massage.png' END,0 FROM services
+WHERE (Id=1 AND name='Signature relaxation massage') OR (Id=2 AND name='Deep tissue reset') OR (Id=3 AND name='The everyday manicure') OR (Id=4 AND name='Gel manicure') OR (Id=5 AND name='Restore facial') OR (Id=6 AND name='Express neck & shoulders');

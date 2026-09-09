@@ -1,7 +1,48 @@
-# Still Studio · Cloudgate Booking
+# Cloudgate Booking
 
 A booking product derived from Cloudgate Shop: two React/Vite entry points, shared Cloudgate client and IdP integration, Python workflow business logic, SQLite, native Wallet Payment nodes, and App Store packaging. The separate Shop and POS refund template updates are documented in their respective `cloudgate/REFUNDS.md` files.
 
+## Version 1.7.0 — Refreshed back office
+
+The default theme is black (`#000000`), neutral grey (`#737373`) and white (`#ffffff`), with neutral headers, navigation and image overlays. New installations use this palette. Existing saved colours are retained; use **Settings → Theme colours → Restore default colours**, then **Save business settings**, to switch an existing business to the new defaults. Custom palettes remain available.
+
+**Settings → Homepage** is the first settings panel. Change the large background image behind the booking heading/search with Upload (including cropping), Library, or an image URL, then **Save changes**. A wide preview shows the chosen image. Homepage copy and the About photo are under the expandable section below it.
+
+The workspace now shares the customer site's bold typography, rounded cards and consistent controls. A dark sidebar groups navigation into Workspace, Manage and Business. The overview brings together today's schedule, business readiness, team profiles and quick links. The same styling carries through services, media, calendar views, tables, reports, profile screens and edit forms.
+
+Saved brand colours and photos remain in use. The navigation becomes a dismissible drawer on smaller screens, with keyboard focus management and hidden links removed from the tab order while closed. Browser hash navigation keeps the selected page in sync. The team-photo editor retains its square preview and adjacent controls, stacking them on phones.
+
+This release changes frontend presentation only. Existing workflows and databases need no update. Validation and screenshots are recorded in the workspace release handoff.
+
+## Version 1.6.0 — Team and personal profile photos
+
+Open **Team & hours → Edit** to upload/crop, reuse a library image, replace or remove a team member photo. Photos appear on team cards, calendar columns and the public team list. Team members are scheduling records, independent of IdP login accounts. Media usage protection now includes active and inactive team members, and the library has a Team folder.
+
+Open **My profile** in the workspace, or **My account → My profile** on the customer site, to upload, replace or remove your own IdP profile picture. Changes update the account avatar and sidebar immediately. Personal photos use the authenticated IdP profile API and do not require business media permissions.
+
+The Cloudgate backend provides `PUT` (multipart `file`) and `DELETE /api/idp/{tenancyName}/profile/picture`. The target is always the active signed-in IdP user; the route tenant must match the signed identity. Uploads accept PNG/JPEG/WebP/GIF up to 5 MB and 4096 pixels per side, normalize to a single-frame PNG at most 512 pixels, and strip identifying metadata. `GET /profile` returns the photo URL. Public photo URLs serve only pictures currently attached to active users in the named tenant. Existing stock avatars remain supported. Replaced image bytes are retained; reference-aware storage cleanup is a separate maintenance task.
+
+Existing installs need `cloudgate/migrations/1.6.0-team-photos.sql` before updating workflows. It is idempotent; fresh templates include the table. The migration is applied to the current Booking tenant's sandbox and production, and all six workflows are updated and published. Profile endpoints are compiled Cloudgate backend code and require that backend update; there is no extra photo workflow or IdpUser schema migration.
+
+Validation: 98 Booking checks (79 Python, 19 JavaScript), nine IdP photo tests, and the Cloudgate host build pass. Native browser verification is recorded in the release handoff.
+
+## Version 1.5.0 — Back-office media library
+
+Open **Media** in the workspace to manage uploaded service photos, logos, icons and banners. The page uses the same authenticated Cloudgate IdP file service as Shop/POS. It supports multiple uploads with per-image cropping, Services/Branding/General library folders, search, usage filters, copying/opening image URLs, and confirmed individual or bulk deletion of unused images. Service and branding editors reuse this library.
+
+Only `booking/...` folders appear in management; the existing image picker can still reuse images from the wider tenant library. All file-service pages are loaded before filtering. Usage checks cover saved services (including hidden services) and five branding/homepage image settings in the current booking environment. Retired services release their photos for cleanup. Deletion reloads file scope and current references before making authenticated host delete requests; it cannot atomically check references in other environments/apps or copied external links. Built-in `/images/...` assets are source files, not uploaded media.
+
+Local preview supports matching folder metadata, listing and guarded deletion; its tests use isolated temporary files. No additional booking workflow or database migration is needed for this release. The six published workflows remain at the 1.4 service-capable implementation. Existing pre-1.4 installations still need the service migration described below.
+
+Validation: 93 automated checks pass (75 Python, 18 JavaScript), production build passes. Native Cloudgate browsing, search, folder filters, URL copying and delete-confirmation cancellation were checked. Multiple uploads, crop/original image export, shared service-picker reuse and in-use protection were verified in an isolated preview. Desktop and phone layouts were visually checked; existing tenant files were not deleted.
+
+## Version 1.4.0 — Services for any appointment business
+
+Services now have individual photos with upload, cropping and media-library selection. Administrators can create, edit, hide and delete services, use custom categories, assign team members, set price and deposits, configure timing and optional resources, and add a booking question. Deleted services leave the catalog while existing appointment and payment history stays intact. Rescheduling uses the booked name, price, duration and buffer rather than later catalog edits.
+
+Homepage copy and photos can be changed under Settings. Default controls use service, business and team terminology. The original spa catalog remains optional sample data; images are stored per service and are not inferred from category names.
+
+Apply `cloudgate/migrations/1.4.0-services.sql` to existing databases before updating workflows. It is idempotent and is already applied to this local Cloudgate tenant's sandbox and production. Fresh installs include the schema automatically. The generated bundle still contains six workflows and 68 nodes. Validation: 83 tests pass, production build passes, and native image upload, service edits, public photo display and availability were verified in the browser.
 ## Run the complete local preview
 
 Requires Node 22.12+ (tested on Node 24), Python 3.11+, and timezone data.

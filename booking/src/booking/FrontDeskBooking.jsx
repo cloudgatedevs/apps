@@ -13,7 +13,7 @@ function pendingRequest() {
 
 export default function FrontDeskBooking({ data, close, refresh }) {
   const catalog = useMemo(() => ({ settings: data.settings,
-    services: data.services.filter(s => s.active),
+    services: data.services.filter(s => s.active && !s.deleted),
     staff: data.staff.filter(s => s.active).map(s => ({ ...s, service_ids: JSON.parse(s.service_ids) })) }), [data]);
   const [pending, setPending] = useState(pendingRequest);
   const [ids, setIds] = useState([]), [staffId, setStaffId] = useState(0), [slot, setSlot] = useState(null);
@@ -44,7 +44,7 @@ export default function FrontDeskBooking({ data, close, refresh }) {
   const finish = () => { sessionStorage.removeItem(storageKey); close(); };
   const base = preview ? window.location.origin : data.settings.website_url?.replace(/\/$/, '');
   const link = held && pending && base ? `${base}/appointments?ref=${encodeURIComponent(held.reference)}#token=${encodeURIComponent(pending.token)}` : '';
-  return <Modal title="Book a client into the studio" wide close={busy ? () => {} : close}>
+  return <Modal title="Book an appointment for a client" wide close={busy ? () => {} : close}>
     {held ? <div className="frontdesk-result">
       <Badge>{held.status}</Badge><h3>{held.customer.name} · {held.reference}</h3>
       <p>{dateLabel(held.starts, data.settings.timezone)}</p>
@@ -69,14 +69,14 @@ export default function FrontDeskBooking({ data, close, refresh }) {
         finally { setBusy(false); }
       }}>Resolve and release reservation</Button>
     </form> : <>
-      <div className="tabs" aria-label="New booking steps">{['Client & treatments', 'Time & therapist', 'Review & payment link'].map((label, i) =>
+      <div className="tabs" aria-label="New booking steps">{['Client & services', 'Time & team member', 'Review & payment link'].map((label, i) =>
         <button key={label} disabled={i > step || busy} className={i === step ? 'active' : ''} onClick={() => setStep(i)}>{label}</button>)}</div>
       {step === 0 ? <form onSubmit={e => { e.preventDefault(); setStep(1); }}>
         <div className="form-grid"><Field label="Search existing clients"><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Name or email"/></Field>
           <Field label="Client"><select value={clientId} onChange={e => selectClient(e.target.value)}><option value="">New client</option>{customers.map(c => <option key={c.Id} value={c.Id}>{c.name} · {c.email}</option>)}</select></Field></div>
         <div className="form-grid">{[['name', 'Client name', 'text'], ['email', 'Client email', 'email'], ['phone', 'Client phone', 'tel']].map(([key, label, type]) =>
           <Field key={key} label={label}><input type={type} required value={client[key]} minLength={key === 'name' ? 2 : undefined} onChange={e => setClient({ ...client, [key]: e.target.value })}/></Field>)}</div>
-        <h3>Treatments</h3><p className="muted">Up to four treatments with one qualified therapist.</p>
+        <h3>Services</h3><p className="muted">Up to four services with one qualified team member.</p>
         <div className="checkbox-grid">{catalog.services.map(s => <label className="checkbox" key={s.Id}><input type="checkbox" checked={ids.includes(s.Id)} disabled={!ids.includes(s.Id) && ids.length >= 4} onChange={e => { setIds(e.target.checked ? [...ids, s.Id] : ids.filter(id => id !== s.Id)); setSlot(null); setStaffId(0); }}/>{s.name} · {money(s.price, data.settings.currency)}</label>)}</div>
         <Button disabled={!ids.length}>Choose a time</Button>
       </form> : step === 1 ? <><SlotPicker catalog={catalog} ids={ids} staffId={staffId} setStaffId={setStaffId} slot={slot} setSlot={setSlot}/><Button disabled={!slot} onClick={() => setStep(2)}>Review reservation</Button></> :

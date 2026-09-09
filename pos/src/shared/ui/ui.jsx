@@ -1,6 +1,7 @@
 // Small shared UI primitives for the admin console (and a few reused by the storefront).
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { smallImageUrl } from '@/shared/services/imageUrl';
 
 /** Tiny async-fetch hook: const { data, loading, error, reload, setData } = useAsync(fn, [deps]) */
 export function useAsync(fn, deps = []) {
@@ -71,15 +72,21 @@ export const EmptyState = ({ icon, title, text, action, className = '', compact 
   </div>
 );
 
-/** Image that fades in when decoded, over a tinted placeholder; lazy by default. */
-export const Img = ({ src, alt = '', className = '', wrapClassName = '', eager = false, ...rest }) => {
+/**
+ * Image that fades in when decoded, over a tinted placeholder; lazy by default.
+ *
+ * Pass `small` wherever the image is rendered into a thumbnail-sized box: it swaps a Cloudgate
+ * upload URL for the host's 400x400 copy and leaves every other kind of URL alone.
+ */
+export const Img = ({ src, alt = '', className = '', wrapClassName = '', eager = false, small = false, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
-  useEffect(() => setLoaded(false), [src]);
-  if (!src) return null;
+  const resolved = small ? smallImageUrl(src) : src;
+  useEffect(() => setLoaded(false), [resolved]);
+  if (!resolved) return null;
   return (
     <span className={`block overflow-hidden bg-ink-800 ${wrapClassName}`}>
       <img
-        src={src}
+        src={resolved}
         alt={alt}
         loading={eager ? 'eager' : 'lazy'}
         decoding="async"

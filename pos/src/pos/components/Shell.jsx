@@ -6,6 +6,7 @@ import { Tooltip } from '@/shared/ui/menus';
 import { utcDate } from '@/shared/ui/ui';
 import { useTill } from '@/pos/state/TillProvider';
 import { useLiveStatus, liveEnabled } from '@/admin/services/live';
+import { smallImageUrl } from '@/shared/services/imageUrl';
 
 const NAV = [
   { to: '/', label: 'Register', icon: ShoppingCart, end: true },
@@ -39,7 +40,7 @@ const Shell = () => {
       <header className="flex h-14 shrink-0 items-center gap-3 px-3 text-white" style={{ background: 'rgb(var(--c-primary))' }}>
         <div className="flex min-w-0 items-center gap-2">
           {settings.store_icon_url || settings.store_logo_url
-            ? <img src={settings.store_icon_url || settings.store_logo_url} alt="" className="h-8 w-8 rounded-lg bg-white/10 object-contain p-0.5" />
+            ? <img src={smallImageUrl(settings.store_icon_url || settings.store_logo_url)} alt="" className="h-8 w-8 rounded-lg bg-white/10 object-contain p-0.5" />
             : <span className="grid h-8 w-8 place-items-center rounded-lg bg-white/15 text-sm font-bold">{(settings.store_name || 'P')[0]}</span>}
           <span className="hidden truncate text-sm font-semibold sm:block">{settings.store_name || 'POS'}</span>
         </div>

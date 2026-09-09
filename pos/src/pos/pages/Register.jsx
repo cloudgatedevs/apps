@@ -24,7 +24,7 @@ const ProductTile = ({ p, currency, onPick }) => (
   <button type="button" onClick={() => onPick(p)} className="pos-tile group" disabled={p.TrackInventory && Number(p.StockQty) <= 0 && !p.AllowNegative}>
     <div className="flex items-start gap-2">
       {p.ImageUrl
-        ? <Img src={p.ImageUrl} alt="" className="h-10 w-10 rounded-lg object-cover" wrapClassName="shrink-0" />
+        ? <Img small src={p.ImageUrl} alt="" className="h-10 w-10 rounded-lg object-cover" wrapClassName="shrink-0" />
         : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-sm font-bold text-white" style={{ background: tileColor(p) || 'rgb(var(--c-secondary))' }}>{(p.Name || '?').slice(0, 2).toUpperCase()}</span>}
       <span className="line-clamp-2 text-[13px] font-medium leading-snug text-mist">{p.Name}</span>
     </div>

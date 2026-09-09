@@ -1,6 +1,7 @@
 // Brand mark for the back office: the store's logo (or icon) and name from Settings, with a
 // generic mark until one is set.
 import { useStoreBrand } from '@/admin/services/storeBrand';
+import { smallImageUrl } from '@/shared/services/imageUrl';
 
 export const BrandMark = ({ size, className }) => (
   <svg width={size} height={size} className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -26,7 +27,7 @@ export const Brand = ({ collapsed = false }) => {
   return (
     <div className="flex items-center gap-3">
       <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-xl shadow-glow">
-        {image ? <img src={image} alt="" className="h-full w-full object-cover" /> : <BrandMark className="h-full w-full" />}
+        {image ? <img src={smallImageUrl(image)} alt="" className="h-full w-full object-cover" /> : <BrandMark className="h-full w-full" />}
       </span>
       {!collapsed && (
         <div className="min-w-0 leading-tight">

@@ -168,7 +168,7 @@ const ProductEdit = () => {
             <h2 className="text-[15px] font-semibold text-mist">Image</h2>
             <p className="text-xs text-mist-muted">Shown on the till tile. Optional.</p>
             <div className="mt-3 flex flex-col items-start gap-3">
-              {form.imageUrl ? <Img src={form.imageUrl} alt="" wrapClassName="h-32 w-32 rounded-xl border border-ink-700" className="h-32 w-32 object-cover" /> : <span className="grid h-32 w-32 place-items-center rounded-xl border border-dashed border-ink-600 text-mist-dim"><ScanLine className="h-6 w-6" /></span>}
+              {form.imageUrl ? <Img small src={form.imageUrl} alt="" wrapClassName="h-32 w-32 rounded-xl border border-ink-700" className="h-32 w-32 object-cover" /> : <span className="grid h-32 w-32 place-items-center rounded-xl border border-dashed border-ink-600 text-mist-dim"><ScanLine className="h-6 w-6" /></span>}
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={() => setChoosing(true)} className="btn-ghost btn-sm">Choose…</button>
                 <button type="button" onClick={() => setUploading(true)} className="btn-ghost btn-sm">Upload…</button>

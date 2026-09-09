@@ -5,7 +5,7 @@ try {
   await page.goto(process.env.BOOKING_PREVIEW_URL || 'http://127.0.0.1:3002');
   const hero = page.locator('.discovery-hero');
   await hero.waitFor();
-  await hero.locator('.hero-photo').evaluate(image => image.decode());
+  if (await hero.locator('.hero-photo').count()) await hero.locator('.hero-photo').evaluate(image => image.decode());
   await page.evaluate(() => document.fonts.ready);
   const clip = await hero.evaluate(element => ({
     x: 0,

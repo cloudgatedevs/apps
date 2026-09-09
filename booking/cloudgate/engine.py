@@ -12,7 +12,7 @@ import time
 from zoneinfo import ZoneInfo
 from urllib.parse import urlsplit
 
-TABLES = ('settings','services','staff','resources','blocks','customers','bookings','allocations','payments','refund_requests','waitlist','promos','messages','audit','customer_accounts','booking_accounts')
+TABLES = ('settings','services','service_metadata','staff','staff_metadata','resources','blocks','customers','bookings','allocations','payments','refund_requests','waitlist','promos','messages','audit','customer_accounts','booking_accounts')
 def q(value):
     if value is None: return 'NULL'
     if isinstance(value, bool): return str(int(value))
@@ -53,6 +53,8 @@ def snapshot_sql():
     return 'SELECT json_object('+','.join(pairs)+') AS snapshot;'
 
 COLUMNS = {
+ 'staff_metadata':'Id staff_id image_url',
+ 'service_metadata':'Id service_id image_url deleted',
  'customer_accounts':'Id user_id name phone created updated','booking_accounts':'Id booking_ref user_id created',
  'settings':'Id key value','services':'Id name category description duration buffer price deposit_percent resource_type active color intake',
  'staff':'Id name title bio color service_ids hours active','resources':'Id name type active','blocks':'Id staff_id resource_id starts ends reason',
@@ -112,13 +114,19 @@ class Engine:
         rec=dict(booking_ref=b['reference'],recipient=customer['email'],subject=subject,body=f"Hello {customer['name']},\n\n{subject}.\n{when} ({self.tz.key})\nReference: {b['reference']}\n{self.settings.get('address','')}\n\n{self.settings.get('name','Studio')}\n{self.settings.get('phone','')}",due=due or self.now,dedupe=f"{b['reference']}:{kind}:{b.get('version',1)}")
         self.sql.append(insert('messages',rec).replace('INSERT INTO','INSERT OR IGNORE INTO',1))
     def public_settings(self): return {k:v for k,v in self.settings.items() if not k.startswith(('smtp_','_'))}
+    def services(self):
+        metadata={r['service_id']:r for r in self.s['service_metadata']}
+        return [dict(r,image_url=metadata.get(r['Id'],{}).get('image_url',''),deleted=metadata.get(r['Id'],{}).get('deleted',0)) for r in self.s['services']]
     def catalog(self):
-        return dict(settings=self.public_settings(),services=[r for r in self.s['services'] if r['active']],staff=[{**r,'service_ids':json.loads(r['service_ids']),'hours':json.loads(r['hours'])} for r in self.s['staff'] if r['active']])
+        return dict(settings=self.public_settings(),services=[r for r in self.services() if r['active'] and not r['deleted']],staff=[{**r,'service_ids':json.loads(r['service_ids']),'hours':json.loads(r['hours'])} for r in self.staff() if r['active']])
+    def staff(self):
+        photos={r['staff_id']:r['image_url'] for r in self.s['staff_metadata']}
+        return [dict(r,image_url=photos.get(r['Id'],'')) for r in self.s['staff']]
     def selected(self,d):
         ids=d.get('service_ids') or [d.get('service_id')]
         require(isinstance(ids,list) and 1<=len(ids)<=4,'Choose between one and four services.')
         require(len(set(ids))==len(ids),'Choose each service once.')
-        result=[next((r for r in self.s['services'] if r['Id']==int(i) and r['active']),None) for i in ids]
+        result=[next((r for r in self.services() if r['Id']==int(i) and r['active'] and not r['deleted']),None) for i in ids]
         require(all(result),'A selected service is no longer available.')
         return result
     def allocations(self,services,staff_id,start,exclude=None):
@@ -148,8 +156,18 @@ class Engine:
             result.append(dict(service_id=service['Id'],staff_id=staff_id,resource_id=resource,starts=cursor,ends=end,service_name=service['name'],price=service['price'],duration=service['duration']))
             cursor=end
         return result
+    def booked_services(self,b):
+        # Keep the purchased name, price, duration and reserved buffer when a service is edited or retired.
+        items=sorted((a for a in self.s['allocations'] if a['booking_ref']==b['reference'] and a['active']),key=lambda a:a['starts'])
+        return [dict(Id=a['service_id'],name=a['service_name'],price=a['price'],duration=a['duration'],buffer=max(0,(a['ends']-a['starts'])//60-a['duration']),resource_type=next((r['type'] for r in self.s['resources'] if r['Id']==a['resource_id']),'')) for a in items]
     def availability(self,d):
-        services=self.selected(d); date=dt.date.fromisoformat(d['date']); today=dt.datetime.fromtimestamp(self.now,self.tz).date()
+        exclude=None
+        if d.get('reference'):
+            b=self.booking(d,bool(d.get('admin')))
+            require(b['status']=='confirmed','Only confirmed appointments can be rescheduled.')
+            services=self.booked_services(b);exclude=b['reference']
+        else:services=self.selected(d)
+        date=dt.date.fromisoformat(d['date']); today=dt.datetime.fromtimestamp(self.now,self.tz).date()
         require(today<=date<=today+dt.timedelta(days=int(self.settings['horizon_days'])),'Choose a date inside the booking window.')
         sid=int(d.get('staff_id') or 0); slots=[]
         for minute in range(0,1440,int(self.settings['slot_minutes'])):
@@ -159,7 +177,7 @@ class Engine:
             if start<self.now+int(self.settings['lead_minutes'])*60: continue
             for person in self.s['staff']:
                 if sid and sid!=person['Id']:continue
-                parts=self.allocations(services,person['Id'],start,d.get('exclude'))
+                parts=self.allocations(services,person['Id'],start,exclude)
                 if parts: slots.append(dict(starts=start,ends=parts[-1]['ends'],label=local.strftime('%H:%M'),staff_id=person['Id'],staff_name=person['name']))
         return dict(slots=slots,timezone=self.tz.key)
     def booking(self,d,admin=False):
@@ -262,8 +280,7 @@ class Engine:
     def reschedule(self,d,admin=False):
         b=self.booking(d,admin); require(b['status']=='confirmed','Only confirmed appointments can be rescheduled.')
         if not admin:require(b['starts']-self.now>=int(self.settings['cancel_hours'])*3600,'The online rescheduling window has closed.')
-        old=[a for a in self.s['allocations'] if a['booking_ref']==b['reference'] and a['active']]
-        services=[next(s for s in self.s['services'] if s['Id']==a['service_id']) for a in old]
+        services=self.booked_services(b)
         start=integer(d['starts'],self.now+int(self.settings['lead_minutes'])*60,self.now+int(self.settings['horizon_days'])*86400,'Time')
         parts=self.allocations(services,int(d['staff_id']),start,b['reference']); require(parts,'That time is no longer available.')
         self.sql.append(update('allocations',dict(active=0),'booking_ref='+q(b['reference'])))
@@ -275,13 +292,53 @@ class Engine:
         return {'status':'confirmed','starts':start}
     def admin_data(self):
         self.admin(); data={k:v for k,v in self.s.items() if k!='settings'}
+        data['services']=self.services();data.pop('service_metadata',None)
+        data['staff']=self.staff();data.pop('staff_metadata',None)
         data['bookings']=[self.detail(b) for b in self.s['bookings']]
         data['settings']={k:v for k,v in self.settings.items() if k!='smtp_password' and not k.startswith('_')};data['settings']['smtp_password_configured']=bool(self.settings.get('smtp_password'))
         return data
+    def save_service(self,rec):
+        ident=integer(rec['Id'],1,2**31-1,'Service') if rec.get('Id') else max([r['Id'] for r in self.s['services']]+[0])+1
+        existing=next((r for r in self.services() if r['Id']==ident),None)
+        require(not rec.get('Id') or (existing and not existing['deleted']),'Service not found or deleted.')
+        row=dict(name='',category='General',description='',duration=60,buffer=0,price=1,deposit_percent=100,resource_type='',active=0,color='#d4ddce',intake='')
+        if existing:row.update({k:existing[k] for k in row})
+        row.update({k:rec[k] for k in row if k in rec})
+        for key,limit in [('name',120),('category',80),('description',3000),('resource_type',120),('intake',1000)]:row[key]=text(row[key],limit)
+        require(len(row['name'])>=2,'Service name is required.')
+        require(bool(row['category']),'Category is required.')
+        for key,lo,hi in [('duration',5,480),('buffer',0,120),('price',1,100000000),('deposit_percent',1,100),('active',0,1)]:row[key]=integer(row[key],lo,hi,key)
+        require(isinstance(row['color'],str) and re.fullmatch(r'#[0-9a-fA-F]{6}',row['color']),'Choose a valid service colour.')
+        require(not row['resource_type'] or any(r['type']==row['resource_type'] for r in self.s['resources']),'Choose an existing resource type, or no resource.')
+        photo=brand_asset(rec.get('image_url',existing.get('image_url','') if existing else ''))
+        staff_ids=rec.get('staff_ids',[r['Id'] for r in self.s['staff'] if ident in json.loads(r['service_ids'])])
+        require(isinstance(staff_ids,list) and all(type(i)==int and any(p['Id']==i for p in self.s['staff']) for i in staff_ids),'Choose valid team members.')
+        require(not row['active'] or any(p['active'] and p['Id'] in staff_ids for p in self.s['staff']),'Assign at least one active team member before publishing this service.')
+        self.sql.append(update('services',row,'Id='+str(ident)) if existing else insert('services',dict(Id=ident,**row)))
+        self.sql.append(insert('service_metadata',dict(service_id=ident,image_url=photo,deleted=0)).rstrip(';')+' ON CONFLICT(service_id) DO UPDATE SET image_url=excluded.image_url;')
+        for person in self.s['staff']:
+            ids=json.loads(person['service_ids']);new_ids=[i for i in ids if i!=ident]
+            if person['Id'] in staff_ids:new_ids.append(ident)
+            if sorted(ids)!=sorted(new_ids):self.sql.append(update('staff',dict(service_ids=encoded(new_ids)),'Id='+str(person['Id'])))
+        self.event(None,'save_services',str(ident)+': '+row['name'])
+        return dict(ok=True,Id=ident)
+    def delete_service(self,d):
+        self.admin();ident=integer(d.get('Id'),1,2**31-1,'Service')
+        service=next((r for r in self.services() if r['Id']==ident),None)
+        require(service,'Service not found.')
+        if service['deleted']:return {'ok':True}
+        # Retain referenced rows and staff qualifications for existing appointments and reports.
+        self.sql.append(update('services',dict(active=0),'Id='+str(ident)))
+        self.sql.append(insert('service_metadata',dict(service_id=ident,image_url=service['image_url'],deleted=1)).rstrip(';')+' ON CONFLICT(service_id) DO UPDATE SET deleted=1;')
+        self.event(None,'delete_service',str(ident)+': '+service['name'])
+        return {'ok':True}
     def save(self,d):
         self.admin(); entity=d.get('entity'); rec=d.get('record') or {}
+        require(isinstance(rec,dict),'Expected a record.')
+        if entity=='services':return self.save_service(rec)
         allowed={'services':('name','category','description','duration','buffer','price','deposit_percent','resource_type','active','color','intake'),'staff':('name','title','bio','color','service_ids','hours','active'),'resources':('name','type','active'),'promos':('code','percent','ends','active'),'customers':('name','phone','notes','marketing')}
         require(entity in allowed,'Unknown record type.'); row={k:rec[k] for k in allowed[entity] if k in rec}
+        photo=brand_asset(rec['image_url']) if entity=='staff' and 'image_url' in rec else None
         if 'name' in row:require(len(text(row['name']))>=2,'Name is required.');row['name']=text(row['name'],120)
         for k,lo,hi in [('duration',5,480),('buffer',0,120),('price',0,100000000),('deposit_percent',1,100),('percent',1,99)]:
             if k in row:row[k]=integer(row[k],lo,hi,k)
@@ -299,11 +356,18 @@ class Engine:
         if entity=='promos':
             if 'code' in row:row['code']=text(row['code'],40).upper();require(bool(row['code']),'Code is required.')
             if 'ends' in row:dt.date.fromisoformat(row['ends'])
-        require(row,'No changes supplied.')
+        require(row or photo is not None,'No changes supplied.')
         if rec.get('Id'):
             ident=integer(rec['Id'],1,2**31-1,'Record');require(any(r['Id']==ident for r in self.s[entity]),'Record not found.')
-            self.sql.append(update(entity,row,'Id='+str(ident)))
-        else:require(entity!='customers','Customers are created through bookings.');self.sql.append(insert(entity,row))
+            if row:self.sql.append(update(entity,row,'Id='+str(ident)))
+        else:
+            require(entity!='customers','Customers are created through bookings.')
+            if entity=='staff':
+                ident=max([r['Id'] for r in self.s[entity]]+[0])+1
+                row=dict(row,Id=ident)
+            self.sql.append(insert(entity,row))
+        if photo is not None:
+            self.sql.append(insert('staff_metadata',dict(staff_id=ident,image_url=photo)).rstrip(';')+' ON CONFLICT(staff_id) DO UPDATE SET image_url=excluded.image_url;')
         self.event(None,'save_'+entity)
         return {'ok':True}
     def dispatch(self,d):
@@ -384,6 +448,7 @@ class Engine:
             return {'ok':True}
         if op=='admin-data':return self.admin_data()
         if op=='admin-save':return self.save(d)
+        if op=='admin-delete-service':return self.delete_service(d)
         if op=='admin-cancel':return self.cancel(d,True)
         if op=='admin-reschedule':return self.reschedule(d,True)
         if op=='admin-status':
@@ -415,7 +480,7 @@ class Engine:
             for key,value in (d.get('settings') or {}).items():
                 if key not in self.settings or key.startswith('_'):continue
                 if key=='smtp_password' and not value:continue
-                if key in ('logo_url','icon_url','favicon_url'):value=brand_asset(value)
+                if key in ('logo_url','icon_url','favicon_url','hero_image_url','about_image_url'):value=brand_asset(value)
                 if key in ('theme_primary','theme_accent','theme_background'):
                     require(isinstance(value,str) and re.fullmatch(r'#[0-9a-fA-F]{6}',value),'Choose a valid six-digit theme colour.')
                 if key in ('app_name','app_short_name','name'):

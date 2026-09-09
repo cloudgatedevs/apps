@@ -6,6 +6,7 @@ import { fmtCents } from '@/shared/lib/money';
 import { fmtDate } from '@/shared/ui/ui';
 import { errorMessage } from '@/shared/lib/errors';
 import { posApi } from '@/pos/services/posApi';
+import { smallImageUrl } from '@/shared/services/imageUrl';
 
 const Line = ({ l, r, bold, muted }) => (
   <div className={`flex justify-between gap-2 ${bold ? 'font-bold' : ''} ${muted ? 'text-mist-dim' : ''}`}><span className="min-w-0 break-words">{l}</span><span className="shrink-0 tabular-nums">{r}</span></div>
@@ -38,7 +39,7 @@ const Receipt = ({ sale, showActions = true, className = '' }) => {
     <div className={className}>
       <div className="pos-receipt mx-auto w-full max-w-[22rem] rounded-xl border border-ink-700 bg-white p-5 text-[12px] leading-snug text-mist">
         <div className="text-center">
-          {s.store_logo_url ? <img src={s.store_logo_url} alt="" className="mx-auto mb-2 h-10 object-contain" /> : null}
+          {s.store_logo_url ? <img src={smallImageUrl(s.store_logo_url)} alt="" className="mx-auto mb-2 h-10 object-contain" /> : null}
           <p className="text-[15px] font-bold">{s.store_name || 'Receipt'}</p>
           {s.store_address ? <p className="whitespace-pre-line text-mist-muted">{s.store_address}</p> : null}
           {s.store_phone ? <p className="text-mist-muted">{s.store_phone}</p> : null}

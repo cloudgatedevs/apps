@@ -8,6 +8,7 @@ import { Tooltip } from '@/shared/ui/menus';
 import { Brand } from './Brand';
 import { NAV, IconBack, IconClose, IconMenu, IconUser, backTargetFor, routeTitle } from './navConfig';
 import { CommandPalette, useCommandPalette } from './CommandPalette';
+import { smallImageUrl } from '@/shared/services/imageUrl';
 
 function initialsFrom(user) {
   const a = (user?.name || '').trim()[0] || '';
@@ -55,7 +56,7 @@ const UserCard = ({ user, displayName, onLogout, onNavigate }) => (
   <div className="rounded-xl border border-ink-700 bg-white p-2.5 shadow-panel">
     <NavLink to="/profile" onClick={onNavigate} className="flex items-center gap-3 rounded-xl transition hover:opacity-90">
       {user?.photoUrl ? (
-        <img src={user.photoUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+        <img src={smallImageUrl(user.photoUrl)} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
       ) : (
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent-grad text-[11px] font-semibold text-white">{initialsFrom(user)}</span>
       )}
@@ -140,7 +141,7 @@ const Layout = () => {
             <button type="button" onClick={() => setPaletteOpen(true)} aria-label="Search" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-mist-muted transition active:bg-ink-800 active:text-mist"><IconSearch className="h-5 w-5" /></button>
           </Tooltip>
           <NavLink to="/profile" aria-label="My account" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-mist-muted transition active:bg-ink-800 active:text-mist">
-            {user?.photoUrl ? <img src={user.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" /> : <span className="grid h-8 w-8 place-items-center rounded-full bg-accent-grad text-[11px] font-semibold text-white">{initialsFrom(user) || <IconUser className="h-4 w-4" />}</span>}
+            {user?.photoUrl ? <img src={smallImageUrl(user.photoUrl)} alt="" className="h-8 w-8 rounded-full object-cover" /> : <span className="grid h-8 w-8 place-items-center rounded-full bg-accent-grad text-[11px] font-semibold text-white">{initialsFrom(user) || <IconUser className="h-4 w-4" />}</span>}
           </NavLink>
         </header>
 

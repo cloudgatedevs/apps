@@ -36,7 +36,14 @@ END;
 CREATE TABLE IF NOT EXISTS abandoned_booking_requests (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, request_key TEXT NOT NULL UNIQUE, created INTEGER NOT NULL);
 CREATE TRIGGER IF NOT EXISTS prevent_abandoned_booking BEFORE INSERT ON bookings WHEN EXISTS(SELECT 1 FROM abandoned_booking_requests WHERE request_key=NEW.request_key) BEGIN SELECT RAISE(ABORT,'This reservation request was released. Start a new booking.'); END;
 
-INSERT OR IGNORE INTO settings(key,value) VALUES ('app_name',''),('app_short_name',''),('logo_url',''),('icon_url',''),('favicon_url',''),('logo_show_name','1'),('theme_primary','#294e3c'),('theme_accent','#7c896e'),('theme_background','#faf9f5');
+INSERT OR IGNORE INTO settings(key,value) VALUES ('app_name',''),('app_short_name',''),('logo_url',''),('icon_url',''),('favicon_url',''),('logo_show_name','1'),('theme_primary','#000000'),('theme_accent','#737373'),('theme_background','#ffffff');
+CREATE TABLE IF NOT EXISTS service_metadata (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, service_id INTEGER NOT NULL UNIQUE REFERENCES services(Id), image_url TEXT NOT NULL DEFAULT '', deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)));
+CREATE TABLE IF NOT EXISTS staff_metadata (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, staff_id INTEGER NOT NULL UNIQUE REFERENCES staff(Id), image_url TEXT NOT NULL DEFAULT '');
+INSERT OR IGNORE INTO settings(key,value) VALUES
+('hero_image_url','/images/studio.png'),('about_image_url','/images/studio.png'),
+('hero_kicker','BOOK ONLINE'),('hero_title','Book your next appointment.'),
+('hero_subtitle','Choose a service. Find a time that works for you.'),
+('services_title','Explore our services.'),('services_intro','Browse services, compare options and book your preferred time.');
 
 INSERT OR IGNORE INTO settings(key,value) VALUES
 ('name','Still Studio'),('tagline','A little time. Entirely yours.'),('description','Thoughtful treatments, talented people, and a moment to slow down. Book your next massage, manicure, or reset.'),('currency','ZAR'),('timezone','Africa/Johannesburg'),('address','12 Kloof Street, Cape Town'),('phone','+27 21 555 0120'),('email','hello@example.com'),('lead_minutes','60'),('horizon_days','90'),('cancel_hours','24'),('hold_minutes','10'),('slot_minutes','15'),('website_url',''),('cancellation_policy','You can reschedule or cancel online up to 24 hours before your appointment. Eligible paid cancellations are reviewed for a refund by our team. Late cancellations: please contact the studio.'),('smtp_host',''),('smtp_port','587'),('smtp_user',''),('smtp_password',''),('smtp_from',''),('smtp_mode','starttls'),('reminder_hours','24');

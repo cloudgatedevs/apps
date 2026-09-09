@@ -2,7 +2,7 @@
   "id": "pos",
   "name": "Cloudgate POS",
   "category": "Commerce",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A complete point-of-sale system: a touch-friendly till that scans barcodes with the device camera or a USB scanner, cash and card payments through Cloudgate Wallet, parked sales, returns and shift cash-ups, plus a back office for products, inventory (goods received and stock takes), sales, shifts, customers, reports and receipts.",
   "folder": "pos",
   "framework": "React",

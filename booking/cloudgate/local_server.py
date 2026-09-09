@@ -9,18 +9,24 @@ import secrets
 import sqlite3
 import threading
 import time
+from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 from engine import Engine, TABLES, plan, encoded
-from local_media import upload as upload_media, listing as list_media, read_image
+from local_media import upload as upload_media, listing as list_media, delete as delete_media, read_image
 
 ROOT=Path(__file__).parent
 LOCK=threading.RLock()
 ADMIN={'Role':'Admin','Email':'preview-admin@localhost','IsActive':True}
 DB=None
+@contextmanager
 def connect():
-    c=sqlite3.connect(DB,timeout=15);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');return c
+    c=sqlite3.connect(DB,timeout=15)
+    try:
+        c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON')
+        with c:yield c
+    finally:c.close()
 def snapshot(c):return {t:[dict(r) for r in c.execute('SELECT * FROM '+t)] for t in TABLES}
 def run(d,identity=None,internal=False):
     with LOCK,connect() as c:
@@ -62,8 +68,14 @@ class Handler(BaseHTTPRequestHandler):
             if route=='/api/branding-media':
                 if not admin:raise PermissionError('Admin access required.')
                 with LOCK:
-                    if d.get('op')=='upload':result=upload_media(Path(DB).parent/'media',d.get('content'),d.get('name'))
-                    elif d.get('op')=='list':result=list_media(Path(DB).parent/'media',d.get('skip',0),d.get('take',36))
+                    if d.get('op')=='upload':result=upload_media(Path(DB).parent/'media',d.get('content'),d.get('name'),d.get('path','booking/branding'))
+                    elif d.get('op')=='list':result=list_media(Path(DB).parent/'media',d.get('skip',0),d.get('take',36),d.get('path','*'))
+                    elif d.get('op')=='delete':
+                        current=run({'op':'admin-data'},ADMIN)
+                        references=[s.get('image_url','') for s in current['services'] if not s.get('deleted')]
+                        references += [person.get('image_url','') for person in current['staff']]
+                        references += [current['settings'].get(k,'') for k in ('logo_url','icon_url','favicon_url','hero_image_url','about_image_url')]
+                        result=delete_media(Path(DB).parent/'media',d.get('id'),references)
                     else:raise ValueError('Unknown media operation.')
             elif route=='/api/booking':
                 if str(d.get('op','')).startswith(('payment-','refund-')) or d.get('op')=='maintenance':raise ValueError('Internal operation.')

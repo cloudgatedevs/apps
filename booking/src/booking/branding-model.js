@@ -1,4 +1,4 @@
-export const BRAND_DEFAULTS = { app_name: '', app_short_name: '', logo_url: '', icon_url: '', favicon_url: '', logo_show_name: '1', theme_primary: '#294e3c', theme_accent: '#7c896e', theme_background: '#faf9f5' };
+export const BRAND_DEFAULTS = { app_name: '', app_short_name: '', logo_url: '', icon_url: '', favicon_url: '', logo_show_name: '1', theme_primary: '#000000', theme_accent: '#737373', theme_background: '#ffffff' };
 const fields = [...Object.keys(BRAND_DEFAULTS), 'name', 'tagline', 'description'];
 export function imageUrl(value) {
   const url = String(value || '').trim();
@@ -29,7 +29,7 @@ export function readableText(hex) {
   return (l + 0.05) / 0.05 >= 1.05 / (l + 0.05) ? '#000000' : '#ffffff';
 }
 export function themeTokens(settings = {}) {
-  const s = brandSettings(settings), best = readableText(s.theme_background), soft = best === '#000000' ? '#1c2922' : '#f4f7f5';
+  const s = brandSettings(settings), best = readableText(s.theme_background), soft = best === '#000000' ? '#202020' : '#f5f5f5';
   const contrast = (Math.max(luminance(soft), luminance(s.theme_background)) + .05) / (Math.min(luminance(soft), luminance(s.theme_background)) + .05);
   const ink = contrast >= 4.5 ? soft : best;
   return { '--green': s.theme_primary, '--on-primary': readableText(s.theme_primary), '--brand-accent': s.theme_accent, '--cream': s.theme_background, '--ink': ink,

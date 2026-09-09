@@ -61,6 +61,16 @@ class NativeTests(unittest.TestCase):
     else:sys.modules[key]=value
  def test_native_public_catalog(self):
   result=self.native('booking',{'op':'catalog'});self.assertEqual(len(result['services']),6)
+ def test_native_service_photo_create_edit_and_delete(self):
+  created=self.native('booking',dict(op='admin-save',entity='services',record=dict(name='Guitar lesson',category='Lessons',price=25000,active=1,staff_ids=[1],image_url='https://cdn.example/guitar.jpg')),ADMIN)
+  ident=created['Id']
+  service=next(s for s in self.native('booking',{'op':'catalog'})['services'] if s['Id']==ident)
+  self.assertEqual(service['image_url'],'https://cdn.example/guitar.jpg')
+  self.native('booking',dict(op='admin-save',entity='services',record=dict(Id=ident,name='Advanced guitar lesson',image_url='',price=35000)),ADMIN)
+  self.assertEqual(next(s for s in self.native('booking',{'op':'catalog'})['services'] if s['Id']==ident)['price'],35000)
+  with self.assertRaisesRegex(ValueError,'Admin access'):self.native('booking',dict(op='admin-delete-service',Id=ident))
+  self.native('booking',dict(op='admin-delete-service',Id=ident),ADMIN)
+  self.assertNotIn(ident,[s['Id'] for s in self.native('booking',{'op':'catalog'})['services']])
  def test_native_admin_rejected(self):
   with self.assertRaisesRegex(ValueError,'Admin access'):self.native('booking',{'op':'admin-data'})
  def test_native_admin_allowed(self):
