@@ -8,6 +8,7 @@
   "framework": "React",
   "devCommand": "npm install && npm run dev",
   "devPort": 3002,
+  "demoUrl": "https://booking.app.cloudgate.dev/",
   "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/booking/banner.png",
   "adminPath": "/admin",
   "tags": [
