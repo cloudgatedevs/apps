@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.local/
+.env
+.env.local
+.env.development
+.env.production
+__pycache__/
+*.pyc
+test-results/

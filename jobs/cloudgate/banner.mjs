@@ -1,0 +1,2 @@
+import{chromium}from'playwright';
+const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1540,height:700},deviceScaleFactor:1});await page.goto(process.env.JOBS_PREVIEW_URL||'http://127.0.0.1:3010/');await page.getByRole('heading',{name:'Your next project, in good hands.'}).waitFor();await page.screenshot({path:new URL('../banner.png',import.meta.url).pathname.replace(/^\/([A-Z]:)/,'$1')});await browser.close();

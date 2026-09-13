@@ -1,0 +1,215 @@
+[
+  {
+    "environment": "sbx",
+    "route": "catalog",
+    "status": 200,
+    "body": {
+      "settings": {
+        "name": "Cloudgate Jobs",
+        "app_name": "",
+        "app_short_name": "Jobs",
+        "tagline": "Good work. From start to finish.",
+        "description": "Reliable services for your home and business.",
+        "phone": "",
+        "email": "",
+        "address": "",
+        "service_area": "Your local area",
+        "website_url": "",
+        "currency": "ZAR",
+        "timezone": "Africa/Johannesburg",
+        "tax_bps": "0",
+        "tax_label": "Tax",
+        "tax_number": "",
+        "payment_terms": "14",
+        "theme_primary": "#153d35",
+        "theme_accent": "#a7cf70",
+        "theme_background": "#ffffff",
+        "logo_url": "",
+        "icon_url": "",
+        "favicon_url": "",
+        "logo_show_name": "1",
+        "hero_title": "Your next project, in good hands.",
+        "hero_subtitle": "Tell us what you need. We will take care of the details, from a clear quote to a job well done.",
+        "hero_image_url": "",
+        "about_image_url": ""
+      },
+      "services": [
+        {
+          "kind": "service",
+          "ref": "SER-PLUMBING",
+          "owner": "",
+          "job": "",
+          "created": 1789034400,
+          "updated": 1789034400,
+          "version": 1,
+          "name": "Plumbing & repairs",
+          "description": "Leaks, fittings and everyday repairs, handled with care.",
+          "category": "Repairs",
+          "price": 65000,
+          "active": true,
+          "image_url": ""
+        },
+        {
+          "kind": "service",
+          "ref": "SER-ELECTRICAL",
+          "owner": "",
+          "job": "",
+          "created": 1789034400,
+          "updated": 1789034400,
+          "version": 1,
+          "name": "Electrical services",
+          "description": "Lighting, fault finding and safe installations.",
+          "category": "Installation",
+          "price": 85000,
+          "active": true,
+          "image_url": ""
+        },
+        {
+          "kind": "service",
+          "ref": "SER-CLEANING",
+          "owner": "",
+          "job": "",
+          "created": 1789034400,
+          "updated": 1789034400,
+          "version": 1,
+          "name": "Home & office cleaning",
+          "description": "A fresh start for the spaces you use every day.",
+          "category": "Maintenance",
+          "price": 45000,
+          "active": true,
+          "image_url": ""
+        },
+        {
+          "kind": "service",
+          "ref": "SER-MAINTENANCE",
+          "owner": "",
+          "job": "",
+          "created": 1789034400,
+          "updated": 1789034400,
+          "version": 1,
+          "name": "Property maintenance",
+          "description": "Keep your property working as it should.",
+          "category": "Maintenance",
+          "price": 55000,
+          "active": true,
+          "image_url": ""
+        }
+      ]
+    }
+  },
+  {
+    "environment": "prod",
+    "route": "catalog",
+    "status": 200,
+    "body": {
+      "settings": {
+        "name": "Cloudgate Jobs",
+        "app_name": "",
+        "app_short_name": "Jobs",
+        "tagline": "Good work. From start to finish.",
+        "description": "Reliable services for your home and business.",
+        "phone": "",
+        "email": "",
+        "address": "",
+        "service_area": "Your local area",
+        "website_url": "",
+        "currency": "ZAR",
+        "timezone": "Africa/Johannesburg",
+        "tax_bps": "0",
+        "tax_label": "Tax",
+        "tax_number": "",
+        "payment_terms": "14",
+        "theme_primary": "#153d35",
+        "theme_accent": "#a7cf70",
+        "theme_background": "#ffffff",
+        "logo_url": "",
+        "icon_url": "",
+        "favicon_url": "",
+        "logo_show_name": "1",
+        "hero_title": "Your next project, in good hands.",
+        "hero_subtitle": "Tell us what you need. We will take care of the details, from a clear quote to a job well done.",
+        "hero_image_url": "",
+        "about_image_url": ""
+      },
+      "services": []
+    }
+  },
+  {
+    "environment": "sbx",
+    "route": "workspace",
+    "status": 401,
+    "body": {
+      "Data": null,
+      "HttpStatusCode": 401,
+      "HttpStatusMessage": "Unauthorized - 401",
+      "ErrorMessages": [],
+      "Status": 0,
+      "Message": "Missing or invalid Authorization header. Bearer token is required."
+    }
+  },
+  {
+    "environment": "sbx",
+    "route": "settings",
+    "status": 401,
+    "body": {
+      "Data": null,
+      "HttpStatusCode": 401,
+      "HttpStatusMessage": "Unauthorized - 401",
+      "ErrorMessages": [],
+      "Status": 0,
+      "Message": "Missing or invalid Authorization header. Bearer token is required."
+    }
+  },
+  {
+    "environment": "sbx",
+    "route": "automation",
+    "status": 400,
+    "body": {
+      "Data": null,
+      "HttpStatusCode": 400,
+      "HttpStatusMessage": "BadRequest - 400",
+      "ErrorMessages": [],
+      "Status": 0,
+      "Message": "This action runs only from the Cloudgate scheduler."
+    }
+  },
+  {
+    "environment": "sbx",
+    "route": "notifications",
+    "status": 400,
+    "body": {
+      "Data": null,
+      "HttpStatusCode": 400,
+      "HttpStatusMessage": "BadRequest - 400",
+      "ErrorMessages": [],
+      "Status": 0,
+      "Message": "This action runs only from the Cloudgate scheduler."
+    }
+  },
+  {
+    "environment": "sbx",
+    "route": "reconcile",
+    "status": 400,
+    "body": {
+      "Data": null,
+      "HttpStatusCode": 400,
+      "HttpStatusMessage": "BadRequest - 400",
+      "ErrorMessages": [],
+      "Status": 0,
+      "Message": "This action runs only from the Cloudgate scheduler."
+    }
+  },
+  {
+    "environment": "sbx",
+    "route": "refund-reconcile",
+    "status": 400,
+    "body": {
+      "Data": null,
+      "HttpStatusCode": 400,
+      "HttpStatusMessage": "BadRequest - 400",
+      "ErrorMessages": [],
+      "Status": 0,
+      "Message": "This action runs only from the Cloudgate scheduler."
+    }
+  }
+]

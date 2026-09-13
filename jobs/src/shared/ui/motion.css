@@ -1,0 +1,66 @@
+/* Shared motion: dialogs, sheets, drawers, toasts, page transitions and skeleton shimmer.
+   Radix stamps data-state="open|closed" on overlays/content, which drives enter and exit. */
+
+@keyframes ui-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ui-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ui-pop-in { from { opacity: 0; transform: translateY(6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ui-pop-out { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(4px) scale(0.98); } }
+@keyframes ui-sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes ui-sheet-out { from { transform: translateY(0); } to { transform: translateY(100%); } }
+@keyframes ui-slide-right-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes ui-slide-right-out { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes ui-slide-left-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes ui-slide-left-out { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes ui-menu-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes ui-page-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes ui-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes ui-pulse-once { 0% { transform: scale(1); } 35% { transform: scale(1.35); } 100% { transform: scale(1); } }
+@keyframes ui-bounce-once { 0% { transform: translateY(0); } 30% { transform: translateY(-6px) rotate(-8deg); } 60% { transform: translateY(0); } 80% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
+
+.ui-overlay[data-state='open'] { animation: ui-fade-in 180ms ease-out; }
+.ui-overlay[data-state='closed'] { animation: ui-fade-out 150ms ease-in forwards; }
+
+/* Dialogs fade only. A transform-based keyframe would fight the translate(-50%,-50%) centring and make the panel jump. */
+.ui-dialog[data-state='open'] { animation: ui-fade-in 160ms ease-out; }
+.ui-dialog[data-state='closed'] { animation: ui-fade-out 120ms ease-in forwards; }
+
+/* On phones dialogs become bottom sheets. */
+@media (max-width: 639px) {
+  .ui-dialog.ui-dialog-sheet[data-state='open'] { animation: ui-fade-in 160ms ease-out; }
+  .ui-dialog.ui-dialog-sheet[data-state='closed'] { animation: ui-fade-out 120ms ease-in forwards; }
+}
+
+.ui-drawer-right[data-state='open'] { animation: ui-slide-right-in 240ms cubic-bezier(0.16, 1, 0.3, 1); }
+.ui-drawer-right[data-state='closed'] { animation: ui-slide-right-out 200ms ease-in forwards; }
+.ui-drawer-left[data-state='open'] { animation: ui-slide-left-in 240ms cubic-bezier(0.16, 1, 0.3, 1); }
+.ui-drawer-left[data-state='closed'] { animation: ui-slide-left-out 200ms ease-in forwards; }
+
+.ui-menu[data-state='open'] { animation: ui-menu-in 140ms ease-out; }
+.ui-menu[data-state='closed'] { animation: ui-fade-out 100ms ease-in forwards; }
+
+.ui-page { animation: ui-page-in 220ms ease-out both; }
+/* Result grids: each child fades and rises in; give children an animation-delay for a stagger. */
+.ui-grid-in > * { animation: ui-page-in 260ms ease-out both; }
+.ui-pulse-once { animation: ui-pulse-once 380ms ease-out; }
+.ui-bounce-once { animation: ui-bounce-once 500ms ease-out; }
+
+.skeleton {
+  border-radius: 0.5rem;
+  background: linear-gradient(90deg, var(--skeleton-base, rgba(15, 23, 42, 0.06)) 25%, var(--skeleton-highlight, rgba(15, 23, 42, 0.11)) 50%, var(--skeleton-base, rgba(15, 23, 42, 0.06)) 75%);
+  background-size: 200% 100%;
+  animation: ui-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Images fade in once decoded; the wrapper keeps a tinted placeholder underneath. */
+.img-fade { opacity: 0; transition: opacity 320ms ease-out; }
+.img-fade.is-loaded { opacity: 1; }
+
+/* Keyboard users always get a visible focus ring; mouse users do not. */
+:focus-visible { outline: 2px solid var(--focus-ring, #4f46e5); outline-offset: 2px; }
+button:focus:not(:focus-visible), a:focus:not(:focus-visible), input:focus:not(:focus-visible) { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-overlay, .ui-dialog, .ui-drawer-right, .ui-drawer-left, .ui-menu, .ui-page, .ui-grid-in > *, .ui-pulse-once, .ui-bounce-once { animation-duration: 1ms !important; animation-delay: 0ms !important; }
+  .skeleton { animation: none; }
+  .img-fade { transition: none; }
+}

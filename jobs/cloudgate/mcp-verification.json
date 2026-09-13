@@ -1,0 +1,146 @@
+{
+  "date": "2026-09-10",
+  "controller": "9753119e-1f56-441e-aad2-08df0f0d38ef",
+  "workflows": [
+    {
+      "route": "catalog",
+      "id": "db5a6c2f-31b9-4de9-8c9e-aa741531224e",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "workspace",
+      "id": "d2f05f75-f4bb-4fe0-a5dd-65bc2032a706",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "requests",
+      "id": "32f07bff-74be-4088-bce4-e5d6ae840292",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "quotes",
+      "id": "112fd5a8-83a9-40c4-b76e-3e6a2a37ec1f",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "jobs",
+      "id": "e296e900-11c6-4d2b-a73c-050c0e50a81c",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "invoices",
+      "id": "841a1347-23c5-41db-aab2-ab4f0b231592",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "settings",
+      "id": "6634c6c3-bca7-4bba-b01e-a7d5f1966228",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "documents",
+      "id": "bcebdb8f-7cf8-4c54-93bf-7b42de0c2226",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "attachments",
+      "id": "561b920e-9eb0-4cd1-9df5-9ec3702f0428",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "checkout",
+      "id": "2624ec97-85f1-46ef-b283-7d4e23654fe1",
+      "nodes": 13,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "payment-status",
+      "id": "19e89c38-d50a-4434-b6c2-f6ff5448d5f6",
+      "nodes": 9,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "refund",
+      "id": "682302b3-ed6c-4fdd-b5f2-ab709f30f451",
+      "nodes": 14,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "maintenance",
+      "id": "4beec4c7-1f90-4b6e-9ed9-ec762cd1188c",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "automation",
+      "id": "9653d131-0e53-483c-8a2f-a4d9034c8ea8",
+      "nodes": 5,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "notifications",
+      "id": "96253550-b698-4a3b-98aa-29396a2504b7",
+      "nodes": 9,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "reconcile",
+      "id": "7c0a8809-17d1-4741-8439-88c459a501b3",
+      "nodes": 10,
+      "draft": false,
+      "scriptsMatch": true
+    },
+    {
+      "route": "refund-reconcile",
+      "id": "3b842ca1-b5be-41a3-aedc-ec012c3276d4",
+      "nodes": 11,
+      "draft": false,
+      "scriptsMatch": true
+    }
+  ],
+  "publication": "published with explicit user approval; all 17 IsDraft=false verified",
+  "hostedExecution": "Gateway sandbox and production catalogue HTTP 200; anonymous workspace/settings HTTP 401; four workers reject HTTP execution with scheduler-only HTTP 400.",
+  "authenticatedSandbox": {
+    "adminLogin": "passed through Jobs IdP; admin workspace rendered",
+    "officePages": "all navigation sections rendered",
+    "quoteDraft": {
+      "ref": "QUO-943C8902BAF1",
+      "totalCents": 95000,
+      "status": "draft",
+      "title": "Sandbox verification \u2014 kitchen tap"
+    },
+    "settings": "saved existing values successfully",
+    "media": "uploaded jobs-icon.png to Cloudgate media server and verified library listing; left unused for review",
+    "portal": "rendered with existing admin session; separate customer role not verified",
+    "remaining": [
+      "separate customer and technician role checks",
+      "full hosted job/payment/refund journey",
+      "scheduled execution and SMTP",
+      "App Store install/update and frontend deployment"
+    ]
+  }
+}
