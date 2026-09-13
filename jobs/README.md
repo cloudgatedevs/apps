@@ -43,7 +43,7 @@ The controller was created and all 17 workflows were created/updated through `mc
 | quotes | Quote revisions, sending, customer pricing review and approval |
 | jobs | Customers, addresses, team, services, visits, job updates and recurrence rules |
 | invoices | Issue, void and credit invoices |
-| settings | Owner-only business/theme/SMTP configuration |
+| settings | Owner-only business/theme configuration; SMTP uses the IdP API |
 | documents | Authorised document snapshots for PDF download |
 | attachments | Protected PNG upload, read and visibility |
 | checkout | Idempotent native Wallet checkout |
@@ -51,13 +51,13 @@ The controller was created and all 17 workflows were created/updated through `mc
 | refund | Owner refund claim, submission and status recovery |
 | maintenance | Owner-triggered recurrence/reminder maintenance |
 | automation | Scheduled recurrence, expiry and reminder generation |
-| notifications | Claim outbox messages, send via TLS SMTP and record results |
+| notifications | Claim outbox messages, send via Cloudgate tenant email and record results |
 | reconcile | Scheduled read-only Wallet payment recovery |
 | refund-reconcile | Scheduled read-only refund recovery |
 
 Native functions use `WorkflowSessionKeyExecutionContext.GetKeys` to read request/node values as data. They do not interpolate customer text into Python. SQL uses UTF-8 hex literals. Mutations use an atomic transaction and optimistic revision guard. Database triggers enforce worker-time collisions. Shared business rules run in the preview and generated native scripts.
 
-Worker entry functions verify the platform-owned `route` session value is `Scheduled Job`, as supplied by `ExecutionJob`; external calls are rejected. Schedules are declared at two-minute intervals in the package, with bounded batches. SMTP delivery is at least once: a crash after provider delivery can lead to a retry. Deterministic Message-ID and claims reduce duplicates but cannot guarantee exactly-once email.
+Worker entry functions verify the platform-owned `route` session value is `Scheduled Job`, as supplied by `ExecutionJob`; external calls are rejected. Schedules are declared at two-minute intervals in the package, with bounded batches. SMTP delivery is at least once: a crash after provider delivery can lead to a retry. Queue claims reduce concurrent sends but cannot guarantee exactly-once email.
 
 Money is stored in integer minor units. Wallet payment success requires DTO Status `1`, matching ID, gross amount and currency. A checkout redirect is not proof of payment. Refunds verify PaymentId, Amount, Currency, IdempotencyKey and RefundId. Pending/uncertain requests reserve their amount and reuse the same key. Late/superseded/cancelled payments are marked for review rather than allocated to new work.
 
@@ -104,3 +104,9 @@ Existing backend and management UI source were inspected but not changed. Preser
 ## Authenticated sandbox verification — 2026-09-10
 
 Jobs IdP admin login succeeded. All office sections rendered; a R950 draft quotation (QUO-943C8902BAF1) persisted through the published workflow. Existing settings saved successfully. jobs-icon.png uploaded to the Cloudgate media server and appeared in the library, left unused for review. The portal rendered using the admin session; this does not certify a separate customer or technician role. No quote was sent, payment taken, or email triggered by these checks. Full hosted customer/payment/refund, scheduler/SMTP and App Store install/update checks remain. Local development now uses the published sandbox via Git-ignored .env.local; npm run dev:preview still explicitly selects the simulated preview.
+
+## Shared Cloudgate email delivery
+
+Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
+
+This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.

@@ -68,18 +68,11 @@ EDITABLE = {
     'theme_secondary': _hex,
     # Outgoing mail (Settings > Email). The password is write-only: 'get' masks it and a blank
     # value on 'set' keeps the stored one.
-    'smtp_host': _text(200),
-    'smtp_port': _port,
-    'smtp_security': _security,
-    'smtp_user': _text(200),
-    'smtp_password': _text(500),
-    'smtp_from_email': _email_opt,
-    'smtp_from_name': _text(120),
 }
 SECRET_KEYS = ('smtp_password',)
 
 if op == 'get':
-    return "SELECT Key, Value, UpdatedAt FROM settings ORDER BY Key;"
+    return "SELECT Key, Value, UpdatedAt FROM settings WHERE Key NOT LIKE 'smtp_%' ORDER BY Key;"
 
 if op == 'set':
     values = d.get('values') if isinstance(d.get('values'), dict) else {k: v for k, v in d.items() if k != 'op'}
@@ -97,12 +90,12 @@ if op == 'set':
                      "ON CONFLICT(Key) DO UPDATE SET Value = excluded.Value, UpdatedAt = CURRENT_TIMESTAMP;")
     if not parts:
         fail('No settings supplied.')
-    return '\n'.join(parts) + "\nSELECT Key, Value, UpdatedAt FROM settings ORDER BY Key;"
+    return '\n'.join(parts) + "\nSELECT Key, Value, UpdatedAt FROM settings WHERE Key NOT LIKE 'smtp_%' ORDER BY Key;"
 
 if op == 'send-test':
     to = str(d.get('to') or user.get('Email') or '').strip()
     if not to or '@' not in to:
         fail('A recipient email address is required.')
-    return "SELECT Key, Value, UpdatedAt FROM settings ORDER BY Key;"
+    return "SELECT Key, Value, UpdatedAt FROM settings WHERE Key NOT LIKE 'smtp_%' ORDER BY Key;"
 
 fail('Unknown op: ' + op)

@@ -4,7 +4,7 @@ import { shopApi } from '@/storefront/services/shopApi';
 import { useStore } from '@/storefront/store/StoreProvider';
 import { useCart } from '@/storefront/cart/CartProvider';
 import { useAsync } from '@/shared/ui/ui';
-import { Skeleton, SkeletonText, SkeletonCards } from '@/shared/ui/skeleton';
+import { Skeleton, SkeletonText } from '@/shared/ui/skeleton';
 import { Modal } from '@/shared/ui/forms';
 import { Placeholder, ProductCard } from '@/storefront/components/ProductCard';
 import { QtyStepper } from '@/storefront/components/QtyStepper';
@@ -98,9 +98,11 @@ const Product = () => {
   const { slug } = useParams();
   const { currency } = useStore();
   const { add, busy } = useCart();
-  const res = useAsync(() => shopApi.product(slug), [slug]);
+  // One workflow call: the detail row carries `Related[]` (same category), so there is no
+  // second, dependent request for the "You may also like" strip.
+  const res = useAsync(() => shopApi.product(slug, { related: 4 }), [slug]);
   const p = res.data;
-  const related = useAsync(() => (p?.CategorySlug ? shopApi.products({ category: p.CategorySlug, take: 5 }) : Promise.resolve(null)), [p?.CategorySlug]);
+  const related = (p?.Related ?? []).filter((r) => r.Id !== p.Id).slice(0, 4);
 
   const [choice, setChoice] = useState({});
   const [qty, setQty] = useState(1);
@@ -231,12 +233,12 @@ const Product = () => {
         </div>
       </div>
 
-      {related.data?.items?.filter((r) => r.Id !== p.Id).length ? (
+      {related.length ? (
         <section className="flex flex-col gap-5 border-t border-zinc-200 pt-10">
           <div className="flex items-end justify-between"><h2 className="text-lg font-semibold">You may also like</h2><Link to={`/shop/${p.CategorySlug}`} className="text-sm text-zinc-600 hover:text-zinc-900">More in {p.CategoryName} →</Link></div>
-          <div className="grid grid-cols-2 gap-5 md:grid-cols-4">{related.data.items.filter((r) => r.Id !== p.Id).slice(0, 4).map((r) => <ProductCard key={r.Id} p={r} currency={currency} />)}</div>
+          <div className="grid grid-cols-2 gap-5 md:grid-cols-4">{related.map((r) => <ProductCard key={r.Id} p={r} currency={currency} />)}</div>
         </section>
-      ) : related.loading && p.CategorySlug ? <SkeletonCards count={4} /> : null}
+      ) : null}
 
       {/* Sticky buy bar on phones */}
       <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur transition-transform duration-200 md:hidden ${showBar ? 'translate-y-0' : 'translate-y-full'}`} style={{ paddingBottom: 'calc(0.75rem + var(--safe-bottom))' }}>

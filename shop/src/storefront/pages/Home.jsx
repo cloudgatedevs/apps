@@ -71,9 +71,21 @@ const Newsletter = () => {
 };
 
 const Home = () => {
-  const { storeName, settings, categories, currency, freeShippingThresholdCents, pages } = useStore();
-  const featured = useAsync(() => shopApi.featured(8), []);
-  const latest = useAsync(() => shopApi.products({ sort: 'newest', take: 8 }), []);
+  const { storeName, settings, categories, currency, freeShippingThresholdCents, pages, home } = useStore();
+  // The grids normally arrive with the store's single bootstrap call (when the app opened on
+  // "/"). Only when they were not preloaded — client-side navigation back to the home page, or
+  // the bootstrap failed — does this page fetch them itself, both in one go.
+  const preloaded = Array.isArray(home.featured);
+  const own = useAsync(
+    () => (home.loading || preloaded ? Promise.resolve(null) : Promise.all([shopApi.featured(8), shopApi.products({ sort: 'newest', take: 8 })])),
+    [home.loading, preloaded],
+  );
+  const featured = preloaded
+    ? { loading: false, data: home.featured, error: null }
+    : { loading: home.loading || own.loading, data: own.data?.[0] ?? null, error: own.error };
+  const latest = preloaded
+    ? { loading: false, data: { items: home.newest ?? [] }, error: null }
+    : { loading: home.loading || own.loading, data: own.data?.[1] ?? null, error: own.error };
   const top = categories.filter((c) => !c.ParentId);
   const heroProducts = (featured.data ?? []).filter((p) => p.ImageUrl).slice(0, 2);
   const about = (pages.nav ?? []).concat(pages.footer ?? []).find((p) => /about/i.test(p.Slug));

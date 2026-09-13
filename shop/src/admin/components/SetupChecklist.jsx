@@ -23,7 +23,6 @@ const ITEMS = (s, pages, counts) => {
     { key: 'terms', label: 'Terms of service', done: edited('terms'), to: page('terms') ? `/pages/${page('terms').Id}` : '/pages', hint: 'Ticks once you save the template with your own wording.' },
     { key: 'privacy', label: 'Privacy policy', done: edited('privacy'), to: page('privacy') ? `/pages/${page('privacy').Id}` : '/pages', hint: 'Ticks once you save what you collect and why.' },
     { key: 'shipping', label: 'Shipping & returns page and rates', done: edited('shipping-returns') && has(s.shipping_flat_cents), to: page('shipping-returns') ? `/pages/${page('shipping-returns').Id}` : '/pages', hint: 'Save the page with your delivery promise; rates live under Settings › Shipping.' },
-    { key: 'email', label: 'Outgoing email', done: has(s.smtp_host) && s.smtp_password_set === '1', to: '/settings?tab=email', hint: 'Order confirmations and shipping notices need a mail server.' },
     { key: 'wallet', label: 'Cloudgate Wallet activated', done: counts.walletReady === true, to: walletUrl(), external: true, hint: 'Card payments run through the tenant wallet; onboarding happens in the Cloudgate hub.' },
     { key: 'products', label: 'First product published', done: (counts.activeProducts ?? 0) > 0, to: '/products', hint: 'At least one active product with a photo.' },
   ];

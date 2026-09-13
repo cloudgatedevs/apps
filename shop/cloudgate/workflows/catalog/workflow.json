@@ -4,10 +4,9 @@
   "method": "POST",
   "allowAnonymous": true,
   "enableLogging": true,
-  "description": "Public storefront reads: settings, categories, products (paged/filtered), product detail, featured. Gateway-anonymous: public data, no API key needed; IdP token optional.",
-  "entry": "IdpAuth",
+  "description": "Public storefront reads: bootstrap (settings + categories + nav pages, optionally the home grids, in one call), settings, categories, products (paged/filtered, optional price bounds), product detail (+related), featured, bounds. Gateway-anonymous: public data, no API key, no IdP node — nothing here is per-user, so the chain is Plan → Run → Shape.",
+  "entry": "Plan",
   "nodes": [
-    { "name": "IdpAuth", "type": "idp", "output": "userId", "allowAnonymous": true, "next": "Plan" },
     { "name": "Plan", "type": "function", "script": "plan.py", "next": "Run" },
     { "name": "Run", "type": "database", "script": "run.sql", "next": "Shape" },
     { "name": "Shape", "type": "function", "script": "shape.py" }

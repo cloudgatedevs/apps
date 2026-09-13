@@ -161,16 +161,13 @@ class Engine:
         if op in ('workspace','admin-data'):
             result=self.workspace();result['staff']=result['team']
             if self.isoffice():result['services']=self.all('service')
-            if self.role in ('admin','administrator','owner'):
-                result['settings'].update({k:v for k,v in self.settings.items() if k.startswith('smtp_') and k!='smtp_password'})
-                result['settings']['smtp_password']=''
             return result
         if op=='settings':
             self.admin();values=d.get('values',{});require(isinstance(values,dict),'Invalid settings.')
             for key,value in values.items():
                 require(key in self.settings and not key.startswith('_'),'Unknown setting.')
                 value=text(value,10000)
-                if key=='smtp_password' and not value:continue
+                if key.startswith('smtp_'):continue
                 if key.startswith('theme_'):require(bool(re.fullmatch('#[0-9a-fA-F]{6}',value)),'Choose a valid colour.')
                 if key.endswith('_url') and key!='website_url':value=asset(value)
                 if key=='website_url':require(not value or (urlsplit(value).scheme=='https' and urlsplit(value).hostname and not urlsplit(value).username),'Use an HTTPS website URL.')
@@ -374,7 +371,6 @@ class Engine:
                     job=self.get(visit['job'],'job');self.queue(job,'Your service visit is tomorrow',job['title']+'\n'+str(dt.datetime.fromtimestamp(visit['starts'],tz)),'visit:'+visit['ref']+':'+str(visit['starts']))
             return dict(ok=True,generated=count)
         if op=='_mail-claim':
-            if not self.settings.get('smtp_host') or not self.settings.get('smtp_from'):return dict(configured=False,messages=[])
             token=uuid.uuid4().hex;pending=[m for m in self.all('message') if m['status'] in ('queued','sending') and m['due']<=self.now and m['attempts']<5 and m.get('lease_until',0)<=self.now]
             claimed=[]
             for m in sorted(pending,key=lambda x:x['due'])[:3]:claimed.append(self.save('message',dict(status='sending',lease_until=self.now+300,claim=token,attempts=m['attempts']+1),m))

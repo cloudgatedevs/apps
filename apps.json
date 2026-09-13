@@ -4,7 +4,7 @@
       "id": "shop",
       "name": "Cloudgate Shop",
       "category": "Commerce",
-      "version": "1.1.1",
+      "version": "1.2.1",
       "description": "A complete online store: catalogue with variants and stock, cart and hosted card checkout through Cloudgate Wallet, order tracking, and a full back office for products, inventory, orders, refunds, customers, content pages, email and theme colours.",
       "folder": "shop",
       "framework": "React",
@@ -33,7 +33,6 @@
       "requirements": [
         "wallet",
         "idp",
-        "smtp",
         "websockets"
       ],
       "environments": [
@@ -99,7 +98,7 @@
       "id": "pos",
       "name": "Cloudgate POS",
       "category": "Commerce",
-      "version": "1.1.2",
+      "version": "1.1.3",
       "description": "A complete point-of-sale system: a touch-friendly till that scans barcodes with the device camera or a USB scanner, cash and card payments through Cloudgate Wallet, parked sales, returns and shift cash-ups, plus a back office for products, inventory (goods received and stock takes), sales, shifts, customers, reports and receipts.",
       "folder": "pos",
       "framework": "React",
@@ -129,7 +128,6 @@
       "requirements": [
         "wallet",
         "idp",
-        "smtp",
         "websockets"
       ],
       "environments": [
@@ -195,7 +193,7 @@
       "id": "booking",
       "name": "Cloudgate Booking",
       "category": "Appointments",
-      "version": "1.7.1",
+      "version": "1.7.2",
       "description": "A configurable booking site and business back office: a media library, service photos, custom categories, staff, resources, availability, payments, customer accounts and appointment management.",
       "folder": "booking",
       "framework": "React",
@@ -233,8 +231,7 @@
       ],
       "requirements": [
         "wallet",
-        "idp",
-        "smtp"
+        "idp"
       ],
       "environments": [
         "sandbox",
@@ -285,12 +282,12 @@
       "id": "jobs",
       "name": "Cloudgate Jobs",
       "category": "Field Service",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "A service-business website, customer portal and staff workspace for requests, quotes, job visits, invoices and Cloudgate Wallet payments, with custom branding and media management.",
       "folder": "jobs",
       "framework": "React",
       "devCommand": "npm install && npm run dev",
-      "devPort": 3010,
+      "devPort": 3002,
       "demoUrl": "",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/jobs/banner.png",
       "adminPath": "/admin",
@@ -316,8 +313,7 @@
       ],
       "requirements": [
         "wallet",
-        "idp",
-        "smtp"
+        "idp"
       ],
       "environments": [
         "sandbox",

@@ -170,3 +170,15 @@ The regression suite covers collisions, stale writes, payment idempotency, late 
 This is a substantial single-location booking V1, not full feature parity with every commercial salon platform. It does not include SMS/WhatsApp delivery, recurring memberships, gift-card liabilities, loyalty points, group-class capacity, marketplace discovery, payroll, multi-location operations, card-terminal integration, two-way Google/Outlook calendar sync, or staff self-service permissions. Waitlist matching/follow-up is manual. Reports are operational and do not constitute tax-accounting software. The calendar supports daily staff columns and a weekly appointment view. The backend currently loads a complete studio snapshot per action, suitable as a small-business baseline; high-volume deployment should add bounded queries and pagination. SMTP delivery is at least once; a crash after sending and before recording can produce a duplicate message. Refunds whose provider result is uncertain require manual reconciliation in Cloudgate Wallet.
 
 Future upgrades should preserve the database conflict guards and add migrations, payment-provider integration tests, role-specific staff access, and worker telemetry before broadening the product.
+
+## Shared Cloudgate email delivery
+
+Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
+
+This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
+
+## Shared Cloudgate email delivery
+
+Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
+
+This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.

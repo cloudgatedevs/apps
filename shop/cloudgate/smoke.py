@@ -165,10 +165,41 @@ def run_public(admin_gw, state):
         expect(isinstance(items, list), "featured should be a list")
         return f"{len(items)} featured"
 
+    def bootstrap():
+        # The storefront shell in one call: must match the individual ops exactly.
+        _, b = gw.post("catalog", {"op": "bootstrap", "home": True, "take": 4})
+        keys(b, "settings", "categories", "pages", "featured", "newest")
+        _, s = gw.post("catalog", {"op": "settings"})
+        _, c = gw.post("catalog", {"op": "categories"})
+        _, n = gw.post("pages", {"op": "nav"})
+        _, f = gw.post("catalog", {"op": "featured", "take": 4})
+        expect(b["settings"] == s, "bootstrap.settings should equal the settings op")
+        expect(b["categories"] == c["items"], "bootstrap.categories should equal the categories op")
+        expect(b["pages"] == n, "bootstrap.pages should equal pages nav")
+        expect(b["featured"]["items"] == f["items"], "bootstrap.featured should equal the featured op")
+        expect(isinstance(b["newest"]["items"], list) and len(b["newest"]["items"]) <= 4, "bootstrap.newest should honour take")
+        _, lite = gw.post("catalog", {"op": "bootstrap"})
+        expect("featured" not in lite and lite["categories"] == c["items"], "bootstrap without home should skip the grids")
+        return f"{len(b['categories'])} categories, {len(b['featured']['items'])} featured, {len(b['newest']['items'])} newest"
+
+    def products_with_bounds():
+        _, b = gw.post("catalog", {"op": "bounds"})
+        _, r = gw.post("catalog", {"op": "products", "withBounds": True, "take": 3})
+        keys(r, "items", "total", "bounds")
+        expect(r["bounds"] == {"minCents": b["minCents"], "maxCents": b["maxCents"]}, "withBounds should equal the bounds op")
+        expect(all("BoundsMinCents" not in p for p in r["items"]), "bounds columns must not leak into items")
+        _, none = gw.post("catalog", {"op": "products", "withBounds": True, "search": "zzz-no-such-product-zzz"})
+        expect(none["items"] == [] and none["bounds"] is None, "an empty page should carry bounds=null")
+        return f"{r['bounds']['minCents']}–{r['bounds']['maxCents']} cents"
+
     def product():
-        _, p = gw.post("catalog", {"op": "product", "slug": state["slug"]})
-        keys(p, "Id", "Name", "Variants")
+        _, p = gw.post("catalog", {"op": "product", "slug": state["slug"], "related": 4})
+        keys(p, "Id", "Name", "Variants", "Related")
         expect(isinstance(p["Variants"], list) and p["Variants"], "product has no variants")
+        expect(isinstance(p["Related"], list) and len(p["Related"]) <= 4 and all(r["Id"] != p["Id"] for r in p["Related"]), "Related should be up to 4 other products")
+        if p.get("CategorySlug"):
+            _, same = gw.post("catalog", {"op": "products", "category": p["CategorySlug"], "take": 5})
+            expect([r["Id"] for r in p["Related"]] == [r["Id"] for r in same["items"] if r["Id"] != p["Id"]][:4], "Related should be the category's featured-sorted products")
         v = next((v for v in p["Variants"] if (v.get("AvailableQty") or 0) > 0 or not p.get("TrackInventory")), None)
         expect(v is not None, "no variant with stock to test the cart with")
         state["variantId"] = v["Id"]
@@ -243,7 +274,8 @@ def run_public(admin_gw, state):
     print("public")
     for name, fn in [
         ("catalog settings", settings), ("catalog categories", categories), ("catalog products", products),
-        ("catalog featured", featured), ("catalog product", product), ("cart add", cart_add), ("cart get", cart_get),
+        ("catalog featured", featured), ("catalog bootstrap", bootstrap), ("catalog products + bounds", products_with_bounds),
+        ("catalog product + related", product), ("cart add", cart_add), ("cart get", cart_get),
         ("cart update", cart_update), ("cart rejects unknown variant", bad_variant), ("checkout start", checkout_start),
         ("checkout requires email", checkout_requires_email), ("payment-status pending", payment_status),
         ("payment-status ownership", payment_status_wrong_token), ("catalog price bounds + filter", price_bounds),

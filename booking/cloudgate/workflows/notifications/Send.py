@@ -317,7 +317,7 @@ class Engine:
         data['services']=self.services();data.pop('service_metadata',None)
         data['staff']=self.staff();data.pop('staff_metadata',None)
         data['bookings']=[self.detail(b) for b in self.s['bookings']]
-        data['settings']={k:v for k,v in self.settings.items() if k!='smtp_password' and not k.startswith('_')};data['settings']['smtp_password_configured']=bool(self.settings.get('smtp_password'))
+        data['settings']=self.public_settings()
         return data
     def save_service(self,rec):
         ident=integer(rec['Id'],1,2**31-1,'Service') if rec.get('Id') else max([r['Id'] for r in self.s['services']]+[0])+1
@@ -500,7 +500,7 @@ class Engine:
         if op=='admin-settings':
             self.admin()
             for key,value in (d.get('settings') or {}).items():
-                if key not in self.settings or key.startswith('_'):continue
+                if key not in self.settings or key.startswith(('_','smtp_')):continue
                 if key=='smtp_password' and not value:continue
                 if key in ('logo_url','icon_url','favicon_url','hero_image_url','about_image_url'):value=brand_asset(value)
                 if key in ('theme_primary','theme_accent','theme_background'):
@@ -530,27 +530,22 @@ def plan(snapshot, request, identity=None, now=None, internal=False):
     return sql,result
 
 # Included in the Cloudgate notification worker after engine.py.
-# At-least-once SMTP delivery: deterministic Message-ID aids receiver deduplication.
+# At-least-once delivery through Cloudgate tenant email settings.
 def deliver(snapshot,now):
-    import smtplib
-    import ssl
-    from email.message import EmailMessage
-    s={r['key']:r['value'] for r in snapshot['settings']}
-    if not s.get('smtp_host') or not s.get('smtp_from'):return "SELECT '{\"configured\":false}' AS payload;"
     jobs=[m for m in snapshot['messages'] if m['status']=='queued' and m['due']<=now and m['attempts']<5]
     jobs.sort(key=lambda m:m['due'])
     statements=[]
     for job in jobs[:5]:
         status='sent';err=''
         try:
-            message=EmailMessage();message['To']=job['recipient'];message['From']=s['smtp_from'];message['Subject']=job['subject'];message['Message-ID']='<booking-'+hashlib.sha256(job['dedupe'].encode()).hexdigest()+'@'+s['smtp_from'].split('@')[-1]+'>';message.set_content(job['body'])
-            context=ssl.create_default_context();port=int(s.get('smtp_port') or 587)
-            server=smtplib.SMTP_SSL(s['smtp_host'],port,timeout=10,context=context) if s.get('smtp_mode')=='ssl' else smtplib.SMTP(s['smtp_host'],port,timeout=10)
-            with server:
-                server.ehlo()
-                if s.get('smtp_mode')!='ssl':server.starttls(context=context);server.ehlo()
-                if s.get('smtp_user'):server.login(s['smtp_user'],s.get('smtp_password',''))
-                server.send_message(message)
+            import clr
+            clr.AddReference('Abp')
+            clr.AddReference('Zero.Core')
+            from Abp.Dependency import IocManager
+            from Zero.IdentityProvider.Emailing import WorkflowAppEmailSender
+            sender=IocManager.Instance.Resolve[WorkflowAppEmailSender]()
+            try:sender.SendAsync(job['recipient'],job['subject'],job['body']).GetAwaiter().GetResult()
+            finally:IocManager.Instance.Release(sender)
         except Exception as ex:
             status='failed' if job['attempts']>=4 else 'queued';err=type(ex).__name__
         statements.append(update('messages',dict(status=status,attempts=job['attempts']+1,last_error=err,due=now+min(3600,60*2**job['attempts'])),'Id='+str(job['Id'])+" AND status='queued'"))

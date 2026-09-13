@@ -15,7 +15,7 @@ ROOT = Path(__file__).parent
 APP = ROOT.parent
 
 
-def main():
+def main(routes=None):
     split_schema()
     # The App Store updater splits at a semicolon followed by a newline. Keep
     # each trigger on one physical line so an update executes its whole body.
@@ -40,7 +40,7 @@ def main():
     types = {'function': 1, 'condition': 4, 'database': 5, 'idp': 9, 'walletpayment': 11, 'websocket': 8}
     by_type = {n['NodeType']: n for n in prototypes['Nodes']}
     by_type[8] = next(n for n in template['Nodes'] if n['NodeType'] == 8)
-    routes = ['refunds', 'admin-orders', 'payment-status', 'payment-reconcile'] if APP.name == 'shop' else ['refunds', 'admin-sales', 'pos-payment', 'pos-sale']
+    routes = list(routes or (['refunds', 'admin-orders', 'payment-status', 'payment-reconcile'] if APP.name == 'shop' else ['refunds', 'admin-sales', 'pos-payment', 'pos-sale']))
     graphs = []
     for route in routes:
         folder = ROOT / 'workflows' / route

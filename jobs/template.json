@@ -2,16 +2,24 @@
   "id": "jobs",
   "name": "Cloudgate Jobs",
   "category": "Field Service",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A service-business website, customer portal and staff workspace for requests, quotes, job visits, invoices and Cloudgate Wallet payments, with custom branding and media management.",
   "folder": "jobs",
   "framework": "React",
   "devCommand": "npm install && npm run dev",
-  "devPort": 3010,
+  "devPort": 3002,
   "demoUrl": "",
   "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/jobs/banner.png",
   "adminPath": "/admin",
-  "tags": ["react", "jobs", "field-service", "quotes", "invoices", "wallet", "idp"],
+  "tags": [
+    "react",
+    "jobs",
+    "field-service",
+    "quotes",
+    "invoices",
+    "wallet",
+    "idp"
+  ],
   "features": [
     "Responsive public business website, authenticated customer portal and separate back office",
     "Customer requests and service addresses, versioned quotes, optional extras, discounts, configurable tax and online approval",
@@ -23,14 +31,52 @@
     "Custom app name, logo, icon, favicon, colours and homepage imagery; Cloudgate media library with uploads and cropping",
     "Owner, office and assigned-technician access, customer ownership and activity history"
   ],
-  "requirements": ["wallet", "idp", "smtp"],
-  "environments": ["sandbox", "production"],
-  "terms": {"version": "1", "url": "https://cloudgate.dev/terms", "summary": ["Payments use your Cloudgate Wallet.", "Configure business details, service pricing, tax, staff access, payment terms and email before serving customers."]},
-  "compliance": [
-    {"key": "sandbox-notice", "environment": "sandbox", "label": "Test work only", "text": "I understand sample records are fictional and this environment is for sandbox testing."},
-    {"key": "jobs-business-ready", "environment": "production", "label": "Business configuration reviewed", "text": "I have configured staff access, services, business details, tax and payment terms."},
-    {"key": "jobs-sandbox-tested", "environment": "production", "label": "Hosted sandbox journey verified", "text": "I have tested customer access, private photos, quote approval, scheduling, invoice payment, refund and reminder delivery in hosted sandbox."}
+  "requirements": [
+    "wallet",
+    "idp"
   ],
-  "build": {"installCommand": "npm install", "buildCommand": "npm run build", "devBuildCommand": "npm run build:dev", "outputDir": "dist"},
-  "workflows": {"projectPath": "jobs", "file": ".template/workflow-template.json", "schema": ".template/schema.sql", "sampleData": ".template/sample-data.sql"}
+  "environments": [
+    "sandbox",
+    "production"
+  ],
+  "terms": {
+    "version": "1",
+    "url": "https://cloudgate.dev/terms",
+    "summary": [
+      "Payments use your Cloudgate Wallet.",
+      "Configure business details, service pricing, tax, staff access, payment terms and email before serving customers."
+    ]
+  },
+  "compliance": [
+    {
+      "key": "sandbox-notice",
+      "environment": "sandbox",
+      "label": "Test work only",
+      "text": "I understand sample records are fictional and this environment is for sandbox testing."
+    },
+    {
+      "key": "jobs-business-ready",
+      "environment": "production",
+      "label": "Business configuration reviewed",
+      "text": "I have configured staff access, services, business details, tax and payment terms."
+    },
+    {
+      "key": "jobs-sandbox-tested",
+      "environment": "production",
+      "label": "Hosted sandbox journey verified",
+      "text": "I have tested customer access, private photos, quote approval, scheduling, invoice payment, refund and reminder delivery in hosted sandbox."
+    }
+  ],
+  "build": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "devBuildCommand": "npm run build:dev",
+    "outputDir": "dist"
+  },
+  "workflows": {
+    "projectPath": "jobs",
+    "file": ".template/workflow-template.json",
+    "schema": ".template/schema.sql",
+    "sampleData": ".template/sample-data.sql"
+  }
 }

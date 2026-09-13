@@ -1,7 +1,7 @@
 {
   "name": "cloudgate-pos",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.1.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,8 @@
     "cloudgate:smoke": "python cloudgate/smoke.py",
     "banner": "node scripts/banner.mjs",
     "test:refunds": "python -B -X utf8 cloudgate/test_refunds.py && node --test tests/refunds-client.mjs",
-    "cloudgate:package-refunds": "python -B -X utf8 cloudgate/package_refunds.py"
+    "cloudgate:package-refunds": "python -B -X utf8 cloudgate/package_refunds.py",
+    "cloudgate:package-email": "python -B -X utf8 cloudgate/package_email.py"
   },
   "dependencies": {
     "@cloudgatedevs/cloudgate-client": "^0.5.0",

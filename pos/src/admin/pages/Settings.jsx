@@ -1,3 +1,4 @@
+import {SmtpSettings} from '@/shared/CloudgateSmtpSettings';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -13,17 +14,13 @@ import { errorMessage } from '@/shared/lib/errors';
 import { useAuthContext } from '@/shared/auth';
 import { LABEL_SIZES } from '@/admin/components/LabelSheet';
 
-const SMTP_PRESETS = [
-  ['', 'Custom'], ['smtp.gmail.com|587|starttls', 'Gmail / Google Workspace'], ['smtp.office365.com|587|starttls', 'Microsoft 365 / Outlook'],
-  ['smtp.sendgrid.net|587|starttls', 'SendGrid (user "apikey")'], ['smtp.mailgun.org|587|starttls', 'Mailgun'], ['email-smtp.eu-west-1.amazonaws.com|587|starttls', 'Amazon SES (eu-west-1)'],
-];
 
 const TABS = [
   { key: 'store', label: 'Store', icon: Store, hint: 'Who you are: name, address, contact details, logo and the public address of this app.', fields: ['store_name', 'store_tagline', 'store_address', 'store_phone', 'support_email', 'store_url', 'store_logo_url', 'store_icon_url'] },
   { key: 'receipt', label: 'Receipts', icon: ReceiptIcon, hint: 'What is printed on every receipt, receipt numbering and the label size for your printer.', fields: ['receipt_header', 'receipt_footer', 'tax_number', 'sale_reference_prefix', 'label_size'] },
   { key: 'money', label: 'Money', icon: Coins, hint: 'Currency and tax.', fields: ['currency', 'tax_rate', 'prices_include_tax'] },
   { key: 'till', label: 'Till', icon: Monitor, hint: 'How the tills behave: payment methods, shifts, stock rules and the quick-cash buttons.', fields: ['payment_cash_enabled', 'payment_card_enabled', 'require_shift', 'allow_negative_stock', 'low_stock_threshold', 'quick_cash_amounts'] },
-  { key: 'email', label: 'Email', icon: Mail, hint: 'Outgoing mail server for e-mailed receipts, and a test send.', fields: ['smtp_host', 'smtp_port', 'smtp_security', 'smtp_user', 'smtp_password', 'smtp_from_email', 'smtp_from_name'] },
+  { key: 'email', label: 'Email', icon: Mail, hint: 'Cloudgate delivery with optional custom SMTP.', fields: [] },
   { key: 'theme', label: 'Theme', icon: Palette, hint: 'Colours for the till screens.', fields: ['theme_primary', 'theme_secondary'] },
 ];
 
@@ -118,7 +115,6 @@ const Settings = () => {
       currency: data.currency ?? 'ZAR', prices_include_tax: data.prices_include_tax !== '0', tax_rate: String((Number(data.tax_rate_bp ?? 0) / 100).toFixed(2)),
       payment_cash_enabled: data.payment_cash_enabled !== '0', payment_card_enabled: data.payment_card_enabled !== '0', require_shift: data.require_shift !== '0', allow_negative_stock: data.allow_negative_stock === '1',
       low_stock_threshold: data.low_stock_threshold ?? '5', quick_cash_amounts: data.quick_cash_amounts ?? '20,50,100,200',
-      smtp_host: data.smtp_host ?? '', smtp_port: data.smtp_port ?? '', smtp_security: data.smtp_security ?? 'starttls', smtp_user: data.smtp_user ?? '', smtp_password: '', smtp_password_set: data.smtp_password_set === '1', smtp_from_email: data.smtp_from_email ?? '', smtp_from_name: data.smtp_from_name ?? '',
       theme_primary: data.theme_primary || '#0f172a', theme_secondary: data.theme_secondary || '#2563eb',
     };
     setForm(next); setSaved(next);
@@ -138,7 +134,6 @@ const Settings = () => {
     currency: form.currency.trim().toUpperCase(), prices_include_tax: form.prices_include_tax, tax_rate_bp: Math.round(Number(form.tax_rate || 0) * 100),
     payment_cash_enabled: form.payment_cash_enabled, payment_card_enabled: form.payment_card_enabled, require_shift: form.require_shift, allow_negative_stock: form.allow_negative_stock,
     low_stock_threshold: Math.max(0, Math.round(Number(form.low_stock_threshold || 0))), quick_cash_amounts: form.quick_cash_amounts.split(',').map((s) => s.trim()).filter((s) => s && !Number.isNaN(Number(s))).join(','),
-    smtp_host: form.smtp_host.trim(), smtp_port: form.smtp_port || (form.smtp_security === 'ssl' ? 465 : 587), smtp_security: form.smtp_security, smtp_user: form.smtp_user.trim(), smtp_password: form.smtp_password, smtp_from_email: form.smtp_from_email.trim(), smtp_from_name: form.smtp_from_name.trim(),
     theme_primary: form.theme_primary.trim().toLowerCase(), theme_secondary: form.theme_secondary.trim().toLowerCase(),
   });
 
@@ -152,7 +147,6 @@ const Settings = () => {
       form.tax_rate !== '' && Number.isNaN(Number(form.tax_rate)) && ['money', 'Tax rate must be a number.'],
       !form.payment_cash_enabled && !form.payment_card_enabled && ['till', 'Enable at least one payment method.'],
       ['theme_primary', 'theme_secondary'].some((k) => !isHex(form[k].trim())) && ['theme', 'Theme colours must be 6-digit hex values like #0f172a.'],
-      form.smtp_from_email.trim() && !form.smtp_from_email.includes('@') && ['email', 'The From e-mail is not a valid address.'],
     ].filter(Boolean);
     if (problems.length) { setActive(problems[0][0]); toast.error(problems[0][1]); return false; }
     return true;
@@ -161,16 +155,14 @@ const Settings = () => {
   const persist = async () => {
     const result = await adminApi.settings.set(payload());
     announceSettingsChanged(result);
-    setForm((f) => { const next = { ...f, smtp_password: '', smtp_password_set: result.smtp_password_set === '1' }; setSaved(next); return next; });
+    setForm((f) => { const next = { ...f }; setSaved(next); return next; });
   };
   const save = async (e) => { e.preventDefault(); if (!validate()) return; setSaving(true); try { await persist(); toast.success('Settings saved.'); } catch (err) { toast.error(errorMessage(err)); } finally { setSaving(false); } };
   const sendTest = async () => {
-    if (!validate()) return;
     setTesting(true); setTestResult(null);
-    try { await persist(); const r = await adminApi.settings.sendTest(testTo.trim()); setTestResult(r?.sent ? { tone: 'success', text: `Test e-mail sent to ${testTo.trim()} via ${r.via}. Check the inbox (and spam folder).` } : { tone: 'error', text: r?.reason || 'The test e-mail could not be sent.' }); }
+    try { const r = await adminApi.settings.sendTest(testTo.trim()); setTestResult(r?.sent ? { tone: 'success', text: `Test e-mail sent to ${testTo.trim()} via ${r.via}. Check the inbox (and spam folder).` } : { tone: 'error', text: r?.reason || 'The test e-mail could not be sent.' }); }
     catch (err) { setTestResult({ tone: 'error', text: errorMessage(err) }); } finally { setTesting(false); }
   };
-  const applyPreset = (value) => { if (!value) return; const [host, port, security] = value.split('|'); setForm((f) => ({ ...f, smtp_host: host, smtp_port: port, smtp_security: security })); };
   const discard = () => { setForm(saved); toast('Changes discarded.'); };
 
   if (error && !form) return <ErrorNote error={error} />;
@@ -254,30 +246,7 @@ const Settings = () => {
           </>
         ) : null}
 
-        {active === 'email' ? (
-          <section className="card flex flex-col gap-4 p-4">
-            <p className="text-sm text-mist-muted">E-mailed receipts go out through your own mail server or provider. Nothing is sent until this is set up.</p>
-            <Field label="Provider preset" hint="Fills in the server details; you still need your own username and password." htmlFor="s-preset"><select id="s-preset" defaultValue="" onChange={(e) => applyPreset(e.target.value)} className="select">{SMTP_PRESETS.map(([v, l]) => <option key={l} value={v}>{l}</option>)}</select></Field>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
-              <Field label="SMTP server" htmlFor="s-smtp-host"><input id="s-smtp-host" value={form.smtp_host} onChange={set('smtp_host')} className="input" placeholder="smtp.example.com" autoComplete="off" /></Field>
-              <Field label="Port" htmlFor="s-smtp-port"><input id="s-smtp-port" value={form.smtp_port} onChange={set('smtp_port')} className="input tabular-nums" inputMode="numeric" placeholder={form.smtp_security === 'ssl' ? '465' : '587'} /></Field>
-              <Field label="Security" htmlFor="s-smtp-sec"><select id="s-smtp-sec" value={form.smtp_security} onChange={set('smtp_security')} className="select"><option value="starttls">STARTTLS (587)</option><option value="ssl">SSL/TLS (465)</option><option value="none">None</option></select></Field>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Username" htmlFor="s-smtp-user"><input id="s-smtp-user" value={form.smtp_user} onChange={set('smtp_user')} className="input" autoComplete="off" /></Field>
-              <Field label="Password" hint={form.smtp_password_set ? 'A password is saved. Leave blank to keep it.' : 'Stored on the server; never shown again.'} htmlFor="s-smtp-pass"><input id="s-smtp-pass" type="password" value={form.smtp_password} onChange={set('smtp_password')} className="input" autoComplete="new-password" placeholder={form.smtp_password_set ? '••••••••' : ''} /></Field>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="From e-mail" hint="Defaults to the support e-mail. Most providers require a verified sender." htmlFor="s-smtp-from"><input id="s-smtp-from" type="email" value={form.smtp_from_email} onChange={set('smtp_from_email')} className="input" placeholder={form.support_email || 'receipts@example.com'} /></Field>
-              <Field label="From name" htmlFor="s-smtp-from-name"><input id="s-smtp-from-name" value={form.smtp_from_name} onChange={set('smtp_from_name')} className="input" placeholder={form.store_name} /></Field>
-            </div>
-            <div className="flex flex-col gap-2 rounded-xl border border-ink-700 bg-ink-900 p-3 sm:flex-row sm:items-end">
-              <Field label="Send a test to" htmlFor="s-test-to" className="grow"><input id="s-test-to" type="email" value={testTo} onChange={(e) => setTestTo(e.target.value)} className="input" /></Field>
-              <button type="button" onClick={sendTest} disabled={testing || saving || !form.smtp_host.trim() || !testTo.trim()} className="btn-ghost whitespace-nowrap">{testing ? 'Sending…' : dirty ? 'Save & send test' : 'Send test'}</button>
-            </div>
-            {testResult ? <Notice tone={testResult.tone}>{testResult.text}</Notice> : null}
-          </section>
-        ) : null}
+        {active === 'email' ? <><SmtpSettings/><section className="card p-4"><Field label="Send a test to" htmlFor="s-test-to"><input id="s-test-to" type="email" value={testTo} onChange={e=>setTestTo(e.target.value)} className="input"/></Field><button type="button" onClick={sendTest} disabled={testing || !testTo.trim()} className="btn-ghost">{testing?'Sending…':'Send test using saved Cloudgate settings'}</button>{testResult ? <Notice tone={testResult.tone}>{testResult.text}</Notice> : null}</section></> : null}
 
         {active === 'theme' ? (
           <section className="card flex flex-col gap-4 p-4">

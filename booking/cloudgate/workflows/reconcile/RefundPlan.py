@@ -317,7 +317,7 @@ class Engine:
         data['services']=self.services();data.pop('service_metadata',None)
         data['staff']=self.staff();data.pop('staff_metadata',None)
         data['bookings']=[self.detail(b) for b in self.s['bookings']]
-        data['settings']={k:v for k,v in self.settings.items() if k!='smtp_password' and not k.startswith('_')};data['settings']['smtp_password_configured']=bool(self.settings.get('smtp_password'))
+        data['settings']=self.public_settings()
         return data
     def save_service(self,rec):
         ident=integer(rec['Id'],1,2**31-1,'Service') if rec.get('Id') else max([r['Id'] for r in self.s['services']]+[0])+1
@@ -500,7 +500,7 @@ class Engine:
         if op=='admin-settings':
             self.admin()
             for key,value in (d.get('settings') or {}).items():
-                if key not in self.settings or key.startswith('_'):continue
+                if key not in self.settings or key.startswith(('_','smtp_')):continue
                 if key=='smtp_password' and not value:continue
                 if key in ('logo_url','icon_url','favicon_url','hero_image_url','about_image_url'):value=brand_asset(value)
                 if key in ('theme_primary','theme_accent','theme_background'):

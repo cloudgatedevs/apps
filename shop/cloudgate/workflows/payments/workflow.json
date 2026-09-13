@@ -4,16 +4,9 @@
   "method": "POST",
   "allowAnonymous": true,
   "enableLogging": true,
-  "description": "Storefront payment readiness: 'status' asks the Wallet Payment node whether the tenant wallet can take card payments in this environment, so the shop can say 'not accepting payments yet' before a customer reaches the hosted checkout. Gateway-anonymous; exposes only the ready flag, provider and a generic reason.",
-  "entry": "IdpAuth",
+  "description": "Storefront payment readiness: 'status' asks the Wallet Payment node whether the tenant wallet can take card payments in this environment, so the shop can say 'not accepting payments yet' before a customer reaches the hosted checkout. Gateway-anonymous, no IdP node (WalletStatus → Shape); exposes only the ready flag, provider and a generic reason.",
+  "entry": "WalletStatus",
   "nodes": [
-    {
-      "name": "IdpAuth",
-      "type": "idp",
-      "output": "userId",
-      "allowAnonymous": true,
-      "next": "WalletStatus"
-    },
     {
       "name": "WalletStatus",
       "type": "walletpayment",

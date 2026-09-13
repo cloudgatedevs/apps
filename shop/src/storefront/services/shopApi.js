@@ -7,10 +7,23 @@ import { api } from '@/shared/services/api';
 
 export const shopApi = {
   // --- catalog -------------------------------------------------------------
+  /**
+   * Everything the storefront shell needs, in ONE workflow call: public settings, the category
+   * tree and the published pages for header/footer. With `home: true` the featured and newest
+   * product grids ride along too, so the home page paints from a single round trip.
+   * Every workflow call costs the same engine overhead regardless of how little it returns, so
+   * folding these together is the cheapest way to make the first paint fast.
+   */
+  bootstrap: ({ home = false, take = 8 } = {}) => api.post('/catalog', { op: 'bootstrap', ...(home ? { home: true, take } : {}) }),
   settings: () => api.post('/catalog', { op: 'settings' }),
   categories: () => api.post('/catalog', { op: 'categories' }).then((r) => r?.items ?? []),
   featured: (take = 8) => api.post('/catalog', { op: 'featured', take }).then((r) => r?.items ?? []),
-  products: ({ category, search, sort, inStock, minCents, maxCents, skip = 0, take = 24 } = {}) =>
+  /**
+   * Paged product cards. `withBounds: true` adds `bounds: { minCents, maxCents }` — the price
+   * range of the whole category, ignoring the other filters — to the same response (null when the
+   * filter matched nothing), which spares the catalogue page a separate `priceBounds` call.
+   */
+  products: ({ category, search, sort, inStock, minCents, maxCents, skip = 0, take = 24, withBounds = false } = {}) =>
     api.post('/catalog', {
       op: 'products',
       skip,
@@ -21,6 +34,7 @@ export const shopApi = {
       ...(inStock ? { inStock: true } : {}),
       ...(minCents ? { minCents } : {}),
       ...(maxCents ? { maxCents } : {}),
+      ...(withBounds ? { withBounds: true } : {}),
     }),
   /** Cheapest / dearest active product (optionally in a category) for the price filter. */
   priceBounds: (category) => api.post('/catalog', { op: 'bounds', ...(category ? { category } : {}) }),
@@ -36,7 +50,8 @@ export const shopApi = {
   },
   /** Is the store able to take card payments right now? Resolves to { ready, provider, reason }; null when unknown. */
   paymentsStatus: () => api.post('/payments', { op: 'status' }).catch(() => null),
-  product: (slug) => api.post('/catalog', { op: 'product', slug }),
+  /** Product detail. `Related[]` (up to `related` cards from the same category) comes with it — no second call. */
+  product: (slug, { related = 4 } = {}) => api.post('/catalog', { op: 'product', slug, related }),
 
   // --- cart (server-side, token in localStorage) ---------------------------
   cart: {

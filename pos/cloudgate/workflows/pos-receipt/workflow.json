@@ -4,7 +4,7 @@
   "method": "POST",
   "allowAnonymous": false,
   "enableLogging": true,
-  "description": "'email' (saleId, to): queues the receipt email on a thread branch through the store's SMTP settings. IdP teller role.",
+  "description": "email (saleId, to): sends the receipt on a thread branch through Cloudgate tenant email delivery. IdP teller role.",
   "entry": "IdpAuth",
   "nodes": [
     {
@@ -47,7 +47,7 @@
     {
       "name": "SendEmail",
       "type": "function",
-      "script": "send_email.py"
+      "script": "../_shared/send_email.py"
     }
   ]
 }

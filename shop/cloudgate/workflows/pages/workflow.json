@@ -4,16 +4,9 @@
   "method": "POST",
   "allowAnonymous": true,
   "enableLogging": true,
-  "description": "Storefront content pages: 'nav' lists published pages for the header and footer, 'get' returns one published page by slug (markdown body). Gateway-anonymous.",
-  "entry": "IdpAuth",
+  "description": "Storefront content pages: 'nav' lists published pages for the header and footer, 'get' returns one published page by slug (markdown body). Gateway-anonymous; no IdP node (nothing per-user), so the chain is Plan → Run → Shape.",
+  "entry": "Plan",
   "nodes": [
-    {
-      "name": "IdpAuth",
-      "type": "idp",
-      "output": "userId",
-      "allowAnonymous": true,
-      "next": "Plan"
-    },
     {
       "name": "Plan",
       "type": "function",

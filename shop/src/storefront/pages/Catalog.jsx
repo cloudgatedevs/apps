@@ -75,8 +75,13 @@ const Catalog = () => {
   // Category is part of the path; keep the query (sort, stock, price) and navigate client-side so nothing reloads.
   const goCategory = (slug) => { const qs = params.toString(); navigate(`${slug ? `/shop/${slug}` : '/shop'}${qs ? `?${qs}` : ''}`); };
 
-  const res = useAsync(() => shopApi.products({ category, search: q || undefined, sort, inStock, minCents: min, maxCents: max, skip: page * PAGE_SIZE, take: PAGE_SIZE }), [category, q, sort, inStock, min, max, page]);
-  const bounds = useAsync(() => shopApi.priceBounds(category), [category]);
+  // One workflow call per filter change: the category's price range rides along with the
+  // page of products (`withBounds`) instead of a separate `bounds` request. An empty result
+  // carries bounds=null, so the last known range stays on screen.
+  const res = useAsync(() => shopApi.products({ category, search: q || undefined, sort, inStock, minCents: min, maxCents: max, skip: page * PAGE_SIZE, take: PAGE_SIZE, withBounds: true }), [category, q, sort, inStock, min, max, page]);
+  const [bounds, setBounds] = useState(null);
+  useEffect(() => { if (res.data?.bounds) setBounds(res.data.bounds); }, [res.data]);
+  useEffect(() => { setBounds(null); }, [category]);
   const items = res.data?.items ?? [];
   const total = res.data?.total ?? 0;
   // First visit shows skeletons; every later filter change keeps the old grid on screen (faded) until
@@ -89,7 +94,7 @@ const Catalog = () => {
   const activeFilters = [inStock ? 'In stock' : null, min || max ? `${min ? fmtCents(min, currency) : '…'} – ${max ? fmtCents(max, currency) : '…'}` : null].filter(Boolean);
 
   const filters = (
-    <Filters category={category} categories={categories} inStock={inStock} min={min} max={max} bounds={bounds.data} currency={currency}
+    <Filters category={category} categories={categories} inStock={inStock} min={min} max={max} bounds={bounds} currency={currency}
       onChange={(patch) => { setParam(patch); setFiltersOpen(false); }} onCategory={(slug) => { setFiltersOpen(false); goCategory(slug); }} />
   );
 

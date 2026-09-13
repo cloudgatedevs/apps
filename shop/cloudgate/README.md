@@ -21,6 +21,8 @@ npm run cloudgate:deploy            # every workflow
 npm run cloudgate:deploy -- catalog # one route
 npm run cloudgate:list              # what the tenant has
 npm run cloudgate:smoke             # public checks; SHOP_ADMIN_TOKEN=<idp jwt> adds the admin checks
+npm run cloudgate:test-local        # catalog + pages workflows against a throwaway SQLite copy (no tenant)
+npm run cloudgate:package -- catalog pages   # refresh those graphs in .template/workflow-template.json offline
 ```
 
 The deployer reuses the OAuth token the Claude Code Cloudgate plugin caches under
@@ -31,6 +33,8 @@ updated in place (a draft is opened automatically) and republished to sandbox.
 
 - Every action is `POST {gateway}/{sbx|prod}/shop/<route>` with a JSON body `{ "op": "...", ...params }`.
 - Node chain: `IdpAuth` (IdP Authorize) → `Plan` (Function: validate + build SQL) → `Run` (Database: `${Plan}`) → `Shape` (Function: rows → response).
+  Public reads that never look at the caller (`catalog`, `pages`, `payments`) skip `IdpAuth` and start at `Plan`: every node is
+  an engine hop (~0.1 s), so a node that nothing reads is pure latency. Keep it wherever a script uses `${IdpAuth}`.
 - Node types in `workflow.json`: `idp`, `function`, `condition` (`positive`/`negative` branches), `database`, `request`,
   and `walletpayment` — `{ "type": "walletpayment", "params": { "operation": "create|get|find|refund", "amount": "${PayAmount}", ... } }`
   maps onto the Wallet Payment node's Param slots (operation, amount, currency, description, reference, customerEmail,

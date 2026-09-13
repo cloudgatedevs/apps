@@ -58,7 +58,7 @@ token; till actions accept any signed-in user, admin actions only the admin role
 | `pos-shift` | any user | `registers`, `current`, `open` (register + float), `movement` (payin/payout/drop), `close` (counted cash → expected, difference), `summary` |
 | `pos-sale` | any user | `complete` (lines + cash payments, server-priced, stock checked and written), `create` (open sale for a card payment), `hold`/`held`/`recall`/`discard`, `get` (id or reference), `recent`; refunds use `refunds` |
 | `pos-payment` | any user | `start` (Wallet Payment `create` → hosted URL for the QR code), `status` (re-reads the wallet payment; completes the sale and sells the stock on success), `cancel`, `wallet-status`; refunds use `refunds` |
-| `pos-receipt` | any user | `email` (receipt e-mail through the SMTP settings, on a thread branch) |
+| `pos-receipt` | any user | `email` (receipt e-mail through Cloudgate tenant delivery, on a thread branch) |
 | `admin-products` | admin | `list`, `get`, `create`, `update`, `set-status`, `delete` (deactivates sold products), `add-barcode`, `remove-barcode`, `barcode-owner`, `labels`, `import` (CSV rows, upsert by barcode/SKU/name), `image-refs` |
 | `admin-categories`, `admin-suppliers`, `admin-registers`, `admin-customers` | admin | `list`, `create`, `update`, `delete` (+ `reorder` for categories, `get` for customers) |
 | `admin-inventory` | admin | `levels`, `movements`, `adjust` (delta or new quantity, with reason), `receive` (goods received note), `receipts`, `receipt`, `count` (stock take) |
@@ -96,3 +96,15 @@ template.json        the App Store manifest entry (mirrored into ../apps.json)
 ### Template 1.1.1 — refund safety
 
 Cash and card refunds now use the durable `refunds` action with stable request keys, confirmed-status accounting, and recovery controls in the till and back office. The package contains the schema upgrade and matching callers. See [cloudgate/REFUNDS.md](cloudgate/REFUNDS.md) for the contract and checks.
+
+## Shared Cloudgate email delivery
+
+Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
+
+This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
+
+## Shared Cloudgate email delivery
+
+Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
+
+This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.

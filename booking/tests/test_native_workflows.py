@@ -160,7 +160,7 @@ class NativeTests(unittest.TestCase):
   self.assertEqual(self.snapshot()['bookings'][0]['refunded'],10000)
  def test_native_reconcile_no_candidate(self):
   result=self.native('reconcile',{});self.assertTrue(result['ok'])
- def test_native_email_unconfigured_does_not_send(self):
-  result=self.native('notifications',{});self.assertFalse(result['configured'])
+ def test_native_email_empty_queue_does_not_send(self):
+  result=self.native('notifications',{});self.assertEqual(result['processed'],0)
 
 if __name__=='__main__':unittest.main()

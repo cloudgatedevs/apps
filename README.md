@@ -7,9 +7,9 @@ accepted terms, imports the app's workflows and databases, builds the app and pu
 
 | App | Folder | What it is | Requirements |
 | --- | --- | --- | --- |
-| [Cloudgate Shop](./shop/) | [`shop/`](./shop/) | Online store with hosted card checkout through Cloudgate Wallet and a full back office. | Wallet, IdP, SMTP (configured in the back office), WebSockets |
-| [Cloudgate Booking](./booking/) | [`booking/`](./booking/) | Service appointments, staff and room scheduling, paid booking confirmation, customer management and a studio back office. | Wallet, IdP, SMTP |
-| [Cloudgate Jobs](./jobs/) | [`jobs/`](./jobs/) | Service requests, quotes, job visits, invoices and a customer/staff workspace with custom branding and media. Source package and local preview available; hosted release verification pending. | Wallet, IdP, SMTP |
+| [Cloudgate Shop](./shop/) | [`shop/`](./shop/) | Online store with hosted card checkout through Cloudgate Wallet and a full back office. | Wallet, IdP, WebSockets |
+| [Cloudgate Booking](./booking/) | [`booking/`](./booking/) | Service appointments, staff and room scheduling, paid booking confirmation, customer management and a studio back office. | Wallet, IdP |
+| [Cloudgate Jobs](./jobs/) | [`jobs/`](./jobs/) | Service requests, quotes, job visits, invoices and a customer/staff workspace with custom branding and media. Source package and local preview available; hosted release verification pending. | Wallet, IdP |
 
 An app only appears in the store once it is listed in [`apps.json`](./apps.json).
 
@@ -32,7 +32,7 @@ An app only appears in the store once it is listed in [`apps.json`](./apps.json)
 | --- | --- |
 | `category`, `version`, `features[]` | Card content. |
 | `adminPath` | Back-office path appended to the live URL on the result screen. |
-| `requirements[]` | `wallet`, `idp`, `smtp`, `websockets`: drives the readiness checks. |
+| `requirements[]` | `wallet`, `idp`, `websockets`: drives the readiness checks. |
 | `environments[]` | `sandbox` and/or `production`. |
 | `terms` | `{ version, url, summary[] }`: must be accepted; the version is recorded on the install. |
 | `compliance[]` | `{ key, label, text, environment }` checkboxes; `environment` is `sandbox`, `production` or `all`. |
@@ -75,3 +75,5 @@ matches by route and keeps the databases), applies `schema.sql` to the existing 
 idempotently: `IF NOT EXISTS`, guarded `ALTER TABLE`), reuses existing WebSocket channels by route,
 then rebuilds and republishes on the same web app. The wizard warns that any local changes to the
 source or the workflows are overwritten.
+
+App email uses Cloudgate delivery by default. Custom SMTP is an optional tenant override in the back office, not an App Store readiness requirement. App manifests must not list `smtp` as a rollout prerequisite.

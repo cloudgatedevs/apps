@@ -1,9 +1,23 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { shopApi } from '@/storefront/services/shopApi';
 
-// Store-wide public settings (name, currency, shipping rules) and the category
-// tree — fetched once, shared everywhere.
+// Store-wide public settings (name, currency, shipping rules), the category tree and the
+// header/footer pages — fetched ONCE, in a single `catalog bootstrap` workflow call, and
+// shared everywhere. When the app opens on the home page the featured / newest grids ride
+// along in that same call (see `home` below), so the landing page paints after one round
+// trip instead of five.
 const StoreContext = createContext(null);
+
+/** True when the app is being opened on the home page (the only route that shows the product grids). */
+const opensOnHome = () => {
+  try {
+    const base = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    return path === (base || '/');
+  } catch {
+    return false;
+  }
+};
 
 const DEFAULTS = { store_name: 'Shop', currency: 'ZAR', shipping_flat_cents: '0', free_shipping_threshold_cents: '0', theme_primary: '#18181b', theme_secondary: '#4f46e5' };
 
@@ -35,17 +49,27 @@ export const StoreProvider = ({ children }) => {
   const [settings, setSettings] = useState(DEFAULTS);
   const [categories, setCategories] = useState([]);
   const [pages, setPages] = useState({ nav: [], footer: [] });
+  // Home-page grids preloaded by the bootstrap call: { featured: [...], newest: [...] } or null.
+  // `loading` is true only while a bootstrap that includes them is in flight, so Home can show
+  // skeletons instead of firing its own requests.
+  const [home, setHome] = useState(() => ({ loading: opensOnHome(), featured: null, newest: null }));
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let alive = true;
-    Promise.all([shopApi.settings(), shopApi.categories(), shopApi.pages.nav().catch(() => ({ nav: [], footer: [] }))])
-      .then(([s, c, p]) => {
+    const withHome = opensOnHome();
+    shopApi
+      .bootstrap({ home: withHome })
+      .then((b) => {
         if (!alive) return;
-        setSettings({ ...DEFAULTS, ...(s || {}) });
+        const s = b?.settings || {};
+        const c = b?.categories || [];
+        const p = b?.pages || {};
+        setSettings({ ...DEFAULTS, ...s });
         applyTheme(s?.theme_primary || DEFAULTS.theme_primary, s?.theme_secondary || DEFAULTS.theme_secondary);
-        setCategories(c || []);
+        setCategories(c);
         setPages({ nav: p?.nav ?? [], footer: p?.footer ?? [] });
+        setHome(withHome ? { loading: false, featured: b?.featured?.items ?? [], newest: b?.newest?.items ?? [] } : { loading: false, featured: null, newest: null });
         if (s?.store_name) document.title = s.store_name;
         // Favicon and meta description come from the back office too.
         const icon = s?.store_icon_url || s?.store_logo_url;
@@ -63,7 +87,11 @@ export const StoreProvider = ({ children }) => {
           meta.content = s.store_description;
         }
       })
-      .catch((e) => alive && setError(e));
+      .catch((e) => {
+        if (!alive) return;
+        setError(e);
+        setHome({ loading: false, featured: null, newest: null });
+      });
     return () => {
       alive = false;
     };
@@ -78,10 +106,11 @@ export const StoreProvider = ({ children }) => {
       freeShippingThresholdCents: Number(settings.free_shipping_threshold_cents) || 0,
       categories,
       pages,
+      home,
       social: Object.fromEntries(['instagram', 'facebook', 'x', 'tiktok'].map((k) => [k, String(settings[`social_${k}`] || '').trim()]).filter(([, v]) => v)),
       error,
     }),
-    [settings, categories, pages, error],
+    [settings, categories, pages, home, error],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

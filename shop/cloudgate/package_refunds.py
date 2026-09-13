@@ -1,11 +1,16 @@
-"""Refresh refund-related App Store graphs offline; never contact/publish a tenant.
+"""Refresh App Store workflow graphs offline; never contact/publish a tenant.
 
 Existing graphs are edited from the checked-in export. New node shapes are copied
-from a live MCP export in refund-node-prototypes.json. Run after editing refunds.
+from a live MCP export in refund-node-prototypes.json. Run after editing refunds
+(default route set), or name the routes to repackage:
+
+    python -B -X utf8 cloudgate/package_refunds.py                     # refund routes
+    python -B -X utf8 cloudgate/package_refunds.py catalog pages       # just these
 """
 import copy
 import json
 import sqlite3
+import sys
 import uuid
 from pathlib import Path
 import deploy
@@ -15,7 +20,10 @@ ROOT = Path(__file__).parent
 APP = ROOT.parent
 
 
-def main():
+REFUND_ROUTES = ['refunds', 'admin-orders', 'payment-status', 'payment-reconcile'] if APP.name == 'shop' else ['refunds', 'admin-sales', 'pos-payment', 'pos-sale']
+
+
+def main(routes=None):
     split_schema()
     # The App Store updater splits at a semicolon followed by a newline. Keep
     # each trigger on one physical line so an update executes its whole body.
@@ -40,7 +48,10 @@ def main():
     types = {'function': 1, 'condition': 4, 'database': 5, 'idp': 9, 'walletpayment': 11, 'websocket': 8}
     by_type = {n['NodeType']: n for n in prototypes['Nodes']}
     by_type[8] = next(n for n in template['Nodes'] if n['NodeType'] == 8)
-    routes = ['refunds', 'admin-orders', 'payment-status', 'payment-reconcile'] if APP.name == 'shop' else ['refunds', 'admin-sales', 'pos-payment', 'pos-sale']
+    routes = list(routes or REFUND_ROUTES)
+    unknown = [r for r in routes if not (ROOT / 'workflows' / r / 'workflow.json').exists()]
+    if unknown:
+        raise SystemExit('Unknown workflow folder(s): ' + ', '.join(unknown))
     graphs = []
     for route in routes:
         folder = ROOT / 'workflows' / route
@@ -76,7 +87,9 @@ def main():
                 if entry.get(edge):
                     named[entry['name']][field] = named[entry[edge]]['Id']
         endpoint = copy.deepcopy(existing or prototypes['Endpoint'])
-        endpoint.update(Id=eid, ProjectId=config['projectId'], Name=spec['name'], Route=route, NodeId=named[spec['entry']]['Id'])
+        endpoint.update(Id=eid, ProjectId=config['projectId'], Name=spec['name'], Route=route, NodeId=named[spec['entry']]['Id'],
+                        RequestType=deploy.REQUEST_TYPE[spec.get('method', 'POST').upper()],
+                        AllowAnonymous=bool(spec.get('allowAnonymous', False)), EnableLogging=bool(spec.get('enableLogging', True)))
         if route == 'refunds':
             endpoint.update(AllowAnonymous=False, EnableLogging=False, MaskData=True)
         template['Endpoints'] = [e for e in template['Endpoints'] if e['Id'] != eid] + [endpoint]
@@ -92,4 +105,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main([a for a in sys.argv[1:] if not a.startswith('-')])
