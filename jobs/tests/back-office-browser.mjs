@@ -1,0 +1,22 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true});
+const page=await browser.newPage({viewport:{width:1440,height:1000}});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.addInitScript(()=>sessionStorage.setItem('jobs.preview.role','admin'));
+let role='admin';
+const settings={name:'Cloudgate Jobs',currency:'ZAR',timezone:'Africa/Johannesburg'};
+await page.route('**/api/**',route=>{const op=route.request().postDataJSON()?.op;return route.fulfill({json:op==='catalog'?{settings,services:[]}:op==='list'?{items:[],totalCount:0}:{settings,records:[],team:[],identity:{name:'Preview Admin'},role}});});
+await page.goto('http://127.0.0.1:3024/admin');
+await page.getByRole('heading',{name:'A clear view of your day.'}).waitFor();
+const nav=page.locator('.office-sidebar');
+for(const name of ['Files & media','Email delivery','User management']){await nav.getByRole('button',{name,exact:true}).click();await page.locator('.workspace-main h1').waitFor();}
+await nav.getByLabel('Find a back office section').fill('user');assert.equal(await nav.locator('nav button').count(),1);
+await nav.getByRole('button',{name:'User management',exact:true}).click();
+await page.screenshot({path:'test-results/back-office-desktop.png',fullPage:true});
+await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Open navigation',exact:true}).click();
+const drawer=page.getByRole('dialog',{name:'Back office navigation'});
+await drawer.waitFor();await drawer.getByRole('button',{name:'Email delivery',exact:true}).click();await drawer.waitFor({state:'hidden'});
+assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+await page.getByRole('button',{name:'Open navigation',exact:true}).click();await page.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});
+await page.screenshot({path:'test-results/back-office-mobile.png',fullPage:true});role='technician';await page.goto('http://127.0.0.1:3024/admin#users');await page.reload();await page.getByRole('heading',{name:'Section unavailable'}).waitFor();await page.getByRole('button',{name:'Open navigation',exact:true}).click();assert.equal(await drawer.getByRole('button',{name:'User management',exact:true}).count(),0);assert.deepEqual(errors,[]);await browser.close();console.log('Back office checks passed.');

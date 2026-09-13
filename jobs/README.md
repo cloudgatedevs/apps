@@ -110,3 +110,11 @@ Jobs IdP admin login succeeded. All office sections rendered; a R950 draft quota
 Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
 
 This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
+
+## Back office navigation (1.0.2)
+
+Compact grouped sidebar, navigation search, accessible mobile drawer, website shortcut and account controls. Administration provides Files & media (Cloudgate images and usage-aware cleanup), Email delivery (shared tenant SMTP with Cloudgate delivery by default), User management and Settings. Branding and Jobs business screens remain available.
+
+User management uses tenant Admin IdP APIs for paginated search, details, create/update, enable/disable, confirmed deletion and confirmed password-reset emails. Calls use the current IdP bearer token with one refresh on expiry. Administrators are read-only here. Jobs team records and assignments remain separate from app identities. Preview does not change identities or send mail.
+
+Validation: production build, 38 regression tests, cross-app metadata checks, isolated sidebar/mobile and mocked user CRUD browser checks. The browser scripts use a preview Vite server on port 3024 with mocked APIs. No real account changes or emails were made. Deployment requires the existing Cloudgate Admin IdP APIs; no additional workflow publication is needed for this frontend change.
