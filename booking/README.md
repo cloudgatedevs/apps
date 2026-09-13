@@ -2,6 +2,10 @@
 
 A booking product derived from Cloudgate Shop: two React/Vite entry points, shared Cloudgate client and IdP integration, Python workflow business logic, SQLite, native Wallet Payment nodes, and App Store packaging. The separate Shop and POS refund template updates are documented in their respective `cloudgate/REFUNDS.md` files.
 
+## Version 1.7.1 — Opaque back-office dialogs
+
+Fixes transparent dialogs, form fields and panels in published builds. The back-office palette now uses an explicit light or dark base colour, avoiding undefined CSS variables generated when compiling `light-dark()`. Saved tenant colours are retained. Update the installed app through the App Store to rebuild and publish the corrected frontend.
+
 ## Version 1.7.0 — Refreshed back office
 
 The default theme is black (`#000000`), neutral grey (`#737373`) and white (`#ffffff`), with neutral headers, navigation and image overlays. New installations use this palette. Existing saved colours are retained; use **Settings → Theme colours → Restore default colours**, then **Save business settings**, to switch an existing business to the new defaults. Custom palettes remain available.

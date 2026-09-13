@@ -195,7 +195,7 @@
       "id": "booking",
       "name": "Cloudgate Booking",
       "category": "Appointments",
-      "version": "1.7.0",
+      "version": "1.7.1",
       "description": "A configurable booking site and business back office: a media library, service photos, custom categories, staff, resources, availability, payments, customer accounts and appointment management.",
       "folder": "booking",
       "framework": "React",

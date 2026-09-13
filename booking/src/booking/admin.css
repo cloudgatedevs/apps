@@ -1,6 +1,8 @@
 /* Back-office presentation; the customer site and saved brand palette stay independent. */
 .admin-app {
-  --office-surface: color-mix(in srgb, var(--cream) 36%, light-dark(#fff, #171717));
+  /* Resolve the light/dark base in themeTokens: production CSS compilation can
+     rewrite light-dark() to switch variables that a runtime color-scheme never defines. */
+  --office-surface: color-mix(in srgb, var(--cream) 36%, var(--office-base, #fff));
   --office-canvas: color-mix(in srgb, var(--cream) 96%, var(--ink));
   --office-line: color-mix(in srgb, var(--ink) 12%, var(--cream));
   --office-soft: color-mix(in srgb, var(--green) 7%, var(--office-surface));

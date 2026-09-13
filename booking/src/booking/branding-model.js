@@ -34,5 +34,5 @@ export function themeTokens(settings = {}) {
   const ink = contrast >= 4.5 ? soft : best;
   return { '--green': s.theme_primary, '--on-primary': readableText(s.theme_primary), '--brand-accent': s.theme_accent, '--cream': s.theme_background, '--ink': ink,
     '--surface': `color-mix(in srgb, ${s.theme_background} 96%, ${ink})`, '--muted': `color-mix(in srgb, ${ink} 68%, ${s.theme_background})`,
-    '--line': `color-mix(in srgb, ${ink} 18%, ${s.theme_background})`, '--sage': `color-mix(in srgb, ${s.theme_accent} 16%, ${s.theme_background})`, '--color-scheme': best === '#000000' ? 'light' : 'dark' };
+    '--line': `color-mix(in srgb, ${ink} 18%, ${s.theme_background})`, '--sage': `color-mix(in srgb, ${s.theme_accent} 16%, ${s.theme_background})`, '--office-base': best === '#000000' ? '#ffffff' : '#171717', '--color-scheme': best === '#000000' ? 'light' : 'dark' };
 }
