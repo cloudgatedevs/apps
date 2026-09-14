@@ -8,7 +8,7 @@ with two entry points that build into two separate bundles:
 | Entry | URL | What it is |
 | --- | --- | --- |
 | `index.html` → `src/storefront/` | `/` | Public shop (light theme): home, catalogue, product pages, cart, checkout. |
-| `admin.html` → `src/admin/` | `/admin` | Back office (light, dense): dashboard, products with variants and images, categories, inventory ledger, orders with shipping/tracking and refunds, customers, media clean-up, settings incl. outgoing email. IdP users with the `admin` role only. |
+| `admin.html` → `src/admin/` | `/admin` | Back office (light, dense): dashboard, products with variants and images, categories, inventory ledger, orders with shipping/tracking and refunds, customers, media clean-up, workflow logs, settings incl. outgoing email. IdP users with the `admin` role only. |
 
 Shared code lives in `src/shared/` (auth, API client, UI kit, money and error helpers).
 
@@ -134,6 +134,29 @@ src/
 cloudgate/           schema.sql, deploy.py, deploy.config.json, workflows/<route>/
 ```
 
+### Template 1.3.0 — workflow logs in the back office
+
+**Back office → Logs** shows every workflow call this shop makes to Cloudgate — storefront, back office,
+thread branches and the scheduled `payment-reconcile` worker — read from Cloudgate's own log store rather
+than a copy the app keeps. Stat tiles (calls, success rate, errors, average and p95 duration, each against
+the previous period), calls per hour/day, a per-action table (calls, error rate, avg, p50, p95, max — click
+a row to filter) and a paged list with outcome / action / minimum-duration filters. The detail drawer shows
+one call's request and response (masked when the action has *Mask data* on in Cloudgate) and its node-by-node
+session logs.
+
+The page is `src/shared/CloudgateWorkflowLogs.jsx` + `src/shared/services/workflowLogsApi.js` — the same
+two files in every App Store app, like the SMTP panel. It talks to the IdP admin API
+`POST /api/idp/{tenant}/admin/workflow-logs/{list|summary|get|nodes}` with the IdP bearer token
+(Admin role required) and names its own scope: `VITE_CLOUDGATE_API_PROJECT` as the controller path and
+`VITE_CLOUDGATE_API_ENV` as the environment. The backend resolves that pair through the tenant's App Store
+installs, so the shop's administrator only ever sees calls to the shop's own controller; on a developer
+tenant that deployed by hand (`cloudgate:deploy`) it falls back to the tenant's non-private controller at
+that path. Request headers and the API key are never returned; the list carries payload sizes only.
+
+Requires a Cloudgate host with the workflow-logs admin API (`IdpAuthController.AdminWorkflowLogs`); older
+hosts get an explanatory empty state. No workflow or schema change — installed tenants only rebuild the
+frontend through the App Store update.
+
 ### Template 1.2.0 — faster storefront
 
 Every workflow call costs the same engine overhead (~0.3 s from the gateway plus ~0.1 s per node) no matter
@@ -156,12 +179,6 @@ copy of the schema (no tenant needed); `npm run cloudgate:smoke` checks the publ
 ### Template 1.1.1 — refund safety
 
 Refunds now use the durable `refunds` action with stable request keys, confirmed-status accounting, and recovery controls. The package contains the schema upgrade and matching callers. See [cloudgate/REFUNDS.md](cloudgate/REFUNDS.md) for the contract and checks.
-
-## Shared Cloudgate email delivery
-
-Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
-
-This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
 
 ## Shared Cloudgate email delivery
 

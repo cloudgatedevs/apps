@@ -111,6 +111,22 @@ Cloudgate delivers app email by default. Custom SMTP is optional and is configur
 
 This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
 
+## Workflow logs in the back office (1.1.0)
+
+**Administration → Logs** (owners only) shows every workflow call this app makes to Cloudgate — the public
+site, the customer portal, the workspace and the scheduled `automation`, `notifications`, `reconcile` and
+`refund-reconcile` workers — read from Cloudgate's own log store. Stat tiles (calls, success rate, errors,
+average and p95 duration against the previous period), calls per hour/day, a per-action table and a paged
+list with outcome / action / minimum-duration filters. The detail drawer shows one call's request and
+response (masked when the action has *Mask data* on in Cloudgate) and its node-by-node session logs.
+
+The page is `src/shared/CloudgateWorkflowLogs.jsx` (+ `cloudgate-workflow-logs.css`) and
+`src/shared/services/workflowLogsApi.js`, the same files as in Shop, POS and Booking. It calls the IdP admin
+API `POST /api/idp/{tenant}/admin/workflow-logs/{list|summary|get|nodes}` with the IdP bearer token (Admin
+role required) and names its own scope from `VITE_CLOUDGATE_API_PROJECT` and `VITE_CLOUDGATE_API_ENV`; the
+backend resolves that through the tenant's App Store installs. The local preview shows an explanatory empty
+state. Requires a Cloudgate host with that API. Frontend only: no workflow or database change.
+
 ## Back office navigation (1.0.2)
 
 Compact grouped sidebar, navigation search, accessible mobile drawer, website shortcut and account controls. Administration provides Files & media (Cloudgate images and usage-aware cleanup), Email delivery (shared tenant SMTP with Cloudgate delivery by default), User management and Settings. Branding and Jobs business screens remain available.

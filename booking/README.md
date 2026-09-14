@@ -2,6 +2,22 @@
 
 A booking product derived from Cloudgate Shop: two React/Vite entry points, shared Cloudgate client and IdP integration, Python workflow business logic, SQLite, native Wallet Payment nodes, and App Store packaging. The separate Shop and POS refund template updates are documented in their respective `cloudgate/REFUNDS.md` files.
 
+## Version 1.8.0 — Workflow logs in the back office
+
+**Business → Logs** shows every workflow call this app makes to Cloudgate — the customer site, the workspace,
+and the scheduled `reconcile` and `notifications` workers — read from Cloudgate's own log store. Stat tiles
+(calls, success rate, errors, average and p95 duration against the previous period), calls per hour/day, a
+per-action table and a paged list with outcome / action / minimum-duration filters. The detail drawer shows one
+call's request and response (masked when the action has *Mask data* on in Cloudgate) and its node-by-node
+session logs.
+
+The page is `src/shared/CloudgateWorkflowLogs.jsx` (+ `cloudgate-workflow-logs.css`) and
+`src/shared/services/workflowLogsApi.js`, the same files as in Shop, POS and Jobs. It calls the IdP admin API
+`POST /api/idp/{tenant}/admin/workflow-logs/{list|summary|get|nodes}` with the IdP bearer token (Admin role
+required) and names its own scope from `VITE_CLOUDGATE_API_PROJECT` and `VITE_CLOUDGATE_API_ENV`; the backend
+resolves that through the tenant's App Store installs. The local preview shows an explanatory empty state.
+Requires a Cloudgate host with that API. Frontend only: no workflow or database change.
+
 ## Version 1.7.1 — Opaque back-office dialogs
 
 Fixes transparent dialogs, form fields and panels in published builds. The back-office palette now uses an explicit light or dark base colour, avoiding undefined CSS variables generated when compiling `light-dark()`. Saved tenant colours are retained. Update the installed app through the App Store to rebuild and publish the corrected frontend.
@@ -170,12 +186,6 @@ The regression suite covers collisions, stale writes, payment idempotency, late 
 This is a substantial single-location booking V1, not full feature parity with every commercial salon platform. It does not include SMS/WhatsApp delivery, recurring memberships, gift-card liabilities, loyalty points, group-class capacity, marketplace discovery, payroll, multi-location operations, card-terminal integration, two-way Google/Outlook calendar sync, or staff self-service permissions. Waitlist matching/follow-up is manual. Reports are operational and do not constitute tax-accounting software. The calendar supports daily staff columns and a weekly appointment view. The backend currently loads a complete studio snapshot per action, suitable as a small-business baseline; high-volume deployment should add bounded queries and pagination. SMTP delivery is at least once; a crash after sending and before recording can produce a duplicate message. Refunds whose provider result is uncertain require manual reconciliation in Cloudgate Wallet.
 
 Future upgrades should preserve the database conflict guards and add migrations, payment-provider integration tests, role-specific staff access, and worker telemetry before broadening the product.
-
-## Shared Cloudgate email delivery
-
-Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
-
-This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
 
 ## Shared Cloudgate email delivery
 

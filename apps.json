@@ -4,7 +4,7 @@
       "id": "shop",
       "name": "Cloudgate Shop",
       "category": "Commerce",
-      "version": "1.2.1",
+      "version": "1.3.0",
       "description": "A complete online store: catalogue with variants and stock, cart and hosted card checkout through Cloudgate Wallet, order tracking, and a full back office for products, inventory, orders, refunds, customers, content pages, email and theme colours.",
       "folder": "shop",
       "framework": "React",
@@ -28,6 +28,7 @@
         "Products with variants, images, stock ledger and low-stock alerts",
         "Orders with shipping, tracking, refunds and customer emails",
         "Editable pages, contact form, newsletter, theme colours and branding",
+        "Logs page in the back office: this shop’s workflow calls, timings and errors, read from Cloudgate",
         "Back office for IdP users with the Admin role"
       ],
       "requirements": [
@@ -98,7 +99,7 @@
       "id": "pos",
       "name": "Cloudgate POS",
       "category": "Commerce",
-      "version": "1.1.3",
+      "version": "1.2.0",
       "description": "A complete point-of-sale system: a touch-friendly till that scans barcodes with the device camera or a USB scanner, cash and card payments through Cloudgate Wallet, parked sales, returns and shift cash-ups, plus a back office for products, inventory (goods received and stock takes), sales, shifts, customers, reports and receipts.",
       "folder": "pos",
       "framework": "React",
@@ -123,6 +124,7 @@
         "Cash with change, and card payments by QR code through Cloudgate Wallet",
         "Shifts with opening float, cash in/out and Z reports; parked sales and returns",
         "Inventory with goods-received notes, stock takes, ledger and label printing",
+        "Logs page in the back office: this till’s workflow calls, timings and errors, read from Cloudgate",
         "Back office for Admins only; tellers sign in to the till with the Teller role"
       ],
       "requirements": [
@@ -193,7 +195,7 @@
       "id": "booking",
       "name": "Cloudgate Booking",
       "category": "Appointments",
-      "version": "1.7.2",
+      "version": "1.8.0",
       "description": "A configurable booking site and business back office: a media library, service photos, custom categories, staff, resources, availability, payments, customer accounts and appointment management.",
       "folder": "booking",
       "framework": "React",
@@ -227,7 +229,8 @@
         "Full payments or deposits through Cloudgate Wallet; confirmation after verified payment",
         "Self-service rescheduling, cancellation, booking access links and calendar downloads",
         "Back office calendar, clients, staff hours, resources, waitlist, promotions and reports",
-        "Email outbox and scheduled reminders; payment recovery and protected refunds"
+        "Email outbox and scheduled reminders; payment recovery and protected refunds",
+        "Logs page in the back office: this business’s workflow calls, timings and errors, read from Cloudgate"
       ],
       "requirements": [
         "wallet",
@@ -282,7 +285,7 @@
       "id": "jobs",
       "name": "Cloudgate Jobs",
       "category": "Field Service",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "description": "A service-business website, customer portal and staff workspace for requests, quotes, job visits, invoices and Cloudgate Wallet payments, with custom branding and media management.",
       "folder": "jobs",
       "framework": "React",
@@ -309,7 +312,8 @@
         "Private request and job photos with record-level access checks and staff-controlled visibility",
         "Recurring job generation, reminder outbox and scheduled payment, refund and email workers",
         "Custom app name, logo, icon, favicon, colours and homepage imagery; Cloudgate media library with uploads and cropping",
-        "Owner, office and assigned-technician access, customer ownership and activity history"
+        "Owner, office and assigned-technician access, customer ownership and activity history",
+        "Logs page in the back office: this business’s workflow calls, timings and errors, read from Cloudgate"
       ],
       "requirements": [
         "wallet",

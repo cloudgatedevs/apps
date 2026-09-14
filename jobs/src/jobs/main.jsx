@@ -1,6 +1,7 @@
 import BackOfficeNav from './BackOfficeNav';
 import UserManagement from './UserManagement';
 import {SmtpSettings} from './smtp-settings';
+import {CloudgateWorkflowLogs} from '../shared/CloudgateWorkflowLogs';
 import '@fontsource/dm-sans/400.css';
 import '@fontsource/dm-sans/500.css';
 import '@fontsource/dm-sans/600.css';
@@ -10,7 +11,7 @@ import '@fontsource/manrope/700.css';
 import '@fontsource/manrope/800.css';
 import React,{useEffect,useState}from'react';
 import{createRoot}from'react-dom/client';
-import{ArrowUpRight,ArrowRight,Check,CheckCheck,Plus,Search,CalendarDays,Users,BriefcaseBusiness,FileText,LayoutDashboard,Settings,ImageIcon,LogOut,Menu,X,Wrench,Zap,Sparkles,House,Clock,MapPin,ChevronRight,Download,RefreshCw,Receipt,Repeat2,BarChart3,ClipboardList,UserRound,Upload,ShieldCheck}from'lucide-react';
+import{ArrowUpRight,ArrowRight,Check,CheckCheck,Plus,Search,CalendarDays,Users,BriefcaseBusiness,FileText,LayoutDashboard,Settings,ImageIcon,LogOut,Menu,X,Wrench,Zap,Sparkles,House,Clock,MapPin,ChevronRight,Download,RefreshCw,Receipt,Repeat2,BarChart3,ClipboardList,UserRound,Upload,ShieldCheck,Activity}from'lucide-react';
 import{auth}from'../shared/services/auth';
 import{call,preview,previewRole,money,dateLabel,csv}from'./api';
 import{Brand,Button,Field,ErrorBox,Empty,Badge,Modal}from'./ui';
@@ -24,9 +25,9 @@ import './branding.css';import './style.css';
 import './back-office.css';
 
 const adminPath=location.pathname.startsWith('/admin');
-const iconMap={overview:LayoutDashboard,requests:ClipboardList,quotes:FileText,jobs:BriefcaseBusiness,calendar:CalendarDays,customers:Users,invoices:Receipt,recurring:Repeat2,reports:BarChart3,services:Wrench,team:Users,media:ImageIcon,email:FileText,users:Users,settings:Settings,profile:UserRound};
-const labels={overview:'Overview',requests:'Requests',quotes:'Quotes',jobs:'Jobs',calendar:'Schedule',customers:'Customers',invoices:'Invoices & payments',recurring:'Recurring work',reports:'Reports',services:'Services',team:'Team',media:'Files & media',email:'Email delivery',users:'User management',settings:'Settings',profile:'My profile'};
-const titles={overview:'A clear view of your day.',requests:'Every project starts here.',quotes:'Make the next step clear.',jobs:'Good work, in progress.',calendar:'The right people. The right time.',customers:'Know your customers.',invoices:'Keep your cash flow moving.',recurring:'Good service, on repeat.',reports:'See how business is doing.',services:'What your business does best.',team:'The people behind the work.',media:'Your business, in pictures.',email:'Email delivery.',users:'Manage app users.',settings:'Make it your own.',profile:'Your account.'};
+const iconMap={overview:LayoutDashboard,requests:ClipboardList,quotes:FileText,jobs:BriefcaseBusiness,calendar:CalendarDays,customers:Users,invoices:Receipt,recurring:Repeat2,reports:BarChart3,services:Wrench,team:Users,media:ImageIcon,email:FileText,users:Users,logs:Activity,settings:Settings,profile:UserRound};
+const labels={overview:'Overview',requests:'Requests',quotes:'Quotes',jobs:'Jobs',calendar:'Schedule',customers:'Customers',invoices:'Invoices & payments',recurring:'Recurring work',reports:'Reports',services:'Services',team:'Team',media:'Files & media',email:'Email delivery',users:'User management',logs:'Logs',settings:'Settings',profile:'My profile'};
+const titles={overview:'A clear view of your day.',requests:'Every project starts here.',quotes:'Make the next step clear.',jobs:'Good work, in progress.',calendar:'The right people. The right time.',customers:'Know your customers.',invoices:'Keep your cash flow moving.',recurring:'Good service, on repeat.',reports:'See how business is doing.',services:'What your business does best.',team:'The people behind the work.',media:'Your business, in pictures.',email:'Email delivery.',users:'Manage app users.',logs:'Every call your app makes to Cloudgate.',settings:'Make it your own.',profile:'Your account.'};
 const nice=s=>String(s||'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
 const fields=e=>Object.fromEntries(new FormData(e.currentTarget));
 const minor=s=>Math.round(Number(s||0)*100);
@@ -52,7 +53,7 @@ function App(){
  const checkout=async o=>{try{const r=await execute('checkout',{ref:o.ref},'checkout',false);if(r.simulated)setModal({type:'simulate',record:o});else location.assign(r.payment_url);}catch{}};
  const uploadPrivate=async(e,r)=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;let url;try{url=URL.createObjectURL(file);const blob=await getResizedBlob(url,{type:'image/png',maxSide:1000});const content=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=reject;reader.readAsDataURL(blob);});await execute('attachment-add',{entity:r.ref,name:file.name,content,visibility:office||tech?'internal':'customer'},'attachments',false);}catch(e){setError(e.message);}finally{if(url)URL.revokeObjectURL(url);}};
  const readPhoto=async r=>{try{const result=await call('attachment-read',{ref:r.ref});setModal({type:'photo',record:r,content:result.content});}catch(e){setError(e.message);}};
- const pageNav=tech?['overview','jobs','calendar','profile']:['overview','requests','quotes','jobs','calendar','customers','invoices','recurring','reports',...(owner?['services','team','media','email','users','settings']:[]),'profile'];
+ const pageNav=tech?['overview','jobs','calendar','profile']:['overview','requests','quotes','jobs','calendar','customers','invoices','recurring','reports',...(owner?['services','team','media','email','users','logs','settings']:[]),'profile'];
 
  if(!ready||!catalog)return <main className="loading"><img src="/jobs-icon.svg" width="54" alt=""/><h2>Getting things ready…</h2><ErrorBox error={error}/>{error&&<Button onClick={()=>location.reload()}>Try again</Button>}</main>;
  const publicHeader=<header className="public-header"><Brand/><nav><a href="/#services">Our services</a><a href="/#how">How it works</a><a href="/account">My account</a></nav><div className="actions">{signed?<button className="text-link" onClick={logout}>Sign out</button>:<button className="text-link" onClick={()=>login()}>Log in</button>}<a className="button" href="/request">Request a quote <ArrowUpRight size={17}/></a></div></header>;
@@ -77,6 +78,7 @@ function App(){
  if(page==='settings')content=<BusinessSettings settings={settings} busy={busy} save={v=>execute('settings',{values:v}).catch(()=>{})}/>;
  if(page==='email'&&owner)content=<SmtpSettings/>;
  if(page==='users'&&owner)content=<UserManagement/>;
+ if(page==='logs'&&owner)content=<CloudgateWorkflowLogs showTitle={false}/>;
  if(page==='media')content=<MediaPanel data={{...data,services:rows('service'),staff:rows('team')}} go={go}/>;
  if(page==='profile')content=<><MyProfile account={profile}/>{!office&&!tech&&<section className="panel"><h2>My service addresses</h2>{rows('address').map(r=><div className="visit-row" key={r.ref}><MapPin/><div><strong>{r.label}</strong><p>{r.address}</p></div><Button secondary onClick={()=>setModal({type:'address',record:r})}>Edit</Button></div>)}<Button secondary onClick={()=>setModal({type:'address'})}>Add address</Button></section>}</>;
  if(adminPath&&!pageNav.includes(page))content=<section className="panel"><h2>Section unavailable</h2><p>Your account does not have access to this section.</p><Button secondary onClick={()=>go('overview')}>Back to overview</Button></section>;

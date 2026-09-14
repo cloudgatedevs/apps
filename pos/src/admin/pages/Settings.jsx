@@ -99,13 +99,9 @@ const Settings = () => {
   const [saved, setSaved] = useState(null);
   const [saving, setSaving] = useState(false);
   const { headerUser: user } = useAuthContext();
-  const [testTo, setTestTo] = useState('');
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState(null);
   const [uploading, setUploading] = useState(null);
   const [choosing, setChoosing] = useState(null);
 
-  useEffect(() => { if (user?.user?.emailAddress && !testTo) setTestTo(user.user.emailAddress); }, [user?.user?.emailAddress]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!data) return;
     const next = {
@@ -158,11 +154,6 @@ const Settings = () => {
     setForm((f) => { const next = { ...f }; setSaved(next); return next; });
   };
   const save = async (e) => { e.preventDefault(); if (!validate()) return; setSaving(true); try { await persist(); toast.success('Settings saved.'); } catch (err) { toast.error(errorMessage(err)); } finally { setSaving(false); } };
-  const sendTest = async () => {
-    setTesting(true); setTestResult(null);
-    try { const r = await adminApi.settings.sendTest(testTo.trim()); setTestResult(r?.sent ? { tone: 'success', text: `Test e-mail sent to ${testTo.trim()} via ${r.via}. Check the inbox (and spam folder).` } : { tone: 'error', text: r?.reason || 'The test e-mail could not be sent.' }); }
-    catch (err) { setTestResult({ tone: 'error', text: errorMessage(err) }); } finally { setTesting(false); }
-  };
   const discard = () => { setForm(saved); toast('Changes discarded.'); };
 
   if (error && !form) return <ErrorNote error={error} />;
@@ -246,7 +237,7 @@ const Settings = () => {
           </>
         ) : null}
 
-        {active === 'email' ? <><SmtpSettings/><section className="card p-4"><Field label="Send a test to" htmlFor="s-test-to"><input id="s-test-to" type="email" value={testTo} onChange={e=>setTestTo(e.target.value)} className="input"/></Field><button type="button" onClick={sendTest} disabled={testing || !testTo.trim()} className="btn-ghost">{testing?'Sending…':'Send test using saved Cloudgate settings'}</button>{testResult ? <Notice tone={testResult.tone}>{testResult.text}</Notice> : null}</section></> : null}
+        {active === 'email' ? <SmtpSettings defaultTestTo={user?.user?.emailAddress || ''}/> : null}
 
         {active === 'theme' ? (
           <section className="card flex flex-col gap-4 p-4">

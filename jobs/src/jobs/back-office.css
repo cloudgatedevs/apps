@@ -32,3 +32,4 @@
 @media(min-width:901px){.workspace .office-sidebar{position:sticky;top:0;height:100dvh;transform:none;}.office-drawer,.office-drawer-overlay{display:none;}}
 @media(max-width:900px){.workspace .office-sidebar{display:none;}.users-module .panel-heading>.actions{flex-wrap:wrap;}.users-module .search{max-width:100%;}.office-drawer .mobile-close{display:inline-flex;}}
 @media(prefers-reduced-motion:reduce){.sidebar.office-drawer{animation:none;}}
+.panel .test-row{display:flex;flex-direction:column;gap:8px;padding-top:14px;margin-top:14px;border-top:1px solid #94a3b844}.panel .test-row strong{font-size:14px}.panel .test-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.panel .test-controls input{flex:1 1 240px;max-width:420px}.panel .test-row small{font-size:12px;opacity:.7}

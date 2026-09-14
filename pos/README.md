@@ -8,7 +8,7 @@ project with two entry points that build into two separate bundles:
 | Entry | URL | Who | What it is |
 | --- | --- | --- | --- |
 | `index.html` → `src/pos/` | `/` | Any signed-in IdP user (the default **User** role is enough) | The till: sign in, open a shift on a register, scan or tap products, take cash or card, print or e-mail the receipt. Parked sales, returns, cash in/out, cash-up. |
-| `admin.html` → `src/admin/` | `/admin` | IdP users with the **Admin** role | The back office: dashboard, products (camera barcode capture, labels, CSV import), categories, inventory (adjustments, goods received, stock take, ledger), suppliers, sales with refunds and voids, shifts with Z reports, tellers, customers, reports with CSV export, media, settings (store, receipts, money, till rules, e-mail, theme). |
+| `admin.html` → `src/admin/` | `/admin` | IdP users with the **Admin** role | The back office: dashboard, products (camera barcode capture, labels, CSV import), categories, inventory (adjustments, goods received, stock take, ledger), suppliers, sales with refunds and voids, shifts with Z reports, tellers, customers, reports with CSV export, media, workflow logs, settings (store, receipts, money, till rules, e-mail, theme). |
 
 Sign-in is required before either screen shows anything. Anyone with an account can use the till; only
 users with the Admin role get into the back office, enforced on the client and again in every workflow.
@@ -93,15 +93,24 @@ src/
 template.json        the App Store manifest entry (mirrored into ../apps.json)
 ```
 
+### Template 1.2.0 — workflow logs in the back office
+
+**Back office → Logs** shows every workflow call the till and the back office make to Cloudgate, read
+from Cloudgate's own log store: stat tiles (calls, success rate, errors, average and p95 duration against
+the previous period), calls per hour/day, a per-action table and a paged list with outcome / action /
+minimum-duration filters. The detail drawer shows one call's request and response (masked when the action
+has *Mask data* on) and its node-by-node session logs.
+
+The page is `src/shared/CloudgateWorkflowLogs.jsx` (+ its stylesheet) and
+`src/shared/services/workflowLogsApi.js`, the same files as in Shop, Booking and Jobs. It calls the IdP admin
+API `POST /api/idp/{tenant}/admin/workflow-logs/{list|summary|get|nodes}` with the IdP bearer token
+(Admin role required — tellers never see it) and names its own scope from `VITE_CLOUDGATE_API_PROJECT`
+and `VITE_CLOUDGATE_API_ENV`. Requires a Cloudgate host with that API; older hosts get an explanatory empty
+state. No workflow or schema change — installed tenants only rebuild the frontend.
+
 ### Template 1.1.1 — refund safety
 
 Cash and card refunds now use the durable `refunds` action with stable request keys, confirmed-status accounting, and recovery controls in the till and back office. The package contains the schema upgrade and matching callers. See [cloudgate/REFUNDS.md](cloudgate/REFUNDS.md) for the contract and checks.
-
-## Shared Cloudgate email delivery
-
-Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
-
-This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
 
 ## Shared Cloudgate email delivery
 

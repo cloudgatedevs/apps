@@ -146,14 +146,10 @@ const Settings = () => {
   const [saved, setSaved] = useState(null);
   const [saving, setSaving] = useState(false);
   const { headerUser: user } = useAuthContext();
-  const [testTo, setTestTo] = useState('');
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState(null);
   const [uploading, setUploading] = useState(null); // 'store_logo_url' | 'store_icon_url'
   const [choosing, setChoosing] = useState(null); // which image field the media picker fills
 
   useEffect(() => {
-    if (user?.user?.emailAddress && !testTo) setTestTo(user.user.emailAddress);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.user?.emailAddress]);
 
@@ -245,18 +241,6 @@ const Settings = () => {
     }
   };
 
-  const sendTest = async () => {
-    setTesting(true);
-    setTestResult(null);
-    try {
-      const r = await adminApi.settings.sendTest(testTo.trim());
-      setTestResult(r?.sent ? { tone: 'success', text: `Test email sent to ${testTo.trim()} via ${r.via}. Check the inbox (and spam folder).` } : { tone: 'error', text: r?.reason || 'The test email could not be sent.' });
-    } catch (err) {
-      setTestResult({ tone: 'error', text: errorMessage(err) });
-    } finally {
-      setTesting(false);
-    }
-  };
 
   const discard = () => { setForm(saved); toast('Changes discarded.'); };
 
@@ -387,7 +371,7 @@ const Settings = () => {
           </section>
         ) : null}
 
-        {active === 'email' ? <><SmtpSettings/><section className="card p-4"><Field label="Send a test to" htmlFor="s-test-to"><input id="s-test-to" type="email" value={testTo} onChange={e=>setTestTo(e.target.value)} className="input"/></Field><button type="button" onClick={sendTest} disabled={testing || !testTo.trim()} className="btn-ghost">{testing?'Sending…':'Send test using saved Cloudgate settings'}</button>{testResult ? <Notice tone={testResult.tone}>{testResult.text}</Notice> : null}</section></> : null}
+        {active === 'email' ? <SmtpSettings defaultTestTo={user?.user?.emailAddress || ''}/> : null}
 
         {active === 'checkout' ? (
           <section className="card flex flex-col gap-4 p-4">

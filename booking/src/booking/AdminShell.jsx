@@ -7,7 +7,7 @@ import { brandIdentity } from './branding-model';
 const GROUPS = [
   ['Workspace', ['overview', 'calendar', 'appointments', 'clients', 'waitlist']],
   ['Manage', ['services', 'team', 'resources', 'media', 'promotions']],
-  ['Business', ['reports', 'messages', 'settings', 'profile']],
+  ['Business', ['reports', 'messages', 'logs', 'settings', 'profile']],
 ];
 
 export function OfficeSidebar({ items, page, go, account, settings, open, onClose, onSignOut, preview, waiting = 0 }) {
