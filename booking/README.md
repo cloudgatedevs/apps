@@ -4,6 +4,8 @@ A booking product derived from Cloudgate Shop: two React/Vite entry points, shar
 
 ## Version 1.8.0 — Workflow logs in the back office
 
+**About & Powered by Cloudgate.** A *Powered by Cloudgate* badge in the workspace sidebar opens **Business → About**: the app and its version, the tenancy this build talks to and links into the Cloudgate hub. Shared files `src/shared/CloudgateAbout.jsx` + `cloudgate-about.css`, the same in every App Store app.
+
 **Business → Logs** shows every workflow call this app makes to Cloudgate — the customer site, the workspace,
 and the scheduled `reconcile` and `notifications` workers — read from Cloudgate's own log store. Stat tiles
 (calls, success rate, errors, average and p95 duration against the previous period), calls per hour/day, a

@@ -6,6 +6,7 @@ import { useAuthContext } from '@/shared/auth';
 import { getProfileDisplayName } from '@/shared/auth';
 import { Tooltip } from '@/shared/ui/menus';
 import { Brand } from './Brand';
+import { PoweredByCloudgate } from '@/shared/CloudgateAbout';
 import { NAV, IconBack, IconClose, IconMenu, IconUser, backTargetFor, routeTitle } from './navConfig';
 import { CommandPalette, useCommandPalette } from './CommandPalette';
 
@@ -98,6 +99,7 @@ const Layout = () => {
             <ArrowUpRight className="ml-auto h-4 w-4 shrink-0 text-mist-dim" aria-hidden="true" />
           </a>
           <UserCard user={user} displayName={displayName} onLogout={() => logout(true)} />
+          <PoweredByCloudgate className="w-full" onOpen={() => navigate('/about')} />
         </div>
       </aside>
 
@@ -115,7 +117,7 @@ const Layout = () => {
               </Dialog.Close>
             </div>
             <div className="mt-6 min-h-0 grow overflow-y-auto"><NavLinks onNavigate={() => setDrawerOpen(false)} /></div>
-            <div className="mt-4 shrink-0"><UserCard user={user} displayName={displayName} onLogout={() => logout(true)} onNavigate={() => setDrawerOpen(false)} /></div>
+            <div className="mt-4 flex shrink-0 flex-col gap-2"><UserCard user={user} displayName={displayName} onLogout={() => logout(true)} onNavigate={() => setDrawerOpen(false)} /><PoweredByCloudgate className="w-full" onOpen={() => { setDrawerOpen(false); navigate('/about'); }} /></div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

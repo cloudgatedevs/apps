@@ -113,6 +113,8 @@ This release removes SMTP from App Store requirements and in-app setup checklist
 
 ## Workflow logs in the back office (1.1.0)
 
+**About & Powered by Cloudgate.** A *Powered by Cloudgate* badge in the workspace navigation opens **Administration → About** (office and owner roles): the app and its version, the tenancy this build talks to and links into the Cloudgate hub. Shared files `src/shared/CloudgateAbout.jsx` + `cloudgate-about.css`, the same in every App Store app.
+
 **Administration → Logs** (owners only) shows every workflow call this app makes to Cloudgate — the public
 site, the customer portal, the workspace and the scheduled `automation`, `notifications`, `reconcile` and
 `refund-reconcile` workers — read from Cloudgate's own log store. Stat tiles (calls, success rate, errors,

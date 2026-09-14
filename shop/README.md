@@ -136,6 +136,8 @@ cloudgate/           schema.sql, deploy.py, deploy.config.json, workflows/<route
 
 ### Template 1.3.0 — workflow logs in the back office
 
+**About & Powered by Cloudgate.** A *Powered by Cloudgate* badge sits at the bottom of the back-office sidebar and opens **About** (`/admin/about`): the app and its version, the tenancy this build talks to (tenant, sandbox/production, controller, gateway and identity hosts, signed-in administrator) and links into the Cloudgate hub (dashboard, App Store, workflows, app users, email delivery). Shared files `src/shared/CloudgateAbout.jsx` + `cloudgate-about.css`, the same in every App Store app.
+
 **Back office → Logs** shows every workflow call this shop makes to Cloudgate — storefront, back office,
 thread branches and the scheduled `payment-reconcile` worker — read from Cloudgate's own log store rather
 than a copy the app keeps. Stat tiles (calls, success rate, errors, average and p95 duration, each against

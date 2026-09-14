@@ -18,6 +18,7 @@ import { Pages } from '@/admin/pages/Pages';
 import { PageEdit } from '@/admin/pages/PageEdit';
 import { Messages } from '@/admin/pages/Messages';
 import { Logs } from '@/admin/pages/Logs';
+import { About } from '@/admin/pages/About';
 import { Settings } from '@/admin/pages/Settings';
 import { Profile } from '@/admin/pages/Profile';
 
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/pages/:id" element={<PageEdit />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/logs" element={<Logs />} />
+              <Route path="/about" element={<About />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/profile" element={<Profile />} />
             </Route>

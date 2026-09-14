@@ -1,0 +1,43 @@
+/* Powered-by badge + About page. Shared by every App Store app; neutrals derive from the host's
+   text colour so it fits Shop's white and Booking's cream workspaces alike. */
+.cg-powered{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid color-mix(in srgb,currentColor 14%,transparent);border-radius:10px;background:color-mix(in srgb,#fff 55%,transparent);font:inherit;color:inherit;text-decoration:none;cursor:pointer;line-height:1.15;transition:border-color .15s,background .15s}
+.cg-powered:hover{border-color:#3f5efb88;background:color-mix(in srgb,#3f5efb 6%,transparent)}
+.cg-powered:focus-visible{outline:2px solid #3f5efb;outline-offset:2px}
+.cg-powered span{display:flex;flex-direction:column;text-align:left}
+.cg-powered small{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.55}
+.cg-powered strong{font-size:12.5px;font-weight:600}
+
+.cg-about{display:flex;flex-direction:column;gap:18px;font-size:14px;line-height:1.5;color:inherit}
+.cg-about *,.cg-about *::before,.cg-about *::after{box-sizing:border-box}
+.cg-about h2{margin:0;font-size:20px;font-weight:600}
+.cg-about h3{margin:0;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.cg-about h4{margin:0 0 4px;font-size:14px;font-weight:600}
+.cg-about p{margin:0}
+.cg-about a{color:#3f5efb}
+.cg-about code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;padding:1px 4px;border-radius:4px;background:color-mix(in srgb,currentColor 7%,transparent)}
+.cg-about-muted{font-size:13px;opacity:.65;margin-bottom:12px!important}
+.cg-about-eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
+.cg-about-version{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;vertical-align:middle;color:#3f5efb;background:color-mix(in srgb,#3f5efb 12%,transparent)}
+.cg-about-hero{display:flex;gap:18px;align-items:flex-start;padding:22px 24px;border-radius:14px;border:1px solid color-mix(in srgb,currentColor 12%,transparent);background:linear-gradient(135deg,color-mix(in srgb,#3f5efb 9%,transparent),color-mix(in srgb,#ec2f4b 5%,transparent)),color-mix(in srgb,#fff 60%,transparent)}
+.cg-about-hero-mark{display:grid;place-items:center;width:64px;height:64px;flex:0 0 64px;border-radius:16px;background:#fff;box-shadow:0 4px 16px #0000001a}
+.cg-about-hero-text{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cg-about-hero-text>p:last-child{max-width:68ch;opacity:.75}
+.cg-about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.cg-about-card{padding:18px 20px;border-radius:12px;border:1px solid color-mix(in srgb,currentColor 12%,transparent);background:color-mix(in srgb,#fff 60%,transparent)}
+.cg-about dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 18px;margin:0}
+.cg-about dt{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.55}
+.cg-about dd{margin:2px 0 0;word-break:break-word}
+.cg-about-note{margin-top:12px!important;padding:10px 12px;border-radius:8px;font-size:13px;color:#1e40af;background:#eff6ff;border:1px solid #bfdbfe}
+.cg-about-links{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.cg-about-links a{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:10px;color:inherit;text-decoration:none;border:1px solid transparent;transition:background .15s,border-color .15s}
+.cg-about-links a:hover{background:color-mix(in srgb,#3f5efb 7%,transparent);border-color:#3f5efb55}
+.cg-about-links a[aria-disabled=true]{opacity:.5;cursor:default}
+.cg-about-links a>span:nth-child(2){display:flex;flex-direction:column;min-width:0;flex:1}
+.cg-about-links strong{font-size:13.5px;font-weight:600}
+.cg-about-links small{font-size:12px;opacity:.65}
+.cg-about-links svg:last-child{opacity:.5;flex:0 0 auto}
+.cg-about-link-icon{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:9px;color:#3f5efb;background:color-mix(in srgb,#3f5efb 12%,transparent)}
+.cg-about-facts{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px 18px}
+.cg-about-facts li{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.cg-about-facts svg{flex:0 0 auto;margin-top:3px;color:#3f5efb}
+@media(max-width:640px){.cg-about-hero{flex-direction:column}}

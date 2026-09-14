@@ -95,6 +95,8 @@ template.json        the App Store manifest entry (mirrored into ../apps.json)
 
 ### Template 1.2.0 — workflow logs in the back office
 
+**About & Powered by Cloudgate.** A *Powered by Cloudgate* badge at the bottom of the back-office sidebar opens **About** (`/admin/about`): the app and its version, the tenancy this build talks to and links into the Cloudgate hub. Shared files `src/shared/CloudgateAbout.jsx` + `cloudgate-about.css`, the same in every App Store app.
+
 **Back office → Logs** shows every workflow call the till and the back office make to Cloudgate, read
 from Cloudgate's own log store: stat tiles (calls, success rate, errors, average and p95 duration against
 the previous period), calls per hour/day, a per-action table and a paged list with outcome / action /

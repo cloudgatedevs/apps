@@ -1,7 +1,7 @@
 // Navigation model shared by the desktop sidebar and the mobile flyout, plus the helpers the
 // mobile top bar uses to title itself and decide whether the current route deserves a back button.
 import {
-  Activity, BarChart3, Boxes, Clock, Image, LayoutDashboard, Monitor, Package, Receipt, Settings, Tags, Truck, UserRound, Users, ChevronLeft, Menu, X,
+  Activity, BarChart3, Boxes, Info, Clock, Image, LayoutDashboard, Monitor, Package, Receipt, Settings, Tags, Truck, UserRound, Users, ChevronLeft, Menu, X,
 } from 'lucide-react';
 
 export const IconUser = UserRound;
@@ -27,6 +27,7 @@ export const NAV = [
   { to: '/media', label: 'Media', icon: Image, group: 'Setup' },
   { to: '/logs', label: 'Logs', icon: Activity, group: 'Setup' },
   { to: '/settings', label: 'Settings', icon: Settings, group: 'Setup' },
+  { to: '/about', label: 'About', icon: Info, group: 'Setup' },
 ];
 
 const DETAIL_ROUTES = [

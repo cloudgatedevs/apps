@@ -3,11 +3,12 @@ import { ArrowUpRight, CalendarDays, ChevronRight, LogOut, Menu, RefreshCw, X } 
 import { Brand, Badge } from './ui';
 import { ProfileAvatar } from './profile';
 import { brandIdentity } from './branding-model';
+import { PoweredByCloudgate } from '../shared/CloudgateAbout';
 
 const GROUPS = [
   ['Workspace', ['overview', 'calendar', 'appointments', 'clients', 'waitlist']],
   ['Manage', ['services', 'team', 'resources', 'media', 'promotions']],
-  ['Business', ['reports', 'messages', 'logs', 'settings', 'profile']],
+  ['Business', ['reports', 'messages', 'logs', 'settings', 'about', 'profile']],
 ];
 
 export function OfficeSidebar({ items, page, go, account, settings, open, onClose, onSignOut, preview, waiting = 0 }) {
@@ -44,6 +45,7 @@ export function OfficeSidebar({ items, page, go, account, settings, open, onClos
         return <button key={id} onClick={() => go(id)} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined}><Icon size={19}/><span>{text}</span>{id === 'waitlist' && waiting > 0 && <span className="nav-count">{waiting}</span>}{id === page && <ChevronRight className="office-nav-arrow" size={14}/>}</button>;
       })}</div>)}</nav>
       <a href="/" className="visit-site">View booking site <ArrowUpRight size={17}/></a>
+      <PoweredByCloudgate className="sidebar-powered" onOpen={() => go('about')}/>
       <div className="sidebar-user"><button type="button" className="sidebar-profile-link" onClick={() => go('profile')} aria-label="Open my profile"><ProfileAvatar className="avatar" name={name} url={account.profile?.photoUrl}/><div><strong>{preview ? 'Preview administrator' : account.profile?.name || 'Administrator'}</strong><small>Manage your profile</small></div></button>{!preview && <button aria-label="Sign out" className="icon-button" onClick={onSignOut}><LogOut size={18}/></button>}</div>
     </aside>
   </>;
