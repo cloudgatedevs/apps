@@ -2,7 +2,8 @@
 // app (Shop, POS, Booking, Jobs), self-contained like CloudgateWorkflowLogs.jsx: plain React,
 // its own stylesheet, no router or UI-kit dependency.
 //
-//   <PoweredByCloudgate onOpen={…} />     small badge for the sidebar; opens the About page
+//   <PoweredByCloudgate onOpen={…} />     sidebar badge (with the app version); opens the About page
+//   <AppVersion />                         "v1.2.3" from template.json, for public footers
 //   <CloudgateAbout />                     the page: app + version, tenancy, hub links
 //
 // Everything shown comes from the build's .env (the values the App Store filled in) plus the
@@ -25,6 +26,16 @@ const isProduction = /^prod/i.test(apiEnv);
 const preview = env.MODE === 'preview';
 const hostOf = (url) => { try { return new URL(url).host; } catch { return url || '—'; } };
 
+/** The installed app version, straight from the App Store manifest (template.json). */
+export const appVersion = String(manifest?.version ?? '').trim();
+export const appName = String(manifest?.name ?? '').trim();
+
+/** Small "v1.2.3" label for footers; renders nothing when the manifest has no version. */
+export function AppVersion({ prefix = 'v', className = '', title = `${appName || 'App'} version ${appVersion}` }) {
+  if (!appVersion) return null;
+  return <span className={`cg-version ${className}`} title={title}>{prefix}{appVersion}</span>;
+}
+
 /** Cloudgate's mark, inline so the badge never depends on a public asset path. */
 export const CloudgateMark = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 128.78 174.18" aria-hidden="true" focusable="false">
@@ -38,10 +49,11 @@ export const CloudgateMark = ({ size = 18 }) => (
  * Sidebar badge. Pass `onOpen` to open the in-app About page (a button), or `href` to make it a
  * plain link (e.g. "/admin/about" in apps that use the router).
  */
-export function PoweredByCloudgate({ onOpen, href, className = '' }) {
-  const inner = <><CloudgateMark size={16} /><span><small>Powered by</small><strong>Cloudgate</strong></span></>;
-  if (href) return <a className={`cg-powered ${className}`} href={href} title="About this app and Cloudgate">{inner}</a>;
-  return <button type="button" className={`cg-powered ${className}`} onClick={onOpen} title="About this app and Cloudgate">{inner}</button>;
+export function PoweredByCloudgate({ onOpen, href, className = '', showVersion = true }) {
+  const title = appVersion ? `${appName || 'This app'} v${appVersion} — about this app and Cloudgate` : 'About this app and Cloudgate';
+  const inner = <><CloudgateMark size={16} /><span><small>Powered by</small><strong>Cloudgate</strong></span>{showVersion && appVersion ? <em className="cg-powered-version">v{appVersion}</em> : null}</>;
+  if (href) return <a className={`cg-powered ${className}`} href={href} title={title}>{inner}</a>;
+  return <button type="button" className={`cg-powered ${className}`} onClick={onOpen} title={title}>{inner}</button>;
 }
 
 const HUB_LINKS = [

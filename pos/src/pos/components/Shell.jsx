@@ -7,6 +7,7 @@ import { utcDate } from '@/shared/ui/ui';
 import { useTill } from '@/pos/state/TillProvider';
 import { useLiveStatus, liveEnabled } from '@/admin/services/live';
 import { smallImageUrl } from '@/shared/services/imageUrl';
+import { AppVersion } from '@/shared/CloudgateAbout';
 
 const NAV = [
   { to: '/', label: 'Register', icon: ShoppingCart, end: true },
@@ -62,7 +63,7 @@ const Shell = () => {
           ) : null}
           <div className="hidden min-w-0 text-right leading-tight lg:block">
             <p className="truncate text-[13px] font-medium">{name}</p>
-            <p className="truncate text-[11px] text-white/60">{teller?.role || 'User'}</p>
+            <p className="truncate text-[11px] text-white/60">{teller?.role || 'User'} · <AppVersion className="!opacity-100" /></p>
           </div>
           {isAdmin ? (
             <Tooltip text="Back office">

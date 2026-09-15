@@ -2,7 +2,7 @@
   "id": "jobs",
   "name": "Cloudgate Jobs",
   "category": "Field Service",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A service-business website, customer portal and staff workspace for requests, quotes, job visits, invoices and Cloudgate Wallet payments, with custom branding and media management.",
   "folder": "jobs",
   "framework": "React",
@@ -30,7 +30,7 @@
     "Recurring job generation, reminder outbox and scheduled payment, refund and email workers",
     "Custom app name, logo, icon, favicon, colours and homepage imagery; Cloudgate media library with uploads and cropping",
     "Owner, office and assigned-technician access, customer ownership and activity history",
-    "Logs page in the back office: this business’s workflow calls, timings and errors, read from Cloudgate"
+    "Logs page in the back office: this business\u2019s workflow calls, timings and errors, read from Cloudgate"
   ],
   "requirements": [
     "wallet",

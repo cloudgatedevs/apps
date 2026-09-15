@@ -2,7 +2,7 @@
   "id": "booking",
   "name": "Cloudgate Booking",
   "category": "Appointments",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "A configurable booking site and business back office: a media library, service photos, custom categories, staff, resources, availability, payments, customer accounts and appointment management.",
   "folder": "booking",
   "framework": "React",
@@ -37,7 +37,7 @@
     "Self-service rescheduling, cancellation, booking access links and calendar downloads",
     "Back office calendar, clients, staff hours, resources, waitlist, promotions and reports",
     "Email outbox and scheduled reminders; payment recovery and protected refunds",
-    "Logs page in the back office: this business’s workflow calls, timings and errors, read from Cloudgate"
+    "Logs page in the back office: this business\u2019s workflow calls, timings and errors, read from Cloudgate"
   ],
   "requirements": [
     "wallet",

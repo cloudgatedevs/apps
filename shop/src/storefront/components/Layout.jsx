@@ -8,6 +8,7 @@ import { useCart, CART_BUMP_EVENT } from '@/storefront/cart/CartProvider';
 import { CartDrawer } from '@/storefront/components/CartDrawer';
 import { CookieConsent } from '@/storefront/components/CookieConsent';
 import { VerifiedBadge } from '@/storefront/components/VerifiedBadge';
+import { AppVersion } from '@/shared/CloudgateAbout';
 
 const icon = (paths) => (p) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>{paths}</svg>
@@ -206,6 +207,8 @@ const Layout = () => {
               © {year} {storeName}. {settings.footer_note || 'All rights reserved.'}
               <span className="mx-2 text-zinc-300" aria-hidden="true">·</span>
               <a href={CLOUDGATE_HOME} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 align-middle font-medium text-zinc-600 hover:text-zinc-900">Powered by <img src="/cloudgate-mark.svg" alt="" className="h-4 w-auto" /><span className="font-semibold">Cloudgate</span></a>
+              <span className="mx-2 text-zinc-300" aria-hidden="true">·</span>
+              <AppVersion className="text-zinc-500" />
             </p>
             <div className="flex flex-wrap gap-4">
               {footerPages.filter((p) => /terms|privacy|cookie/i.test(p.Slug)).map((p) => <Link key={p.Slug} to={`/pages/${p.Slug}`} className="hover:text-zinc-900">{p.Title}</Link>)}

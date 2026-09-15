@@ -4,7 +4,7 @@
       "id": "shop",
       "name": "Cloudgate Shop",
       "category": "Commerce",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "description": "A complete online store: catalogue with variants and stock, cart and hosted card checkout through Cloudgate Wallet, order tracking, and a full back office for products, inventory, orders, refunds, customers, content pages, email and theme colours.",
       "folder": "shop",
       "framework": "React",
@@ -28,7 +28,7 @@
         "Products with variants, images, stock ledger and low-stock alerts",
         "Orders with shipping, tracking, refunds and customer emails",
         "Editable pages, contact form, newsletter, theme colours and branding",
-        "Logs page in the back office: this shop’s workflow calls, timings and errors, read from Cloudgate",
+        "Logs page in the back office: this shop\u2019s workflow calls, timings and errors, read from Cloudgate",
         "Back office for IdP users with the Admin role"
       ],
       "requirements": [
@@ -99,7 +99,7 @@
       "id": "pos",
       "name": "Cloudgate POS",
       "category": "Commerce",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "description": "A complete point-of-sale system: a touch-friendly till that scans barcodes with the device camera or a USB scanner, cash and card payments through Cloudgate Wallet, parked sales, returns and shift cash-ups, plus a back office for products, inventory (goods received and stock takes), sales, shifts, customers, reports and receipts.",
       "folder": "pos",
       "framework": "React",
@@ -124,8 +124,8 @@
         "Cash with change, and card payments by QR code through Cloudgate Wallet",
         "Shifts with opening float, cash in/out and Z reports; parked sales and returns",
         "Inventory with goods-received notes, stock takes, ledger and label printing",
-        "Logs page in the back office: this till’s workflow calls, timings and errors, read from Cloudgate",
-        "Back office for Admins only; tellers sign in to the till with the Teller role"
+        "Logs page in the back office: this till\u2019s workflow calls, timings and errors, read from Cloudgate",
+        "Any signed-in user can run the till; the back office is for Admins only"
       ],
       "requirements": [
         "wallet",
@@ -162,7 +162,7 @@
           "key": "teller-accounts",
           "environment": "production",
           "label": "Individual teller accounts",
-          "text": "Each cashier gets their own user with the Teller role so shifts and cash-ups are attributable."
+          "text": "Each cashier gets their own user account so shifts and cash-ups are attributable."
         },
         {
           "key": "sandbox-tested",
@@ -195,7 +195,7 @@
       "id": "booking",
       "name": "Cloudgate Booking",
       "category": "Appointments",
-      "version": "1.8.0",
+      "version": "1.8.1",
       "description": "A configurable booking site and business back office: a media library, service photos, custom categories, staff, resources, availability, payments, customer accounts and appointment management.",
       "folder": "booking",
       "framework": "React",
@@ -230,7 +230,7 @@
         "Self-service rescheduling, cancellation, booking access links and calendar downloads",
         "Back office calendar, clients, staff hours, resources, waitlist, promotions and reports",
         "Email outbox and scheduled reminders; payment recovery and protected refunds",
-        "Logs page in the back office: this business’s workflow calls, timings and errors, read from Cloudgate"
+        "Logs page in the back office: this business\u2019s workflow calls, timings and errors, read from Cloudgate"
       ],
       "requirements": [
         "wallet",
@@ -285,7 +285,7 @@
       "id": "jobs",
       "name": "Cloudgate Jobs",
       "category": "Field Service",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "description": "A service-business website, customer portal and staff workspace for requests, quotes, job visits, invoices and Cloudgate Wallet payments, with custom branding and media management.",
       "folder": "jobs",
       "framework": "React",
@@ -313,7 +313,7 @@
         "Recurring job generation, reminder outbox and scheduled payment, refund and email workers",
         "Custom app name, logo, icon, favicon, colours and homepage imagery; Cloudgate media library with uploads and cropping",
         "Owner, office and assigned-technician access, customer ownership and activity history",
-        "Logs page in the back office: this business’s workflow calls, timings and errors, read from Cloudgate"
+        "Logs page in the back office: this business\u2019s workflow calls, timings and errors, read from Cloudgate"
       ],
       "requirements": [
         "wallet",
@@ -359,6 +359,80 @@
       },
       "workflows": {
         "projectPath": "jobs",
+        "file": ".template/workflow-template.json",
+        "schema": ".template/schema.sql",
+        "sampleData": ".template/sample-data.sql"
+      }
+    },
+    {
+      "id": "courses",
+      "name": "Cloudgate Academy",
+      "category": "Education",
+      "version": "1.1.0",
+      "description": "A branded learning academy with courses, enrolments, assessments, certificates and Cloudgate payments.",
+      "folder": "courses",
+      "framework": "React",
+      "devCommand": "npm install && npm run dev",
+      "devPort": 3004,
+      "demoUrl": "",
+      "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/courses/banner.png",
+      "adminPath": "/admin",
+      "tags": [
+        "react",
+        "courses",
+        "training",
+        "learning",
+        "wallet",
+        "idp"
+      ],
+      "features": [
+        "Public searchable course catalogue and responsive learner portal",
+        "Course authoring, ordered modules and lessons, preview lessons and publication validation",
+        "Free and paid enrolments with verified Cloudgate Wallet checkout and refunds",
+        "Lesson progress, quizzes with server-side scoring, attempt limits and certificates",
+        "Instructor assignments, live training sessions, attendance and learner discussions",
+        "Cloudgate media, shared SMTP, user management, logs, custom branding and About",
+        "Premium responsive design with six colour presets and individual theme controls"
+      ],
+      "requirements": [
+        "wallet",
+        "idp"
+      ],
+      "environments": [
+        "sandbox",
+        "production"
+      ],
+      "terms": {
+        "version": "1",
+        "url": "https://cloudgate.dev/terms",
+        "summary": [
+          "Course owners are responsible for their learning content and permissions.",
+          "Payments and refunds are processed through Cloudgate Wallet.",
+          "Certificates record completion of academy content and do not imply external accreditation."
+        ]
+      },
+      "compliance": [
+        {
+          "key": "academy-content",
+          "environment": "all",
+          "label": "Content rights confirmed",
+          "text": "I have the rights to distribute the course content and media."
+        },
+        {
+          "key": "academy-tested",
+          "environment": "production",
+          "label": "Sandbox learning journey verified",
+          "text": "I have verified enrolment, payments, lesson access, assessments, certificates and email delivery in hosted sandbox."
+        }
+      ],
+      "build": {
+        "installCommand": "npm install",
+        "buildCommand": "npm run build",
+        "devBuildCommand": "npm run build:dev",
+        "outputDir": "dist"
+      },
+      "workflows": {
+        "projectPath": "courses",
         "file": ".template/workflow-template.json",
         "schema": ".template/schema.sql",
         "sampleData": ".template/sample-data.sql"

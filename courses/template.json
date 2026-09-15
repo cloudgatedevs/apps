@@ -1,0 +1,74 @@
+{
+  "id": "courses",
+  "name": "Cloudgate Academy",
+  "category": "Education",
+  "version": "1.1.0",
+  "description": "A branded learning academy with courses, enrolments, assessments, certificates and Cloudgate payments.",
+  "folder": "courses",
+  "framework": "React",
+  "devCommand": "npm install && npm run dev",
+  "devPort": 3004,
+  "demoUrl": "",
+  "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/courses/banner.png",
+  "adminPath": "/admin",
+  "tags": [
+    "react",
+    "courses",
+    "training",
+    "learning",
+    "wallet",
+    "idp"
+  ],
+  "features": [
+    "Public searchable course catalogue and responsive learner portal",
+    "Course authoring, ordered modules and lessons, preview lessons and publication validation",
+    "Free and paid enrolments with verified Cloudgate Wallet checkout and refunds",
+    "Lesson progress, quizzes with server-side scoring, attempt limits and certificates",
+    "Instructor assignments, live training sessions, attendance and learner discussions",
+    "Cloudgate media, shared SMTP, user management, logs, custom branding and About",
+    "Premium responsive design with six colour presets and individual theme controls"
+  ],
+  "requirements": [
+    "wallet",
+    "idp"
+  ],
+  "environments": [
+    "sandbox",
+    "production"
+  ],
+  "terms": {
+    "version": "1",
+    "url": "https://cloudgate.dev/terms",
+    "summary": [
+      "Course owners are responsible for their learning content and permissions.",
+      "Payments and refunds are processed through Cloudgate Wallet.",
+      "Certificates record completion of academy content and do not imply external accreditation."
+    ]
+  },
+  "compliance": [
+    {
+      "key": "academy-content",
+      "environment": "all",
+      "label": "Content rights confirmed",
+      "text": "I have the rights to distribute the course content and media."
+    },
+    {
+      "key": "academy-tested",
+      "environment": "production",
+      "label": "Sandbox learning journey verified",
+      "text": "I have verified enrolment, payments, lesson access, assessments, certificates and email delivery in hosted sandbox."
+    }
+  ],
+  "build": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "devBuildCommand": "npm run build:dev",
+    "outputDir": "dist"
+  },
+  "workflows": {
+    "projectPath": "courses",
+    "file": ".template/workflow-template.json",
+    "schema": ".template/schema.sql",
+    "sampleData": ".template/sample-data.sql"
+  }
+}

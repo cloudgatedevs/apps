@@ -174,4 +174,4 @@
   .admin-app .bar-row{font-size:11px;grid-template-columns:120px 1fr 25px;gap:10px}
 }
 @media(prefers-reduced-motion:reduce){.admin-app .sidebar,.admin-app .sidebar nav button{transition:none}}
-.admin-app .sidebar .sidebar-powered{margin:10px 14px 4px;justify-content:center;color:#dddddd;border-color:#ffffff22;background:#ffffff0d}.admin-app .sidebar .sidebar-powered:hover{background:#ffffff1a}
+.admin-app .sidebar .sidebar-powered{margin:10px 14px 4px;justify-content:center;color:#dddddd;border-color:#ffffff22;background:#ffffff0d}.admin-app .sidebar .sidebar-powered:hover{background:#ffffff1a}.admin-app .sidebar .sidebar-powered .cg-powered-version{color:#c9d3ff;background:#3f5efb55}

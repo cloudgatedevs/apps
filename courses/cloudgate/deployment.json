@@ -1,0 +1,58 @@
+{
+  "tenant": "learner",
+  "state": "published",
+  "workflows": [
+    {
+      "route": "catalog",
+      "id": "8e656b00-53bd-4940-9bb1-c93edd718156"
+    },
+    {
+      "route": "workspace",
+      "id": "0503d2b0-0ffc-45f1-bc32-8f9d2d736fad"
+    },
+    {
+      "route": "courses",
+      "id": "9d001b57-6a1d-42cb-a898-e3bb6adaaaaf"
+    },
+    {
+      "route": "enrollments",
+      "id": "6b62c190-98b6-4f45-bbae-73fc8c7b8a8c"
+    },
+    {
+      "route": "learning",
+      "id": "bf516da7-af79-4f6d-ac07-364ccd8a0027"
+    },
+    {
+      "route": "sessions",
+      "id": "66f98f79-0bd3-4743-8071-a54d4fbd81cd"
+    },
+    {
+      "route": "settings",
+      "id": "135136bf-cdf1-4152-8ae4-14af9b43f8b4"
+    },
+    {
+      "route": "checkout",
+      "id": "c594c468-fec3-4f02-bb6e-e108dcc4cd68"
+    },
+    {
+      "route": "payment-status",
+      "id": "3401a27b-c67e-4f00-bed4-a6c95d494c7d"
+    },
+    {
+      "route": "refund",
+      "id": "13b3137a-b482-45c6-9a8e-d77b96a0aca5"
+    },
+    {
+      "route": "reconcile",
+      "id": "4771b2c1-c19d-42a0-a0ac-5f21a37b670d"
+    },
+    {
+      "route": "refund-reconcile",
+      "id": "f0dd72c7-3b17-4bdc-84ae-222d37406377"
+    },
+    {
+      "route": "notifications",
+      "id": "7da62e77-3fa5-497a-8df5-9d4e4309d1b7"
+    }
+  ]
+}

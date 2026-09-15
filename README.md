@@ -10,6 +10,7 @@ accepted terms, imports the app's workflows and databases, builds the app and pu
 | [Cloudgate Shop](./shop/) | [`shop/`](./shop/) | Online store with hosted card checkout through Cloudgate Wallet and a full back office. | Wallet, IdP, WebSockets |
 | [Cloudgate Booking](./booking/) | [`booking/`](./booking/) | Service appointments, staff and room scheduling, paid booking confirmation, customer management and a studio back office. | Wallet, IdP |
 | [Cloudgate Jobs](./jobs/) | [`jobs/`](./jobs/) | Service requests, quotes, job visits, invoices and a customer/staff workspace with custom branding and media. Source package and local preview available; hosted release verification pending. | Wallet, IdP |
+| [Cloudgate Academy](./courses/) | [`courses/`](./courses/) | Courses, assessments, certificates and a premium learner portal with an instructor/admin back office. | Wallet, IdP |
 
 An app only appears in the store once it is listed in [`apps.json`](./apps.json).
 
