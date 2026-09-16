@@ -295,7 +295,7 @@ def compile_workflow(folder, config, endpoint_id=None):
         "ScheduledProduction": bool(schedule.get("production", False)) if cron is not None else False,
         "EnableRequestLimit": False, "Daily": None, "Weekly": None,
         "Monthly": None, "X": None, "Y": None, "AllowAnonymous": bool(spec.get("allowAnonymous", False)),
-        "EnableLogging": bool(spec.get("enableLogging", True)), "IsAsync": False, "EnableCache": False,
+        "EnableLogging": True, "IsAsync": False, "EnableCache": False,
         "CacheInMinutes": None, "IsActive": True, "IsPrivate": False, "MaskData": False,
         "NodeId": by_name[spec["entry"]]["Id"], "ProjectId": config["projectId"], "Id": endpoint_id,
     }

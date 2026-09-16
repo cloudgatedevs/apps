@@ -31,7 +31,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "b9785927-a612-56b9-9cbc-cc4c363b8792",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "bf485cd8-f42b-56ef-8ccc-72639d82b3e0"
@@ -61,7 +61,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "3468a40c-39ad-5318-a382-2f40f684f774",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "9509485e-85ff-5682-9c75-58b84ce504ea"
@@ -91,7 +91,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "38643bf7-5939-58a8-b143-35b753395e90",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "8c4a4ec5-2e8a-5375-9dd2-75f63f1f8259"
@@ -121,7 +121,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "ef95a8b4-d5eb-5867-b918-964cd1b06891",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "e73d6670-fd14-5213-8fdb-21134d83fe10"
@@ -151,7 +151,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "d5be0414-5238-510a-9027-527e03264443",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "e5d0b41d-4b4f-54f5-9162-00401c81ed0d"
@@ -181,7 +181,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "83d79587-1446-5f1f-9345-1012598b5ef4",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "3bab03c8-cf06-5678-a0c6-2a600ad7a4eb"
@@ -211,7 +211,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "ebdd52be-25de-5176-aa07-4cfcde1610f9",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "3391c024-cc61-5739-b215-1785e91b7190"
@@ -241,7 +241,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "c1af9789-31b5-5df0-b4f7-0d75e0725857",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "e55786e7-2e41-5846-9dce-f38ced60e6f9"
@@ -271,7 +271,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "4bfded79-fee0-56fd-b527-e6d87e9ce8da",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "3804dd70-35aa-59fe-a158-6db0e484156d"
@@ -301,7 +301,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "0b425c6d-b04e-5749-b00d-b91f25dbb7cb",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "b8290de6-5fee-5a23-ae5d-9f9e78c48315"
@@ -331,7 +331,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "d10f28cb-63ab-50f9-857f-a0e50239cfd0",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "cb01c50f-6aba-5267-a1f2-05f6690f15db"
@@ -361,7 +361,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "a61e05af-13e2-552b-8481-6ccc0648c255",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "686d56c5-d4b1-54d9-8e31-0177bf03ab88"
@@ -391,7 +391,7 @@
             "CacheInMinutes": null,
             "IsActive": true,
             "IsPrivate": false,
-            "MaskData": true,
+            "MaskData": false,
             "NodeId": "abe2c67e-7ccb-517b-96a4-847e6d0a6996",
             "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
             "Id": "d76f5b50-90c1-5b36-8230-cdfdb6cfb57d"

@@ -89,9 +89,10 @@ def main(routes=None):
         endpoint = copy.deepcopy(existing or prototypes['Endpoint'])
         endpoint.update(Id=eid, ProjectId=config['projectId'], Name=spec['name'], Route=route, NodeId=named[spec['entry']]['Id'],
                         RequestType=deploy.REQUEST_TYPE[spec.get('method', 'POST').upper()],
-                        AllowAnonymous=bool(spec.get('allowAnonymous', False)), EnableLogging=bool(spec.get('enableLogging', True)))
+                        AllowAnonymous=bool(spec.get('allowAnonymous', False)), EnableLogging=True, MaskData=False)
+        endpoint.update(EnableLogging=True, MaskData=False)
         if route == 'refunds':
-            endpoint.update(AllowAnonymous=False, EnableLogging=False, MaskData=True)
+            endpoint.update(AllowAnonymous=False, EnableLogging=True, MaskData=False)
         template['Endpoints'] = [e for e in template['Endpoints'] if e['Id'] != eid] + [endpoint]
         template['Nodes'] = [n for n in template['Nodes'] if n['EndpointId'] != eid] + nodes
         graphs.append(dict(Endpoint=endpoint, Nodes=nodes))

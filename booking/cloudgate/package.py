@@ -53,7 +53,7 @@ def graph(route,steps,anonymous=True,schedule=False):
         if 'positive' in opts:node.update(PositiveNodeId=names[opts['positive']]['Id'],NegativeNodeId=names[opts['negative']]['Id'])
         elif opts.get('terminal'):pass
         else:node['NodeId']=names[opts['next']]['Id'] if opts.get('next') else nodes[i+1]['Id'] if i+1<len(nodes) else None
-    ep=copy.deepcopy(prototype['Endpoint']);ep.update(Id=eid,Name='Booking · '+route.replace('-',' ').title(),Route=route,RequestType=2,ProjectId=PROJECT,NodeId=nodes[0]['Id'],AllowAnonymous=anonymous,EnableLogging=False,MaskData=True,RunOnSchedule=schedule,ScheduleCron=0 if schedule else None,ScheduledSandbox=schedule,ScheduledProduction=schedule)
+    ep=copy.deepcopy(prototype['Endpoint']);ep.update(Id=eid,Name='Booking · '+route.replace('-',' ').title(),Route=route,RequestType=2,ProjectId=PROJECT,NodeId=nodes[0]['Id'],AllowAnonymous=anonymous,EnableLogging=True,MaskData=False,RunOnSchedule=schedule,ScheduleCron=0 if schedule else None,ScheduledSandbox=schedule,ScheduledProduction=schedule)
     out={'projectId':PROJECT,'Endpoint':ep,'Nodes':nodes};graphs.append(out)
     directory=ROOT/'workflows'/route;directory.mkdir(parents=True,exist_ok=True)
     (directory/'graph.json').write_text(json.dumps(out,indent=2))

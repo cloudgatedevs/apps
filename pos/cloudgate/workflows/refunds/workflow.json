@@ -3,7 +3,7 @@
   "route": "refunds",
   "method": "POST",
   "allowAnonymous": false,
-  "enableLogging": false,
+  "enableLogging": true,
   "description": "Durable card/cash refunds: claim, confirmed application, list, read-only refund-status and retry with the original requestKey.",
   "entry": "IdpAuth",
   "nodes": [

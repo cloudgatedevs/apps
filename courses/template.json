@@ -8,7 +8,7 @@
   "framework": "React",
   "devCommand": "npm install && npm run dev",
   "devPort": 3004,
-  "demoUrl": "",
+  "demoUrl": "https://academy.app.cloudgate.dev/",
   "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/courses/banner.png",
   "adminPath": "/admin",
   "tags": [

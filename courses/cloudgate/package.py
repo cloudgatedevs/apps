@@ -47,7 +47,7 @@ def graph(route,steps,anonymous=False,schedule=False):
         if 'positive' in opts:n.update(PositiveNodeId=names[opts['positive']]['Id'],NegativeNodeId=names[opts['negative']]['Id'])
         elif opts.get('terminal'):pass
         else:n['NodeId']=names[opts['next']]['Id'] if opts.get('next') else nodes[i+1]['Id'] if i+1<len(nodes) else None
-    ep=copy.deepcopy(prototype['Endpoint']);ep.update(Id=eid,Name='Academy · '+route.replace('-',' ').title(),Route=route,RequestType=2,ProjectId=R['projectId'],NodeId=nodes[0]['Id'],AllowAnonymous=anonymous,EnableLogging=True,MaskData=True,RunOnSchedule=schedule,ScheduleCron=0 if schedule else None,ScheduledSandbox=schedule,ScheduledProduction=schedule,IsActive=True)
+    ep=copy.deepcopy(prototype['Endpoint']);ep.update(Id=eid,Name='Academy · '+route.replace('-',' ').title(),Route=route,RequestType=2,ProjectId=R['projectId'],NodeId=nodes[0]['Id'],AllowAnonymous=anonymous,EnableLogging=True,MaskData=False,RunOnSchedule=schedule,ScheduleCron=0 if schedule else None,ScheduledSandbox=schedule,ScheduledProduction=schedule,IsActive=True)
     g=dict(projectId=R['projectId'],Endpoint=ep,Nodes=nodes);graphs.append(g);directory=ROOT/'workflows'/route;directory.mkdir(parents=True,exist_ok=True);(directory/'graph.json').write_text(json.dumps(g,indent=2),encoding='utf8')
     return g
 snap=snapshot_sql();shape=fn("rows=obj('Run',[])\nif isinstance(rows,dict):rows=[rows]\nreturn rows[0]['result'] if rows else '{}'\n")

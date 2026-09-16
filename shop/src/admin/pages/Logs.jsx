@@ -3,6 +3,6 @@
 // Store app); this wrapper only gives it a route and a title.
 import { CloudgateWorkflowLogs } from '@/shared/CloudgateWorkflowLogs';
 
-const Logs = () => <CloudgateWorkflowLogs title="Logs" />;
+const Logs = () => <CloudgateWorkflowLogs title="Logs" titleClassName="hidden lg:block" />;
 
 export { Logs };

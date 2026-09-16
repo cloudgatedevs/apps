@@ -230,7 +230,7 @@ const Unavailable = ({ error }) => {
  * <CloudgateWorkflowLogs title="Logs" showTitle />
  * `showTitle={false}` when the host back office already prints the page name (Booking, Jobs).
  */
-export function CloudgateWorkflowLogs({ title = 'Logs', showTitle = true }) {
+export function CloudgateWorkflowLogs({ title = 'Logs', showTitle = true, titleClassName }) {
   const [period, setPeriod] = useState(24);
   const [outcome, setOutcome] = useState('');
   const [route, setRoute] = useState('');
@@ -261,7 +261,7 @@ export function CloudgateWorkflowLogs({ title = 'Logs', showTitle = true }) {
     <div className="cwl">
       <div className="cwl-head">
         <div>
-          {showTitle ? <h2>{title}</h2> : null}
+          {showTitle ? <h2 className={titleClassName}>{title}</h2> : null}
           <p>
             {configured ? <>Every workflow call this app made to Cloudgate — <span className="cwl-mono">/{workflowLogsScope.projectPath}</span> in <Badge plain tone={workflowLogsScope.isProduction ? 'violet' : 'blue'}>{workflowLogsScope.isProduction ? 'production' : 'sandbox'}</Badge>{s?.fromInstall === false ? <span className="cwl-dim"> (developer tenant)</span> : null}</> : 'Workflow calls recorded by Cloudgate for this app.'}
           </p>

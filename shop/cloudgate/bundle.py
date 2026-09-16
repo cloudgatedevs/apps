@@ -54,6 +54,8 @@ def export_bundle():
     # and the App Store creates its own API key. Strip static keys' values defensively.
     for project in projects:
         template = project.get('Template') or project.get('template') or {}
+        for endpoint in template.get('Endpoints') or []:
+            endpoint.update(EnableLogging=True, MaskData=False)
         for ws in template.get('WebSockets') or []:
             ws['Password'] = ''
         for key in template.get('Keys') or []:

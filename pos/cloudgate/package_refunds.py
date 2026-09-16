@@ -77,8 +77,9 @@ def main(routes=None):
                     named[entry['name']][field] = named[entry[edge]]['Id']
         endpoint = copy.deepcopy(existing or prototypes['Endpoint'])
         endpoint.update(Id=eid, ProjectId=config['projectId'], Name=spec['name'], Route=route, NodeId=named[spec['entry']]['Id'])
+        endpoint.update(EnableLogging=True, MaskData=False)
         if route == 'refunds':
-            endpoint.update(AllowAnonymous=False, EnableLogging=False, MaskData=True)
+            endpoint.update(AllowAnonymous=False, EnableLogging=True, MaskData=False)
         template['Endpoints'] = [e for e in template['Endpoints'] if e['Id'] != eid] + [endpoint]
         template['Nodes'] = [n for n in template['Nodes'] if n['EndpointId'] != eid] + nodes
         graphs.append(dict(Endpoint=endpoint, Nodes=nodes))

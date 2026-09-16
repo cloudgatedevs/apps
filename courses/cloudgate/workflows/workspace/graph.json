@@ -25,7 +25,7 @@
     "CacheInMinutes": null,
     "IsActive": true,
     "IsPrivate": false,
-    "MaskData": true,
+    "MaskData": false,
     "NodeId": "3468a40c-39ad-5318-a382-2f40f684f774",
     "ProjectId": "0b131822-be86-40f9-1d61-08df12d49181",
     "Id": "9509485e-85ff-5682-9c75-58b84ce504ea"
