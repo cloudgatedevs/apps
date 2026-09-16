@@ -11,6 +11,7 @@ accepted terms, imports the app's workflows and databases, builds the app and pu
 | [Cloudgate Booking](./booking/) | [`booking/`](./booking/) | Service appointments, staff and room scheduling, paid booking confirmation, customer management and a studio back office. | Wallet, IdP |
 | [Cloudgate Jobs](./jobs/) | [`jobs/`](./jobs/) | Service requests, quotes, job visits, invoices and a customer/staff workspace with custom branding and media. [Live app](https://jobs.app.cloudgate.dev/). | Wallet, IdP |
 | [Cloudgate Academy](./courses/) | [`courses/`](./courses/) | Courses, assessments, certificates and a premium learner portal with an instructor/admin back office. [Live app](https://academy.app.cloudgate.dev/). | Wallet, IdP |
+| [Events](./events/) | Event discovery, ticket sales, QR admission and an organiser workspace with shared Cloudgate services. [Live app](https://events.app.cloudgate.dev/). | Wallet, IdP |
 
 An app only appears in the store once it is listed in [`apps.json`](./apps.json).
 

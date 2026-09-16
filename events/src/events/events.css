@@ -1,0 +1,33 @@
+.theme-section-heading{display:flex;justify-content:space-between;align-items:center;gap:20px}.theme-section-heading h3{font-size:26px;margin-top:8px}.theme-current{font-size:11px;color:var(--green);border:1px solid var(--line);border-radius:30px;padding:8px 14px}.theme-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:24px 0 32px}.theme-preset{position:relative;border:1px solid var(--line);border-radius:10px;padding:10px 10px 15px;text-align:left;color:var(--ink);background:var(--cream);min-width:0}.theme-preset:hover{border-color:var(--green);transform:translateY(-2px)}.theme-preset[aria-pressed=true]{outline:2px solid var(--green);outline-offset:2px}.theme-preset>strong{display:block;font-size:12px;margin:13px 4px 4px}.theme-preset>small{font-size:10px;color:var(--muted);margin:0 4px}.theme-swatch{height:72px;border-radius:6px;padding:15px;display:flex;align-items:end;gap:7px;overflow:hidden}.theme-swatch i{height:75%;width:35%;border-radius:4px}.theme-swatch i:nth-child(2){height:100%;width:20%}.theme-swatch i:nth-child(3){height:40%;width:40%;opacity:.3}.theme-selected{position:absolute;right:14px;top:20px;font-size:8px;background:var(--green);color:var(--on-primary);padding:4px 7px;border-radius:20px}.settings-group h4{font-size:13px}.brand-colours{margin-top:20px}.branding-preview{border-radius:12px}.brand-preview-body{padding:35px}.brand-preview-body h2{font-weight:500;letter-spacing:-.05em}
+
+/* Shared administration modules follow the Events palette, including portal drawers. */
+.cwl,.cwl-drawer,.cg-about{--cwl-accent:var(--green);color:var(--ink)}
+.cwl .cwl-card,.cg-about .cg-about-card{background:var(--surface);border-color:var(--line);box-shadow:none}
+.cg-about .cg-about-hero{background:linear-gradient(135deg,color-mix(in srgb,var(--green) 10%,transparent),transparent),var(--surface);border-color:var(--line)}
+.cg-about .cg-about-hero-mark{background:var(--cream);border:1px solid var(--line);box-shadow:none}
+.cg-about a,.cg-about .cg-about-facts svg{color:var(--green)}
+.cg-about .cg-about-links a{color:var(--ink)}
+.cg-about .cg-about-version,.cg-about .cg-about-link-icon{color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent)}
+.cg-about .cg-about-links a:hover{background:var(--sage);border-color:var(--line)}
+.cg-about .cg-about-note{color:var(--ink);background:var(--sage);border-color:var(--line)}
+.cg-about .cg-about-muted,.cg-about .cg-about-eyebrow,.cg-about dt,.cg-about .cg-about-links small,.cg-about .cg-about-hero-text>p:last-child{color:var(--muted);opacity:1}
+.cg-about dd,.cwl-drawer dd{text-align:left}
+.cg-about .cg-about-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.cg-about .cg-about-facts{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.cwl .cwl-muted,.cwl .cwl-dim,.cwl .cwl-head p,.cwl .cwl-stat-label,.cwl .cwl-stat-sub,.cwl .cwl-legend,.cwl .cwl-chart-axis,.cwl .cwl-scroll th,.cwl .cwl-section-note,.cwl .cwl-filters .cwl-count,.cwl .cwl-empty p,.cwl .cwl-pager>span{color:var(--muted);opacity:1}
+.cwl .cwl-seg,.cwl .cwl-btn,.cwl select{border-color:var(--line);background-color:var(--surface)}
+.cwl .cwl-scroll td,.cwl .cwl-action-footer{border-color:var(--line)}
+.cwl .cwl-link{color:var(--green)}
+.cwl .cwl-badge-blue,.cwl .cwl-badge-violet{color:var(--green);background:color-mix(in srgb,var(--green) 12%,var(--surface));border-color:color-mix(in srgb,var(--green) 25%,var(--line))}
+.cwl .cwl-badge-gray{color:var(--muted);background:var(--surface);border-color:var(--line)}
+.cwl .cwl-dur-bad,.cwl .cwl-stat-trend.down{color:color-mix(in srgb,#dc2626 65%,var(--ink))}
+.cwl .cwl-dur-warn{color:color-mix(in srgb,#b45309 65%,var(--ink))}
+.cwl .cwl-stat-trend.up{color:color-mix(in srgb,#047857 65%,var(--ink))}
+.cwl-drawer{background:var(--surface);border-left:1px solid var(--line)}
+.cwl-drawer .cwl-drawer-head{border-color:var(--line)}
+.cwl-drawer .cwl-pre,.cwl-drawer .cwl-node{background:var(--cream);color:var(--ink);border-color:var(--line)}
+.cwl-drawer .cwl-node .cwl-pre{background:var(--surface)}
+.cwl-drawer dt,.cwl-drawer .cwl-label,.cwl-drawer .cwl-drawer-head p{color:var(--muted);opacity:1}
+.cwl .cwl-tip{background:var(--ink);color:var(--cream)}
+
+@media(max-width:700px){.theme-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-section-heading{flex-wrap:wrap}}

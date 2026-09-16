@@ -1,0 +1,71 @@
+{
+  "id": "events",
+  "name": "Cloudgate Events",
+  "category": "Events & Ticketing",
+  "version": "1.1.0",
+  "description": "Event discovery, ticket sales, QR admission and an organiser back office with Cloudgate payments, media, email and themes.",
+  "folder": "events",
+  "framework": "React",
+  "devCommand": "npm install && npm run dev",
+  "devPort": 3006,
+  "demoUrl": "https://events.app.cloudgate.dev/",
+  "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/events/banner.png",
+  "adminPath": "/admin",
+  "tags": [
+    "react",
+    "events",
+    "tickets",
+    "check-in"
+  ],
+  "features": [
+    "Event discovery and detailed event pages",
+    "Ticket tiers and capacity reservations",
+    "Wallet checkout and verified ticket issuance",
+    "QR tickets and mobile check-in",
+    "Attendee management, refunds and reports",
+    "Cloudgate identity, email, media, logging and theme presets"
+  ],
+  "requirements": [
+    "wallet",
+    "idp"
+  ],
+  "environments": [
+    "sandbox",
+    "production"
+  ],
+  "terms": {
+    "version": "1",
+    "url": "https://cloudgate.dev/terms",
+    "summary": [
+      "Organisers are responsible for event details, capacity, content rights and admission policies.",
+      "Payments and full refunds are processed through Cloudgate Wallet.",
+      "Cancellation stops sales and voids tickets; organisers must review and refund paid bookings."
+    ]
+  },
+  "compliance": [
+    {
+      "key": "events-rights",
+      "environment": "all",
+      "label": "Event and content rights confirmed",
+      "text": "I am authorised to organise these events and use their content and media."
+    },
+    {
+      "key": "events-tested",
+      "environment": "production",
+      "label": "Sandbox booking and admission verified",
+      "text": "I have verified ticket sales, payment confirmation, refunds, check-in and email delivery in hosted sandbox."
+    }
+  ],
+  "build": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "devBuildCommand": "npm run build:dev",
+    "outputDir": "dist"
+  },
+  "workflows": {
+    "projectPath": "events",
+    "file": ".template/workflow-template.json",
+    "schema": ".template/schema.sql",
+    "sampleData": ".template/sample-data.sql"
+  }
+}

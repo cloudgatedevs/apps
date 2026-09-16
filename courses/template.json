@@ -2,7 +2,7 @@
   "id": "courses",
   "name": "Cloudgate Academy",
   "category": "Education",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A branded learning academy with courses, enrolments, assessments, certificates and Cloudgate payments.",
   "folder": "courses",
   "framework": "React",

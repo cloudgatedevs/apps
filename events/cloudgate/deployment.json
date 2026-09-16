@@ -1,0 +1,73 @@
+{
+  "tenant": "events",
+  "gateway": "http://events.localhost:44301",
+  "projectId": "67e5cf8a-ac8c-4e06-765d-08df139efe7d",
+  "status": "published",
+  "endpoints": [
+    {
+      "route": "catalog",
+      "endpointId": "6bebdbfc-81ce-4716-bfd5-bd1f50d638b8"
+    },
+    {
+      "route": "checkin",
+      "endpointId": "49150afe-1546-4dc5-ac69-29e5533c7470"
+    },
+    {
+      "route": "checkout",
+      "endpointId": "275b713c-0268-4ba9-85aa-d75e56277db6"
+    },
+    {
+      "route": "events",
+      "endpointId": "3a251f36-89f3-43fa-ac16-ddcd9ddbaab6"
+    },
+    {
+      "route": "notifications",
+      "endpointId": "08b11984-2067-42de-ad63-e82d9c19ac9a"
+    },
+    {
+      "route": "orders",
+      "endpointId": "19823f65-1c78-4b11-af7d-803b02b264fb"
+    },
+    {
+      "route": "payment-status",
+      "endpointId": "1e73a0bb-cde4-4080-a303-af56173b4afe"
+    },
+    {
+      "route": "reconcile",
+      "endpointId": "c07e82d3-27a0-47a4-a977-0effd3b78364"
+    },
+    {
+      "route": "refund",
+      "endpointId": "b0d85db6-5f9f-42a0-8700-5fbc89b5f532"
+    },
+    {
+      "route": "refund-reconcile",
+      "endpointId": "d5ba4128-2133-4fd9-8f59-5926dd811c18"
+    },
+    {
+      "route": "settings",
+      "endpointId": "1df1d1bb-5d46-4e87-a7e4-3d178c8ec721"
+    },
+    {
+      "route": "staff",
+      "endpointId": "ab01cf55-663b-4101-9183-6b61d4f07e58"
+    },
+    {
+      "route": "waitlist",
+      "endpointId": "73123e25-f647-4f37-ac0e-6defb1d12cba"
+    },
+    {
+      "route": "workspace",
+      "endpointId": "7b68d6ef-1e7c-433c-b1a1-a32361904ac3"
+    }
+  ],
+  "verified": "2026-09-16",
+  "verification": [
+    "14 published workflows; logging on, masking off",
+    "Public catalogs: sandbox 3, production 0",
+    "10 authenticated route boundaries and 3 worker guards per environment",
+    "Hosted Admin: workspace, users, SMTP default, media list, logs, profile, About",
+    "Hosted unpublished event save",
+    "30 domain tests and 3 theme checks"
+  ]
+}
