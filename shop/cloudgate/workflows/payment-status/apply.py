@@ -10,6 +10,10 @@ if not rows or not isinstance(pay, dict):
 o = rows[0]
 oid = to_int(o.get('Id'), 0)
 pid = to_int(o.get('PaymentRowId'), 0)
+if (to_int(pay.get('Id'), 0) != to_int(o.get('ConnectPaymentId'), 0)
+        or pay.get('GrossAmount') != to_int(o.get('TotalCents'), 0)
+        or str(pay.get('Currency') or '').upper() != str(o.get('Currency') or '').upper()):
+    fail('Wallet payment details do not match this order.')
 status = to_int(pay.get('Status'), 0)
 raw = q(out(pay))
 

@@ -19,7 +19,6 @@ const ITEMS = (s, counts) => [
   { key: 'products', label: 'Products with barcodes', done: (counts.activeProducts ?? 0) > 0, to: '/products', hint: 'Scan them in with the camera or import a spreadsheet.' },
   { key: 'tellers', label: 'Teller accounts', done: (counts.tellers ?? 0) > 0, to: '/tellers', hint: 'Create a user for each cashier in the Cloudgate hub; any role can use the till.' },
   { key: 'wallet', label: 'Cloudgate Wallet activated', done: counts.walletReady === true, to: walletUrl(), external: true, hint: 'Card payments run through the tenant wallet.' },
-  { key: 'url', label: 'Public address of this app', done: has(s.store_url), to: '/settings?tab=store', hint: 'Card payments return the customer here.' },
 ];
 
 const SetupChecklist = ({ activeProducts, walletReady, registers, tellers }) => {

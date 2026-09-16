@@ -16,8 +16,8 @@
     { "name": "PayCurrency", "type": "function", "script": "pay_currency.py", "next": "PayRef" },
     { "name": "PayRef", "type": "function", "script": "pay_ref.py", "next": "PayEmail" },
     { "name": "PayEmail", "type": "function", "script": "pay_email.py", "next": "PaySuccessUrl" },
-    { "name": "PaySuccessUrl", "type": "function", "script": "pay_success_url.py", "next": "PayCancelUrl" },
-    { "name": "PayCancelUrl", "type": "function", "script": "pay_cancel_url.py", "next": "Pay" },
+    { "name": "PaySuccessUrl", "type": "function", "script": "pay_success_url.py", "libraries": ["../../payment_return.py"], "next": "PayCancelUrl" },
+    { "name": "PayCancelUrl", "type": "function", "script": "pay_cancel_url.py", "libraries": ["../../payment_return.py"], "next": "Pay" },
     {
       "name": "Pay", "type": "walletpayment", "next": "SavePayment",
       "params": {

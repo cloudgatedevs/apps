@@ -16,7 +16,6 @@ const ITEMS = (s, pages, counts) => {
   return [
     { key: 'name', label: 'Store name and tagline', done: has(s.store_name) && has(s.store_tagline), to: '/settings?tab=store', hint: 'Shown in the header, emails and the browser tab.' },
     { key: 'logo', label: 'Logo and store icon', done: has(s.store_logo_url) || has(s.store_icon_url), to: '/settings?tab=store', hint: 'Header mark and the browser favicon.' },
-    { key: 'url', label: 'Public store address', done: has(s.store_url), to: '/settings?tab=store', hint: 'Payment providers return customers here.' },
     { key: 'contact', label: 'Contact details', done: has(s.support_email) && (has(s.contact_phone) || has(s.contact_address)), to: '/settings?tab=contact', hint: 'Support email, phone, address and hours.' },
     { key: 'social', label: 'Social media links', done: ['social_instagram', 'social_facebook', 'social_x', 'social_tiktok'].some((k) => has(s[k])), to: '/settings?tab=contact', hint: 'Shown in the footer and on About pages.' },
     { key: 'about', label: 'About us page', done: edited('about'), to: page('about') ? `/pages/${page('about').Id}` : '/pages', hint: 'Ticks once you save your own wording over the template.' },

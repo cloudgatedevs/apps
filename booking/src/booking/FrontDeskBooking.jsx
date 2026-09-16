@@ -42,7 +42,7 @@ export default function FrontDeskBooking({ data, close, refresh }) {
     finally { setBusy(false); }
   };
   const finish = () => { sessionStorage.removeItem(storageKey); close(); };
-  const base = preview ? window.location.origin : data.settings.website_url?.replace(/\/$/, '');
+  const base = (preview ? '' : data.settings.website_url?.trim())?.replace(/\/$/, '') || window.location.origin;
   const link = held && pending && base ? `${base}/appointments?ref=${encodeURIComponent(held.reference)}#token=${encodeURIComponent(pending.token)}` : '';
   return <Modal title="Book an appointment for a client" wide close={busy ? () => {} : close}>
     {held ? <div className="frontdesk-result">

@@ -189,7 +189,7 @@ const Settings = () => {
             </section>
             <section className="card flex flex-col gap-4 p-4">
               <h3 className="text-sm font-semibold text-mist">Public address</h3>
-              <Field label="URL of this app" hint="Card payments send the customer's phone back here after paying." htmlFor="s-url"><input id="s-url" value={form.store_url} onChange={set('store_url')} className="input" placeholder="https://pos.example.com" /></Field>
+              <Field label="URL of this app" hint="Optional. Payments return to the current website automatically. Set this to override the return address, for example when the till uses a different address." htmlFor="s-url"><input id="s-url" value={form.store_url} onChange={set('store_url')} className="input" placeholder="https://pos.example.com" /></Field>
             </section>
           </>
         ) : null}

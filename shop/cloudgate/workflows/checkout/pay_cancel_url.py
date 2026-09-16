@@ -1,9 +1,9 @@
-# Checkout / PayCancelUrl — where the provider sends the customer if they abandon the payment page.
-import urllib.parse as _up
-rows = rows_of('''${CreateOrder}''')
-d = body()
+import json as _payment_json
+from urllib.parse import quote as _payment_quote
+rows = _payment_json.loads(payment_request_value('CreateOrder') or '[]')
 o = rows[0] if rows else {}
-base = str(o.get('StoreUrl') or '').strip() or str(d.get('returnBase') or '').strip()
-if not base.startswith('http://') and not base.startswith('https://'):
-    fail('The store URL is not configured (settings.store_url).')
-return base.rstrip('/') + '/checkout/cancel?ref=' + _up.quote(str(o.get('Reference') or ''))
+d = _payment_json.loads(payment_request_value('body') or '{}')
+configured = o.get('StoreUrl')
+reference = o.get('Reference')
+base = payment_return_base(configured, payment_request_value('Header_Origin'), d.get('returnBase'))
+return base + '/checkout/cancel?ref=' + _payment_quote(str(reference or ''), safe='')

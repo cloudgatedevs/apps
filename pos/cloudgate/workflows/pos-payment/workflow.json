@@ -60,13 +60,13 @@
     {
       "name": "PaySuccessUrl",
       "type": "function",
-      "script": "pay_success_url.py",
+      "script": "pay_success_url.py", "libraries": ["../../payment_return.py"],
       "next": "PayCancelUrl"
     },
     {
       "name": "PayCancelUrl",
       "type": "function",
-      "script": "pay_cancel_url.py",
+      "script": "pay_cancel_url.py", "libraries": ["../../payment_return.py"],
       "next": "PayKey"
     },
     {

@@ -1,21 +1,11 @@
-import urllib.parse as _up
-
-def load_pay():
-    rows = rows_of('''${Load}''')
-    r = rows[0] if rows else {}
-    settings = load_json(r.get('SettingsJson'), {}) or {}
-    sale = load_json(r.get('SaleJson'), None)
-    shift = load_json(r.get('ShiftJson'), None)
-    if isinstance(sale, dict):
-        sale['Items'] = load_json(sale.get('ItemsJson'), []) or []
-        for k in ('Pending', 'Succeeded'):
-            if isinstance(sale.get(k), str):
-                sale[k] = load_json(sale.get(k), None)
-    return settings, (sale if isinstance(sale, dict) and sale.get('Id') else None), (shift if isinstance(shift, dict) and shift.get('Id') else None)
-
-settings, sale, shift = load_pay()
-d = body()
-base = str(settings.get('store_url') or '').strip() or str(d.get('returnBase') or '').strip()
-if not base.startswith('http://') and not base.startswith('https://'):
-    fail('The app URL is not configured (Settings > Store > App URL).')
-return base.rstrip('/') + '/pay/cancel?ref=' + _up.quote(str((sale or {}).get('Reference') or ''))
+import json as _payment_json
+from urllib.parse import quote as _payment_quote
+rows = _payment_json.loads(payment_request_value('Load') or '[]')
+o = rows[0] if rows else {}
+d = _payment_json.loads(payment_request_value('body') or '{}')
+settings = _payment_json.loads(o.get('SettingsJson') or '{}')
+sale = _payment_json.loads(o.get('SaleJson') or '{}')
+configured = settings.get('store_url')
+reference = sale.get('Reference')
+base = payment_return_base(configured, payment_request_value('Header_Origin'), d.get('returnBase'))
+return base + '/pay/cancel?ref=' + _payment_quote(str(reference or ''), safe='')

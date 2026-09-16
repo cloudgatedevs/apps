@@ -233,7 +233,7 @@ class RefundTests(unittest.TestCase):
         lib=(ROOT/'workflows/_shared/lib.py').read_text(encoding='utf-8')
         script=(ROOT/'workflows/payment-status/apply.py').read_text(encoding='utf-8')
         for status in (1,2,3):
-            code=lib+'\n'+script.replace('${LoadOrder}',json.dumps([{'Id':9001,'PaymentRowId':9001,'Reference':'TEST-1'}])).replace('${WalletGet}',json.dumps({'Status':status}))
+            code=lib+'\n'+script.replace('${LoadOrder}',json.dumps([{'Id':9001,'PaymentRowId':9001,'ConnectPaymentId':71001,'Reference':'TEST-1','TotalCents':1000,'Currency':'ZAR'}])).replace('${WalletGet}',json.dumps({'Id':71001,'GrossAmount':1000,'Currency':'zar','Status':status}))
             scope={}
             exec('def main():\n'+'\n'.join('    '+ln for ln in code.splitlines()),scope)
             execute(self.db,scope['main']())
@@ -368,7 +368,8 @@ class RefundTests(unittest.TestCase):
                 self.assertEqual(sum(n['NodeType']==11 for n in nodes),1)
         manifest=json.loads((ROOT.parent/'template.json').read_text(encoding='utf-8'))
         catalog=json.loads((ROOT.parent.parent/'apps.json').read_text(encoding='utf-8'))
-        self.assertEqual(manifest['version'],'1.1.1')
+        package=json.loads((ROOT.parent/'package.json').read_text(encoding='utf-8'))
+        self.assertEqual(manifest['version'],package['version'])
         self.assertEqual(next(a for a in catalog['apps'] if a['id']==APP)['version'],manifest['version'])
 
 

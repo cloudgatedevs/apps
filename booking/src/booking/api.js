@@ -8,9 +8,6 @@ export async function call(op, data = {}, admin = false, route = 'booking') {
   if (!res.ok) throw new Error(value.error || 'Something went wrong. Please try again.');
   return value;
 }
-export function requireOnlineCheckout(settings) {
-  if (!preview && !String(settings.website_url || '').startsWith('https://')) throw new Error('Online payment is not available yet. Please contact the studio to arrange your booking.');
-}
 export const money = (n, currency = 'ZAR') => new Intl.NumberFormat('en-ZA', { style: 'currency', currency, maximumFractionDigits: n % 100 ? 2 : 0 }).format((n || 0) / 100);
 export const dateLabel = (n, tz = 'Africa/Johannesburg', opts = {}) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', ...opts }).format(new Date(n * 1000));
 export function localDay(offset = 0, tz = 'Africa/Johannesburg') { const d = new Date(Date.now() + offset * 86400000); return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d); }

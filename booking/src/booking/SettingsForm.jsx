@@ -1,3 +1,4 @@
+import PaymentWebsiteHint from '../shared/PaymentWebsiteHint';
 import {SmtpSettings} from '../shared/CloudgateSmtpSettings';
 import React, { useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
@@ -20,7 +21,7 @@ export default function SettingsForm({ data, save, busy }) {
       await save(Object.fromEntries(keys.map(key => [key, value[key] ?? ''])));
     } catch (err) { setError(err); }
   };
-  const group = ([title, fields]) => <section className="panel settings-group" key={title}><h3>{title}</h3><div className="form-grid">{fields.map(([key,label]) => <Field key={key} label={label}>{['description','cancellation_policy'].includes(key) ? <textarea name={key} value={value[key] || ''} onChange={e => change(key, e.target.value)}/> : <input name={key} required={key==='name'} maxLength={key==='name'?120:undefined} type="text" value={value[key] || ''} onChange={e => change(key, e.target.value)}/>}</Field>)}</div></section>;
+  const group = ([title, fields]) => <section className="panel settings-group" key={title}><h3>{title}</h3><div className="form-grid">{fields.map(([key,label]) => <Field key={key} label={label}>{['description','cancellation_policy'].includes(key) ? <textarea name={key} value={value[key] || ''} onChange={e => change(key, e.target.value)}/> : <input name={key} required={key==='name'} maxLength={key==='name'?120:undefined} type="text" value={value[key] || ''} onChange={e => change(key, e.target.value)}/>}{key==='website_url'&&<PaymentWebsiteHint value={value[key]}/>}</Field>)}</div></section>;
   return <form onSubmit={submit}>
     <section className="panel settings-group homepage-settings" aria-label="Homepage settings">
       <div className="panel-heading"><h3>Homepage</h3><a className="text-link" href="/" target="_blank" rel="noreferrer">Open homepage <ArrowUpRight size={15}/></a></div>

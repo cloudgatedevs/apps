@@ -22,6 +22,7 @@
 
 import { CloudgateError, createCloudgateClient } from '@cloudgatedevs/cloudgate-client';
 import { auth } from './auth';
+import { explainApiError } from './api-error';
 
 const trimSlashes = (value) => String(value ?? '').trim().replace(/^\/+|\/+$/g, '');
 
@@ -56,15 +57,15 @@ function ensureConfigured() {
 }
 
 // On a 401, silently refresh the IdP session once and retry the request.
-async function withAuthRetry(run) {
+async function withAuthRetry(run, retried = false) {
   try {
     return await run();
   } catch (err) {
-    if (err instanceof CloudgateError && err.status === 401 && auth.enabled) {
+    if (!retried && err instanceof CloudgateError && err.status === 401 && auth.enabled) {
       const refreshed = await auth.refresh();
-      if (refreshed) return run();
+      if (refreshed) return withAuthRetry(run, true);
     }
-    throw err;
+    throw explainApiError(err);
   }
 }
 

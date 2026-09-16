@@ -19,6 +19,11 @@ settings, sale, shift = load_pay()
 pay = load_json('''${WalletCreate}''', None)
 if not sale or not isinstance(pay, dict) or not pay.get('Id'):
     fail('The card payment could not be created.')
+if (pay.get('GrossAmount') != to_int(sale.get('TotalCents'), 0) - to_int(sale.get('PaidCents'), 0)
+        or str(pay.get('Currency') or '').upper() != str(sale.get('Currency') or '').upper()):
+    fail('Wallet checkout details do not match this sale.')
+if not str(pay.get('PaymentUrl') or '').startswith('https://'):
+    fail('The wallet did not return a secure checkout URL. Please try again.')
 sid = str(sale['Id'])
 return "\n".join([
     "INSERT INTO sale_payments (SaleId, Method, AmountCents, Status, Reference, ConnectPaymentId, PaymentUrl, IsProduction, RawJson, CreatedBy) VALUES ("

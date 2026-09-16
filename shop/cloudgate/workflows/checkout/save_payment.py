@@ -4,6 +4,11 @@ pay = load_json('''${Pay}''', None)
 if not order or not isinstance(pay, dict) or not pay.get('Id'):
     fail('The payment could not be created.')
 o = order[0]
+if (pay.get('GrossAmount') != to_int(o.get('TotalCents'), 0)
+        or str(pay.get('Currency') or '').upper() != str(o.get('Currency') or '').upper()):
+    fail('Wallet checkout details do not match this order. Please contact the store.')
+if not str(pay.get('PaymentUrl') or '').startswith('https://'):
+    fail('The wallet did not return a secure checkout URL. Please try again.')
 oid = to_int(o.get('Id'), 0)
 raw = out(pay)
 return (

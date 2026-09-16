@@ -12,10 +12,9 @@ def load_pay():
     return settings, (sale if isinstance(sale, dict) and sale.get('Id') else None), (shift if isinstance(shift, dict) and shift.get('Id') else None)
 
 settings, sale, shift = load_pay()
-pending = (sale or {}).get('Pending') if sale else None
+pending = (sale or {}).get('Pending') or (sale or {}).get('Succeeded')
 if not sale:
     fail('Sale not found.')
 if not pending:
-    # Nothing pending: answer from the database without touching the wallet (paymentId 0 -> node error), so signal via a benign id.
     fail('No card payment is in progress for this sale.')
 return str(to_int(pending.get('ConnectPaymentId'), 0))

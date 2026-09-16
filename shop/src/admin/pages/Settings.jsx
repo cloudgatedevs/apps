@@ -283,7 +283,7 @@ const Settings = () => {
             </section>
             <section className="card flex flex-col gap-4 p-4">
               <h3 className="text-sm font-semibold text-mist">Addresses</h3>
-              <Field label="Public store URL" hint="Where the storefront lives. Payment providers send customers back here and emails link to it." htmlFor="s-url"><input id="s-url" value={form.store_url} onChange={set('store_url')} className="input" placeholder="https://shop.example.com" /></Field>
+              <Field label="Public store URL" hint="Optional. Payments return to the current website automatically. Set this to override the return address and provide a fixed address for email links." htmlFor="s-url"><input id="s-url" value={form.store_url} onChange={set('store_url')} className="input" placeholder="https://shop.example.com" /></Field>
             </section>
           </>
         ) : null}

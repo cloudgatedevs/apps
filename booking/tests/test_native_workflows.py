@@ -23,9 +23,9 @@ class NativeTests(unittest.TestCase):
  slot=engine_tests.BookingTests.slot
  hold=engine_tests.BookingTests.hold
  pay=engine_tests.BookingTests.pay
- def native(self,route,request,user=None,wallet=None):
+ def native(self,route,request,user=None,wallet=None,origin='https://studio.example'):
   graph=json.loads((ROOT/'workflows'/route/'graph.json').read_text())
-  nodes={n['Id']:n for n in graph['Nodes']};self.keys={'body':json.dumps(request)}
+  nodes={n['Id']:n for n in graph['Nodes']};self.keys={'body':json.dumps(request),'Header_Origin':origin}
   scope=types.SimpleNamespace(GetKeys=lambda sid:[types.SimpleNamespace(Key=k,Value=v) for k,v in self.keys.items()])
   modules={'clr':types.SimpleNamespace(AddReference=lambda name:None),'Web.Core.Shared.Services.Endpoints.Engine':types.SimpleNamespace(WorkflowSessionKeyExecutionContext=scope)}
   old={key:sys.modules.get(key) for key in modules};sys.modules.update(modules)
@@ -61,6 +61,15 @@ class NativeTests(unittest.TestCase):
     else:sys.modules[key]=value
  def test_native_public_catalog(self):
   result=self.native('booking',{'op':'catalog'});self.assertEqual(len(result['services']),6)
+ def test_native_checkout_derives_browser_origin_with_no_website_setting(self):
+  b=self.hold();req={'reference':b['reference'],'token':self.token}
+  for origin in ('https://custom.example','http://localhost:3007','http://127.0.0.1:3007'):
+   with self.subTest(origin=origin):
+    def wallet(n,keys):
+     self.assertEqual(n['Param7'],origin+'/checkout/return?ref='+b['reference'])
+     self.assertEqual(n['Param8'],n['Param7'])
+     return {'Id':123,'PaymentUrl':'https://wallet.example/pay/123','GrossAmount':75000,'Currency':'ZAR','Status':0}
+    self.native('checkout',req,wallet=wallet,origin=origin)
  def test_native_service_photo_create_edit_and_delete(self):
   created=self.native('booking',dict(op='admin-save',entity='services',record=dict(name='Guitar lesson',category='Lessons',price=25000,active=1,staff_ids=[1],image_url='https://cdn.example/guitar.jpg')),ADMIN)
   ident=created['Id']

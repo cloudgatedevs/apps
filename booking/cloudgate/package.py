@@ -38,6 +38,9 @@ def request():
 '''
 ENGINE=(ROOT/'engine.py').read_text()
 def function(code,engine=False): return BRIDGE+'\n'+(ENGINE+'\n' if engine else '')+code
+PAYMENT_RETURN=(ROOT/'payment_return.py').read_text(encoding='utf8')
+def payment_function(code,engine=False):return function(PAYMENT_RETURN+'\n'+code,engine)
+
 graphs=[]
 def graph(route,steps,anonymous=True,schedule=False):
     eid=str(uuid.uuid5(uuid.NAMESPACE_URL,'cloudgate-booking/'+route));nodes=[];names={}
@@ -70,7 +73,7 @@ graph('booking',[
  ('Plan','function',function("d=request()\nif d.get('op')=='maintenance' or str(d.get('op','')).startswith(('payment-','refund-')): raise Exception('Internal operation.')\nsql,result=plan(snapshot(),d,obj('IdpAuth',{}))\nreturn sql",True)),
  ('Run','database','${Plan}'),('Shape','function',shape)])
 
-prepare=function("e=Engine(snapshot(),obj('IdpAuth',{}))\nb=e.booking(request())\nrequire(b['status']=='held' and b['expires']>e.now,'Your checkout hold expired. Please book again.')\nurl=e.settings.get('website_url','').rstrip('/')\nrequire(url.startswith('https://'),'The studio must configure its live HTTPS website URL before taking payments.')\nc=next(c for c in e.s['customers'] if c['Id']==b['customer_id'])\nreturn encoded(dict(b,email=c['email'],url=url))",True)
+prepare=payment_function("e=Engine(snapshot(),obj('IdpAuth',{}))\nb=e.booking(request())\nrequire(b['status']=='held' and b['expires']>e.now,'Your checkout hold expired. Please book again.')\nurl=payment_return_base(e.settings.get('website_url',''),value('Header_Origin'))\nc=next(c for c in e.s['customers'] if c['Id']==b['customer_id'])\nreturn encoded(dict(b,email=c['email'],url=url))",True)
 extract=lambda key: function("return str(obj('Prepare')['"+key+"'])")
 save=function("p=obj('WalletCreate',{})\nrequire(p.get('Id') and str(p.get('PaymentUrl','')).startswith('https://'),'The wallet did not return a secure checkout session.')\nb=obj('Prepare')\nsql,result=plan(snapshot('AfterWallet'),dict(op='payment-save',reference=b['reference'],payment_id=str(p['Id']),payment_url=p['PaymentUrl']),internal=True)\nreturn sql",True)
 graph('checkout',[

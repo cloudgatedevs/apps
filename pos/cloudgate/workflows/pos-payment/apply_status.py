@@ -31,7 +31,11 @@ settings, sale, shift = load_pay()
 pay = load_json('''${WalletGet}''', None)
 if not sale or not isinstance(pay, dict):
     fail('Sale or payment not found.')
-pending = sale.get('Pending') or {}
+pending = sale.get('Pending') or sale.get('Succeeded') or {}
+if (not pending or to_int(pay.get('Id'), 0) != to_int(pending.get('ConnectPaymentId'), 0)
+        or pay.get('GrossAmount') != to_int(pending.get('AmountCents'), 0)
+        or str(pay.get('Currency') or '').upper() != str(sale.get('Currency') or '').upper()):
+    fail('Wallet payment details do not match this sale.')
 sid = str(sale['Id'])
 pid = str(to_int(pending.get('Id'), 0))
 status = to_int(pay.get('Status'), 0)

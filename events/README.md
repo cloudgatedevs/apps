@@ -26,7 +26,7 @@ Generated photos are supplied separately in `events-artwork.zip` and `artwork/`,
 - Online QR camera scanning or ticket-reference admission, event-scoped staff access, duplicate scan detection and administrator admission reversal.
 - Shared Cloudgate files/media, tenant email settings, user management, account photos, workflow logs, About, branding and six editable colour presets.
 
-Cloudgate sends email by default. SMTP setup is **not** an installation requirement. Custom SMTP is optional and shared by every app in the tenant across sandbox and production. Save a live HTTPS website URL in Settings before enabling paid checkout.
+Cloudgate sends email by default. SMTP setup is **not** an installation requirement. Custom SMTP is optional and shared by every app in the tenant across sandbox and production. Checkout automatically returns to the browser's website. The website URL in Settings is an optional override and supplies a fixed address for email links or server-initiated checkout.
 
 ## Booking and payment rules
 

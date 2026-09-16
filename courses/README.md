@@ -26,8 +26,10 @@ test identities and simulated payments; it never sends emails.
 - `npm run cloudgate:package`: regenerate the 13 native workflow graphs and
   `.template` install bundle. Use sample data only in sandbox.
 
-Paid courses require Cloudgate Wallet configuration and a live HTTPS website
-return URL. SMTP defaults to Cloudgate; custom SMTP is optional. Certificates
+Paid courses require Cloudgate Wallet configuration. Checkout automatically
+returns to the browser's website; the website URL setting is an optional override
+and a fixed address for email links or server-initiated checkout.
+SMTP defaults to Cloudgate; custom SMTP is optional. Certificates
 record course completion, not external accreditation. SCORM, proctoring and
 subscription billing are outside this sample's scope.
 
