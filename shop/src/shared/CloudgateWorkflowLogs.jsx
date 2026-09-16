@@ -88,7 +88,7 @@ const BucketChart = ({ buckets, bucketSize }) => {
   const bw = (w - gap * (buckets.length - 1)) / buckets.length;
   const label = (b) => {
     const d = new Date(b.at);
-    return bucketSize === 'hour' ? d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    return bucketSize === 'hour' ? d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
   };
   return (
     <div className="cwl-chart">
@@ -99,6 +99,7 @@ const BucketChart = ({ buckets, bucketSize }) => {
           const errors = (b.errors / max) * (h - padY * 2);
           return (
             <g key={b.at} onMouseEnter={() => setHover(i)}>
+              <title>{label(b)}: {b.calls} calls, {b.errors} errors</title>
               <rect x={x} y={0} width={bw} height={h} fill="transparent" />
               <rect x={x} y={h - padY - total} width={bw} height={Math.max(total, b.calls ? 1.5 : 0)} fill="var(--cwl-accent, #4f46e5)" opacity={hover === i ? 1 : 0.75} />
               {b.errors ? <rect x={x} y={h - padY - errors} width={bw} height={Math.max(errors, 1.5)} fill="#dc2626" /> : null}
@@ -114,6 +115,38 @@ const BucketChart = ({ buckets, bucketSize }) => {
       <div className="cwl-chart-axis"><span>{label(buckets[0])}</span><span>{label(buckets[buckets.length - 1])}</span></div>
     </div>
   );
+};
+
+const ActionBreakdown = ({ rows, loading, route, setRoute }) => {
+  const [page, setPage] = useState(0);
+  const [sort, setSort] = useState('calls');
+  const sorted = [...rows].sort((a, b) => (b[sort] || 0) - (a[sort] || 0));
+  const pages = Math.max(1, Math.ceil(sorted.length / 6));
+  const current = Math.min(page, pages - 1);
+  const total = rows.reduce((sum, row) => sum + row.calls, 0);
+  return <section className="cwl-card">
+    <div className="cwl-card-head">
+      <div><h3>Action performance</h3><p className="cwl-section-note">Compare traffic and response times. Select an action to filter calls below.</p></div>
+      <div className="cwl-head-actions">
+        {route && <button type="button" className="cwl-link" onClick={() => setRoute('')}>Clear action filter</button>}
+        <select aria-label="Sort action performance" value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}>
+          <option value="calls">Most calls</option><option value="errors">Most errors</option><option value="p95Ms">Slowest p95</option>
+        </select>
+      </div>
+    </div>
+    {loading ? <Skeleton lines={4} /> : !rows.length ? <p className="cwl-section-note">No calls in this period.</p> : <>
+      <div className="cwl-scroll cwl-routes"><table>
+        <thead><tr><th>Action</th><th className="cwl-r">Calls / share</th><th className="cwl-r">Errors</th><th className="cwl-r">Avg</th><th className="cwl-r">p95</th><th className="cwl-r">Max</th></tr></thead>
+        <tbody>{sorted.slice(current * 6, current * 6 + 6).map(r => <tr key={r.route} className={route === r.route ? 'active' : ''}>
+          <td><button type="button" className="cwl-action-name cwl-mono" aria-pressed={route === r.route} onClick={() => setRoute(route === r.route ? '' : r.route)}>/{r.route}</button></td>
+          <td className="cwl-r cwl-num"><span>{r.calls.toLocaleString()} <small className="cwl-muted">{total ? Math.round(r.calls / total * 100) : 0}%</small></span><span className="cwl-share"><i style={{ width: `${total ? r.calls / total * 100 : 0}%` }} /></span></td>
+          <td className={`cwl-r cwl-num ${r.errors ? 'cwl-dur-bad' : 'cwl-muted'}`}>{r.errors.toLocaleString()}</td>
+          <td className={`cwl-r ${durClass(r.avgMs)}`}>{fmtMs(r.avgMs)}</td><td className={`cwl-r ${durClass(r.p95Ms)}`}>{fmtMs(r.p95Ms)}</td><td className={`cwl-r ${durClass(r.maxMs)}`}>{fmtMs(r.maxMs)}</td>
+        </tr>)}</tbody>
+      </table></div>
+      <div className="cwl-action-footer"><span>{current * 6 + 1}–{Math.min(current * 6 + 6, rows.length)} of {rows.length} actions</span><div className="cwl-head-actions"><button type="button" className="cwl-btn cwl-btn-sm" disabled={current === 0} onClick={() => setPage(current - 1)}>Previous</button><button type="button" className="cwl-btn cwl-btn-sm" disabled={current + 1 >= pages} onClick={() => setPage(current + 1)}>Next</button></div></div>
+    </>}
+  </section>;
 };
 
 const NodeLogs = ({ sessionId }) => {
@@ -261,28 +294,7 @@ export function CloudgateWorkflowLogs({ title = 'Logs', showTitle = true }) {
               <div className="cwl-card-head"><h3>Calls per {s?.bucketSize === 'day' ? 'day' : 'hour'}</h3><span className="cwl-legend"><i style={{ background: 'var(--cwl-accent, #4f46e5)' }} />calls<i style={{ background: '#dc2626' }} />errors</span></div>
               {summary.loading ? <Skeleton lines={4} /> : <BucketChart buckets={s?.buckets} bucketSize={s?.bucketSize} />}
             </section>
-            <section className="cwl-card">
-              <div className="cwl-card-head"><h3>By action</h3>{route ? <button type="button" className="cwl-link" onClick={() => setRoute('')}>Show all actions</button> : null}</div>
-              {summary.loading ? <Skeleton lines={5} /> : !s?.byRoute?.length ? <p className="cwl-dim" style={{ margin: '24px 0', textAlign: 'center' }}>No calls in this period.</p> : (
-                <div className="cwl-scroll cwl-routes">
-                  <table>
-                    <thead><tr><th>Action</th><th className="cwl-r">Calls</th><th className="cwl-r">Errors</th><th className="cwl-r">Avg</th><th className="cwl-r">p95</th><th className="cwl-r">Max</th></tr></thead>
-                    <tbody>
-                      {s.byRoute.map((r) => (
-                        <tr key={r.route} className={route === r.route ? 'active' : ''} onClick={() => setRoute(route === r.route ? '' : r.route)} title="Filter the list to this action">
-                          <td className="cwl-mono">/{r.route}</td>
-                          <td className="cwl-r cwl-num cwl-muted">{r.calls.toLocaleString()}</td>
-                          <td className={`cwl-r cwl-num ${r.errors ? 'cwl-dur-bad' : 'cwl-dim'}`}>{r.errors ? `${r.errors} (${r.errorRate}%)` : '0'}</td>
-                          <td className={`cwl-r ${durClass(r.avgMs)}`}>{fmtMs(r.avgMs)}</td>
-                          <td className={`cwl-r ${durClass(r.p95Ms)}`}>{fmtMs(r.p95Ms)}</td>
-                          <td className={`cwl-r ${durClass(r.maxMs)}`}>{fmtMs(r.maxMs)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
+            <ActionBreakdown rows={s?.byRoute || []} loading={summary.loading} route={route} setRoute={setRoute} />
           </div>
 
           <div className="cwl-filters">
