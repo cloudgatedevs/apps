@@ -1,0 +1,7 @@
+/* Same office surfaces in the page and in dialogs mounted outside admin-app. */
+.cga.cga{--cga-bg:color-mix(in srgb,var(--cream) 36%,var(--office-base,#fff));--cga-line:color-mix(in srgb,var(--ink) 12%,var(--cream))}
+.admin-app .cga h2,.cga.cga h2{font-family:Manrope,'DM Sans',sans-serif;font-size:14px;font-weight:650;letter-spacing:normal;line-height:1.4}
+.cga.cga-dialog{background:var(--cga-bg)}
+.cga.cga-dialog h2{font-size:17px}
+/* Keep off-screen accessible table labels inside the horizontal scroll area. */
+.cga .cga-table-wrap{position:relative}

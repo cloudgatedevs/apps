@@ -1,7 +1,7 @@
 {
   "name": "cloudgate-courses",
   "private": true,
-  "version": "1.1.2",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,11 +10,12 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "test": "python -B -m unittest discover -s tests -v",
+    "test": "node --test tests/analytics.test.mjs && python -B -m unittest discover -s tests -v",
     "cloudgate:package": "python -B cloudgate/package.py",
     "test:hosted": "node tests/hosted-smoke.mjs",
     "test:theme": "node --test tests/theme.test.mjs",
-    "banner": "node cloudgate/banner.mjs"
+    "banner": "node cloudgate/banner.mjs",
+    "test:analytics": "node --test tests/analytics.test.mjs"
   },
   "dependencies": {
     "@cloudgatedevs/cloudgate-client": "^0.5.0",

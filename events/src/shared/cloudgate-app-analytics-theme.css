@@ -1,0 +1,7 @@
+/* Reuse the saved back-office palette for panels, controls and portal dialogs. */
+.cga.cga{--cga-bg:var(--surface);--cga-accent:var(--green);--cga-line:var(--line);--cga-muted:var(--muted);color:var(--ink)}
+.cga.cga h2{font-family:inherit;font-size:14px;font-weight:650;letter-spacing:normal;line-height:1.4}
+.cga.cga-dialog{background:var(--cga-bg)}
+.cga.cga-dialog h2{font-size:17px}
+/* Keep off-screen accessible table labels inside the horizontal scroll area. */
+.cga .cga-table-wrap{position:relative}

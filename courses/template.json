@@ -2,7 +2,7 @@
   "id": "courses",
   "name": "Cloudgate Academy",
   "category": "Education",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "A branded learning academy with courses, enrolments, assessments, certificates and Cloudgate payments.",
   "folder": "courses",
   "framework": "React",
@@ -26,7 +26,8 @@
     "Lesson progress, quizzes with server-side scoring, attempt limits and certificates",
     "Instructor assignments, live training sessions, attendance and learner discussions",
     "Cloudgate media, shared SMTP, user management, logs, custom branding and About",
-    "Premium responsive design with six colour presets and individual theme controls"
+    "Premium responsive design with six colour presets and individual theme controls",
+    "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
   ],
   "requirements": [
     "wallet",

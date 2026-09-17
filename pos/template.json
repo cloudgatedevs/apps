@@ -2,7 +2,7 @@
   "id": "pos",
   "name": "Cloudgate POS",
   "category": "Commerce",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "A complete point-of-sale system: a touch-friendly till that scans barcodes with the device camera or a USB scanner, cash and card payments through Cloudgate Wallet, parked sales, returns and shift cash-ups, plus a back office for products, inventory (goods received and stock takes), sales, shifts, customers, reports and receipts.",
   "folder": "pos",
   "framework": "React",
@@ -28,7 +28,8 @@
     "Shifts with opening float, cash in/out and Z reports; parked sales and returns",
     "Inventory with goods-received notes, stock takes, ledger and label printing",
     "Logs page in the back office: this till\u2019s workflow calls, timings and errors, read from Cloudgate",
-    "Any signed-in user can run the till; the back office is for Admins only"
+    "Any signed-in user can run the till; the back office is for Admins only",
+    "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
   ],
   "requirements": [
     "wallet",

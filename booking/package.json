@@ -1,7 +1,7 @@
 {
   "name": "cloudgate-booking",
   "private": true,
-  "version": "1.8.3",
+  "version": "1.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,7 +14,8 @@
     "build": "vite build",
     "banner": "node cloudgate/banner.mjs",
     "test:refund-ui": "node tests/refund-browser.mjs",
-    "dev:preview": "vite --mode preview"
+    "dev:preview": "vite --mode preview",
+    "test:analytics": "node --test tests/analytics.test.mjs"
   },
   "dependencies": {
     "@cloudgatedevs/cloudgate-client": "^0.5.0",

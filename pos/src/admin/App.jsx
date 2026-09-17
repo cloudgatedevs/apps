@@ -21,6 +21,7 @@ import { Customers, CustomerDetail } from '@/admin/pages/Customers';
 import { Reports } from '@/admin/pages/Reports';
 import { Media } from '@/admin/pages/Media';
 import { Logs } from '@/admin/pages/Logs';
+import { Analytics } from '@/admin/pages/Analytics';
 import { About } from '@/admin/pages/About';
 import { Settings } from '@/admin/pages/Settings';
 import { Profile } from '@/admin/pages/Profile';
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/registers" element={<Registers />} />
                 <Route path="/media" element={<Media />} />
                 <Route path="/logs" element={<Logs />} />
+                <Route path="/analytics" element={<Analytics />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/profile" element={<Profile />} />

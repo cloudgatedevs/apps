@@ -8,7 +8,7 @@ import { PoweredByCloudgate } from '../shared/CloudgateAbout';
 const GROUPS = [
   ['Workspace', ['overview', 'calendar', 'appointments', 'clients', 'waitlist']],
   ['Manage', ['services', 'team', 'resources', 'media', 'promotions']],
-  ['Business', ['reports', 'messages', 'logs', 'settings', 'about', 'profile']],
+  ['Business', ['reports', 'messages', 'logs', 'analytics', 'settings', 'about', 'profile']],
 ];
 
 export function OfficeSidebar({ items, page, go, account, settings, open, onClose, onSignOut, preview, waiting = 0 }) {

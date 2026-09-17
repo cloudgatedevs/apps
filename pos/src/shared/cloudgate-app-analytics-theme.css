@@ -1,0 +1,5 @@
+/* Match the Shop/POS back-office palette, including dialogs mounted on body. */
+.cga.cga{--cga-accent:#4f46e5;--cga-line:#e5e8ee;--cga-bg:#fff;--cga-muted:#6b7280;color:#0f172a}
+.cga.cga-dialog{background:var(--cga-bg)}
+/* Keep off-screen accessible table labels inside the horizontal scroll area. */
+.cga .cga-table-wrap{position:relative}

@@ -1,5 +1,13 @@
 # Cloudgate Booking
 
+## Version 1.9.0 — Website analytics
+
+**Back office → Analytics** (`/admin#analytics`) uses the same Cloudgate Web App Insights data and administrator authentication as the verified Jobs implementation. Includes views, sessions, signed-in visitors, previous-period comparisons, bounce rate, session duration, pages, countries, sources and device/browser breakdowns. Period filters, page and visitor pagination, and signed-in visitor workflow calls are included. The page and its dialogs follow this app's back-office theme.
+
+Uses the existing `POST /api/idp/{tenant}/admin/analytics/{overview|pages|sessions}` APIs. The published website ID and analytics environment are derived automatically from Cloudgate's published metadata; local development falls back to the App Store installation mapping. Requests require an active Admin IdP user. No new environment settings, workflows or database migrations are needed. Update/rebuild the app on the Cloudgate server that already supports Jobs Analytics.
+
+Run `npm run test:analytics` and `npm run build` before publishing. Shared Analytics source and client tests are copied unchanged from Jobs; app-specific styles live in `src/shared/cloudgate-app-analytics-theme.css`.
+
 A booking product derived from Cloudgate Shop: two React/Vite entry points, shared Cloudgate client and IdP integration, Python workflow business logic, SQLite, native Wallet Payment nodes, and App Store packaging. The separate Shop and POS refund template updates are documented in their respective `cloudgate/REFUNDS.md` files.
 
 ## Version 1.8.0 — Workflow logs in the back office

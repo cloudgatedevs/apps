@@ -59,6 +59,7 @@ export const IconLogs = icon(
     <path d="M4 19V5" /><path d="M4 19h16" /><path d="M8 15l3-4 3 2 4-6" />
   </>,
 );
+export const IconAnalytics = icon(<><path d="M4 4v16h16" /><path d="M9 15v-4M14 15V6M19 15v-7" /></>);
 export const IconSettings = icon(
   <>
     <circle cx="12" cy="12" r="3" />
@@ -81,6 +82,7 @@ export const NAV = [
   { to: '/pages', label: 'Pages', icon: IconPages },
   { to: '/messages', label: 'Messages', icon: IconMessages },
   { to: '/logs', label: 'Logs', icon: IconLogs },
+  { to: '/analytics', label: 'Analytics', icon: IconAnalytics },
   { to: '/media', label: 'Media', icon: IconMedia },
   { to: '/settings', label: 'Settings', icon: IconSettings },
   { to: '/about', label: 'About', icon: IconAbout },

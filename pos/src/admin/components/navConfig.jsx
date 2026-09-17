@@ -26,6 +26,7 @@ export const NAV = [
   { to: '/registers', label: 'Registers', icon: Monitor, group: 'Setup' },
   { to: '/media', label: 'Media', icon: Image, group: 'Setup' },
   { to: '/logs', label: 'Logs', icon: Activity, group: 'Setup' },
+  { to: '/analytics', label: 'Analytics', icon: BarChart3, group: 'Setup' },
   { to: '/settings', label: 'Settings', icon: Settings, group: 'Setup' },
   { to: '/about', label: 'About', icon: Info, group: 'Setup' },
 ];
