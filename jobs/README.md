@@ -1,6 +1,6 @@
 # Cloudgate Jobs
 
-Cloudgate App Store service-business app, version 1.0.0. React/Vite public website, customer portal and staff back office; native Cloudgate workflows, SQLite and Cloudgate Wallet. Built separately from Booking, Shop and POS.
+Cloudgate App Store service-business app, version 1.2.0. React/Vite public website, customer portal and staff back office; native Cloudgate workflows, SQLite and Cloudgate Wallet. Built separately from Booking, Shop and POS.
 
 ## Run locally
 
@@ -101,7 +101,7 @@ PDFs use the standard jsPDF font set; English/Latin examples were visually check
 
 Existing backend and management UI source were inspected but not changed. Preserve the unrelated pre-existing backend `license-state.json` modification.
 
-## Authenticated sandbox verification � 2026-09-10
+## Authenticated sandbox verification — 2026-09-10
 
 Jobs IdP admin login succeeded. All office sections rendered; a R950 draft quotation (QUO-943C8902BAF1) persisted through the published workflow. Existing settings saved successfully. jobs-icon.png uploaded to the Cloudgate media server and appeared in the library, left unused for review. The portal rendered using the admin session; this does not certify a separate customer or technician role. No quote was sent, payment taken, or email triggered by these checks. Full hosted customer/payment/refund, scheduler/SMTP and App Store install/update checks remain. Local development now uses the published sandbox via Git-ignored .env.local; npm run dev:preview still explicitly selects the simulated preview.
 
@@ -128,6 +128,26 @@ API `POST /api/idp/{tenant}/admin/workflow-logs/{list|summary|get|nodes}` with t
 role required) and names its own scope from `VITE_CLOUDGATE_API_PROJECT` and `VITE_CLOUDGATE_API_ENV`; the
 backend resolves that through the tenant's App Store installs. The local preview shows an explanatory empty
 state. Requires a Cloudgate host with that API. Frontend only: no workflow or database change.
+
+## Website analytics in the back office (1.2.0)
+
+**Administration → Analytics** is available to Jobs owners, with an active Cloudgate Admin IdP account required by the API. It uses the same `WebAppAnalyticsService` calculations and recorded website traffic as the Hub's per-web-app Insights dashboard: views, sessions, signed-in visitors, previous-period comparisons, bounce rate, average session duration, pages, countries, referrers, devices, browsers and operating systems. Page and visitor lists are paginated; selecting a page filters visitor sessions. Signed-in visitors have a shortcut to their workflow calls in Logs. Anonymous visitors remain anonymous.
+
+Reporting periods use UTC and match the Hub. Countries count recorded website activity, including session-ending events, while source and device breakdowns count page views. Counts may therefore differ between these breakdowns. The page follows the configured Jobs colours and supports narrow screens, keyboard navigation and reduced motion. No extra tracking script or third-party analytics service is installed.
+
+The component is `src/shared/CloudgateAppAnalytics.jsx`. Its client uses the same IdP bearer authentication and one refresh on expiry as Logs:
+
+| API | Response |
+| --- | --- |
+| `POST /api/idp/{tenant}/admin/analytics/overview` | Website identity, summary, countries, referrers and devices |
+| `POST /api/idp/{tenant}/admin/analytics/pages` | `{totalCount, items}` grouped by page path |
+| `POST /api/idp/{tenant}/admin/analytics/sessions` | `{totalCount, items}` for visitor sessions, optionally filtered by `pagePath` |
+
+All requests include `projectPath`, `environment` (`sbx` or `prod`), and `timePeriod` (0 all time, 1 three months, 2 one month, 3 one week, 4 yesterday, 5 today, 6 last hour). List requests use `skip` and `take` (1–100). On a published site, `publishedWebAppId` and the analytics environment come automatically from Cloudgate's injected `__CG_ANALYTICS__` metadata or its same-origin `/cg-analytics.json`. Only the site ID and environment are used; its public beacon token does not authorize admin access. The server checks that the authenticated tenant owns the requested, non-deleted website. When public metadata is absent, it resolves the unique website from the tenant's App Store installation for the configured controller and environment. This supports local development against an installed site without adding an environment variable. Directly published sites should be verified at their hosted URL.
+
+**Deployment:** deploy the Cloudgate server changes in `AppAnalyticsService.cs`, `IdpAuthController.AdminAnalytics.cs` and the controller constructor, then update Jobs to 1.2.0 and rebuild/publish it. No workflow publication or database migration is required. Older servers and missing website mappings show an explanatory message; they are not displayed as zero traffic. Preview mode does not request live analytics. This feature is enabled only in Jobs pending verification before adoption by other apps.
+
+`npm test` includes the analytics client's authentication, metadata discovery, filter and UTC-window tests alongside the existing Jobs domain tests. Backend tests cover tenant/environment isolation, active Admin access, published-site ownership, ambiguous installations and reuse of Hub results.
 
 ## Back office navigation (1.0.2)
 
