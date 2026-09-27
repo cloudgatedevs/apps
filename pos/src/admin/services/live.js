@@ -8,7 +8,7 @@
 // VITE_CLOUDGATE_WS_PASSWORD). They ship in the back-office bundle, so keep the
 // payloads free of customer data — they are, by design.
 import { useEffect } from 'react';
-import { createCloudgateWebSockets } from '@cloudgatedevs/cloudgate-client';
+import { createCloudgateWebSockets } from '@cloudgatedevs/cloudgate-client-react';
 import { apiEnv } from '@/shared/services/api';
 
 const CHANNEL = 'pos-events';
@@ -63,6 +63,12 @@ export function useLiveEvents(onEvent, types) {
     ensureConnected();
     return () => {
       handlers.delete(handler);
+      if (!handlers.size && connectionKey) {
+        sockets.disconnect(connectionKey);
+        connectionKey = null;
+        status = 'idle';
+        statusListeners.forEach(listener => listener(status));
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onEvent, types?.join('|')]);

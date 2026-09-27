@@ -1,8 +1,16 @@
-import { api } from '../shared/services/api';
-export const preview = import.meta.env.DEV && (import.meta.env.MODE === 'preview' || !import.meta.env.VITE_CLOUDGATE_API_URL);
+import { cloudgate, workflow, preview } from './platform';
+export { preview };
 export async function call(op, data = {}, admin = false, route = 'booking') {
   const body = { ...data, op };
-  if (!preview) return api.post('/' + route, body);
+  if (!preview) {
+    if (!workflow) throw new Error('Configure the Booking workflow gateway to use this app.');
+    await cloudgate.auth.ensureAccessToken();
+    try { return await workflow.post('/' + route, body); }
+    catch (error) {
+      if (error.status !== 401 || !await cloudgate.auth.refresh()) throw error;
+      return workflow.post('/' + route, body);
+    }
+  }
   const res = await fetch('/api/' + route, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Studio-Preview': '1', ...(admin ? { 'X-Preview-Role': 'admin' } : {}) }, body: JSON.stringify(body) });
   const value = await res.json();
   if (!res.ok) throw new Error(value.error || 'Something went wrong. Please try again.');

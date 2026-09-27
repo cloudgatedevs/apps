@@ -2,12 +2,12 @@
   "id": "jobs",
   "name": "Cloudgate Jobs",
   "category": "Field Service",
-  "version": "1.2.0",
-  "description": "A service-business website, customer portal and staff workspace for requests, quotes, job visits, invoices and Cloudgate Wallet payments, with custom branding and media management.",
+  "version": "2.0.0",
+  "description": "Service requests, quotes, scheduled job visits, invoices and customer payments with a shared Cloudgate React back office.",
   "folder": "jobs",
   "framework": "React",
   "devCommand": "npm install && npm run dev",
-  "devPort": 3002,
+  "devPort": 3010,
   "demoUrl": "https://jobs.app.cloudgate.dev/",
   "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/jobs/banner.png",
   "adminPath": "/admin",
@@ -28,10 +28,8 @@
     "Downloadable quote, invoice and payment-receipt PDFs, operational reports and CSV export",
     "Private request and job photos with record-level access checks and staff-controlled visibility",
     "Recurring job generation, reminder outbox and scheduled payment, refund and email workers",
-    "Custom app name, logo, icon, favicon, colours and homepage imagery; Cloudgate media library with uploads and cropping",
     "Owner, office and assigned-technician access, customer ownership and activity history",
-    "Logs page in the back office: this business\u2019s workflow calls, timings and errors, read from Cloudgate",
-    "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+    "Shared Cloudgate React SDK for authentication, profile, users, roles, media, branding, themes, analytics, logs and developer tools"
   ],
   "requirements": [
     "wallet",
@@ -80,5 +78,21 @@
     "file": ".template/workflow-template.json",
     "schema": ".template/schema.sql",
     "sampleData": ".template/sample-data.sql"
+  },
+  "appSettings": {
+    "app_tagline": "Good work, made simple",
+    "app_description": "Request a quote, follow your jobs and manage payments in one place.",
+    "theme_mode": "light",
+    "theme_density": "flex",
+    "theme_primary": "#153d35",
+    "theme_secondary": "#a7cf70",
+    "theme_neutral": "#64748b",
+    "theme_success": "#15803d",
+    "theme_warning": "#a16207",
+    "theme_danger": "#be123c",
+    "theme_info": "#0369a1",
+    "theme_custom_palette": "{\"name\":\"Jobs Evergreen\",\"colors\":{\"theme_primary\":\"#153d35\",\"theme_secondary\":\"#a7cf70\",\"theme_neutral\":\"#64748b\",\"theme_success\":\"#15803d\",\"theme_warning\":\"#a16207\",\"theme_danger\":\"#be123c\",\"theme_info\":\"#0369a1\"}}",
+    "enable_public_website": "true",
+    "require_public_website_login": "false"
   }
 }

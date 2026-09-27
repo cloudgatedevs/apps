@@ -54,7 +54,7 @@ const PageEdit = () => {
       if (creating) {
         const created = await adminApi.pages.create(payload);
         toast.success('Page created.');
-        navigate(`/pages/${created.Id}`, { replace: true });
+        navigate(`/admin/pages/${created.Id}`, { replace: true });
       } else {
         const updated = await adminApi.pages.update(Number(id), payload);
         const f = fromServer(updated);
@@ -89,7 +89,7 @@ const PageEdit = () => {
   };
 
   const remove = async () => {
-    try { await adminApi.pages.remove(Number(id)); toast.success('Page deleted.'); navigate('/pages', { replace: true }); } catch (err) { toast.error(errorMessage(err)); }
+    try { await adminApi.pages.remove(Number(id)); toast.success('Page deleted.'); navigate('/admin/pages', { replace: true }); } catch (err) { toast.error(errorMessage(err)); }
   };
 
   if (!creating && page.loading) return <div className="flex flex-col gap-6"><SkeletonForm fields={3} /><SkeletonForm fields={1} /></div>;
@@ -100,7 +100,7 @@ const PageEdit = () => {
       <PageHead title={creating ? 'New page' : form.title || 'Edit page'} subtitle={creating ? 'Written in Markdown. Pages can sit in the navigation, the footer, or be linked from anywhere.' : (
         <span className="inline-flex flex-wrap items-center gap-2"><Badge tone={form.status === 'published' ? 'green' : 'amber'} dot>{form.status}</Badge>{isSystem ? <Badge tone="blue">system page</Badge> : null}{form.status === 'published' ? <a href={`/pages/${saved.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-accent hover:text-accent-600">View in store <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" /></a> : null}</span>
       )}>
-        <Link to="/pages" className="btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back</span></Link>
+        <Link to="/admin/pages" className="btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back</span></Link>
         {dirty ? <span className="text-xs text-amber-600">Unsaved changes</span> : null}
         <Tooltip text="Ctrl S"><button type="submit" disabled={saving || (!creating && !dirty)} className="btn-primary">{saving ? 'Saving…' : creating ? 'Create page' : 'Save changes'}</button></Tooltip>
       </PageHead>
@@ -148,7 +148,7 @@ const PageEdit = () => {
             </Field>
             <label className="flex items-center gap-3 text-sm text-mist-muted"><input type="checkbox" checked={form.showInNav} onChange={set('showInNav')} className="accent-accent" /> Show in the top navigation</label>
             <label className="flex items-center gap-3 text-sm text-mist-muted"><input type="checkbox" checked={form.showInFooter} onChange={set('showInFooter')} className="accent-accent" /> Show in the footer</label>
-            <label className="flex items-start gap-3 text-sm text-mist-muted"><input type="checkbox" checked={form.showContact} onChange={set('showContact')} className="mt-0.5 accent-accent" /><span>Show the store's contact details under the content<span className="block text-xs text-mist-dim">Address, hours, phone, email and social links from <Link to="/settings?tab=contact" className="text-accent">Settings → Contact</Link>. Good for the About page.</span></span></label>
+            <label className="flex items-start gap-3 text-sm text-mist-muted"><input type="checkbox" checked={form.showContact} onChange={set('showContact')} className="mt-0.5 accent-accent" /><span>Show the store's contact details under the content<span className="block text-xs text-mist-dim">Address, hours, phone, email and social links from <Link to="/admin/business?tab=contact" className="text-accent">Settings → Contact</Link>. Good for the About page.</span></span></label>
           </section>
           {!creating && !isSystem ? (
             <section className="card flex flex-col gap-3 p-4">

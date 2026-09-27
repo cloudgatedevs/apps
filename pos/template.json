@@ -2,8 +2,8 @@
   "id": "pos",
   "name": "Cloudgate POS",
   "category": "Commerce",
-  "version": "1.3.0",
-  "description": "A complete point-of-sale system: a touch-friendly till that scans barcodes with the device camera or a USB scanner, cash and card payments through Cloudgate Wallet, parked sales, returns and shift cash-ups, plus a back office for products, inventory (goods received and stock takes), sales, shifts, customers, reports and receipts.",
+  "version": "2.0.0",
+  "description": "Barcode point of sale with cash and Wallet payments, shifts, inventory, returns and a Cloudgate React SDK back office.",
   "folder": "pos",
   "framework": "React",
   "devCommand": "npm install && npm run dev",
@@ -27,9 +27,8 @@
     "Cash with change, and card payments by QR code through Cloudgate Wallet",
     "Shifts with opening float, cash in/out and Z reports; parked sales and returns",
     "Inventory with goods-received notes, stock takes, ledger and label printing",
-    "Logs page in the back office: this till\u2019s workflow calls, timings and errors, read from Cloudgate",
-    "Any signed-in user can run the till; the back office is for Admins only",
-    "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+    "Authenticated cashier till with independently authorised retail administration",
+    "Cloudgate React SDK for authentication, profile, users, roles, media, appearance, themes, analytics, workflow logs and developer tools"
   ],
   "requirements": [
     "wallet",
@@ -93,5 +92,21 @@
       ".env"
     ],
     "example": ".env.example"
+  },
+  "appSettings": {
+    "app_tagline": "Point of sale",
+    "app_description": "Sell, manage stock and close your shift with Cloudgate POS.",
+    "theme_mode": "light",
+    "theme_density": "compact",
+    "theme_primary": "#0f172a",
+    "theme_secondary": "#2563eb",
+    "theme_neutral": "#64748b",
+    "theme_success": "#15803d",
+    "theme_warning": "#a16207",
+    "theme_danger": "#be123c",
+    "theme_info": "#0369a1",
+    "theme_custom_palette": "{\"name\":\"POS Slate\",\"colors\":{\"theme_primary\":\"#0f172a\",\"theme_secondary\":\"#2563eb\",\"theme_neutral\":\"#64748b\",\"theme_success\":\"#15803d\",\"theme_warning\":\"#a16207\",\"theme_danger\":\"#be123c\",\"theme_info\":\"#0369a1\"}}",
+    "enable_public_website": "true",
+    "require_public_website_login": "true"
   }
 }

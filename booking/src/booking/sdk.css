@@ -1,0 +1,17 @@
+/* Booking components inherit the SDK palette; these variables never affect SDK pages. */
+.booking-ui {
+  --green: rgb(var(--accent)); --on-primary: rgb(var(--accent-fg));
+  --brand-accent: rgb(var(--secondary)); --cream: rgb(var(--ink-950));
+  --ink: rgb(var(--mist)); --muted: rgb(var(--mist-muted)); --line: rgb(var(--ink-700));
+  --surface: rgb(var(--ink-850)); --sage: rgb(var(--ink-800)); --office-base: rgb(var(--ink-850));
+  color: var(--ink); background: var(--cream); color-scheme: inherit; min-width: 0;
+}
+.booking-ui .booking-workspace { display: block; background: transparent; min-height: 0; }
+.booking-ui .booking-workspace .admin-content { padding: 0; max-width: none; }
+.booking-ui .booking-workspace .admin-title h1 { font-size: 26px; }
+.booking-ui .booking-workspace .admin-title .eyebrow { margin-bottom: 6px; }
+.booking-ui .booking-workspace .admin-title { margin-bottom: 24px; }
+.booking-ui .booking-workspace .button { min-height: 36px; padding: 8px 13px; }
+.booking-ui .booking-workspace .panel { background: rgb(var(--ink-850)); }
+.booking-ui .button:hover:not(:disabled) { background: color-mix(in srgb, var(--green) 88%, var(--ink)); }
+.booking-ui .button.secondary:hover:not(:disabled) { background: var(--sage); }

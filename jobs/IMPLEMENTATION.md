@@ -1,3 +1,5 @@
+> Historical implementation record. Jobs 2.0 now uses the Cloudgate React SDK; see README.md for current ownership, routes and configuration.
+
 # Cloudgate Jobs — repository analysis and implementation plan
 
 Date: 2026-09-10. Status: planning complete; implementation not started.

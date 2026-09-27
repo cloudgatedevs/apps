@@ -1,0 +1,16 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import '@cloudgatedevs/cloudgate-client-react/react/styles.css';
+import '@fontsource/dm-sans/400.css';
+import '@fontsource/dm-sans/500.css';
+import '@fontsource/dm-sans/600.css';
+import '@fontsource/dm-sans/700.css';
+import '@fontsource/manrope/600.css';
+import '@fontsource/manrope/700.css';
+import '@fontsource/manrope/800.css';
+import './jobs/style.css';
+import './jobs/branding.css';
+import './jobs/sdk.css';
+import { App } from './App';
+createRoot(document.getElementById('root')).render(<App />);

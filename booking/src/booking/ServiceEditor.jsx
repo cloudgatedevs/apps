@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Button, Field, ErrorBox, Modal } from './ui';
-import { Asset } from './BrandingEditor';
+import { Asset } from './Asset';
 import { imageUrl } from './branding-model';
 import './services.css';
 

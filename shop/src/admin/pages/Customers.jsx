@@ -61,11 +61,11 @@ const Customers = () => {
         <>
           {pager}
           <Table
-            rowHref={(r) => `/customers/${r.Id}`}
+            rowHref={(r) => `/admin/customers/${r.Id}`}
             sort={sort}
             onSort={setSort}
             columns={[
-              { key: 'Name', label: 'Customer', mobile: 'title', sortable: true, render: (r) => <div className="flex flex-col leading-tight"><Link to={`/customers/${r.Id}`} className="font-medium text-mist hover:text-accent">{customerName(r)}</Link><span className="break-all text-xs text-mist-dim">{r.Email}</span></div> },
+              { key: 'Name', label: 'Customer', mobile: 'title', sortable: true, render: (r) => <div className="flex flex-col leading-tight"><Link to={`/admin/customers/${r.Id}`} className="font-medium text-mist hover:text-accent">{customerName(r)}</Link><span className="break-all text-xs text-mist-dim">{r.Email}</span></div> },
               { key: 'IdpUserId', label: 'Type', mobile: 'meta', render: (r) => (r.IdpUserId ? <Badge tone="blue">account</Badge> : <Badge tone="gray">guest</Badge>) },
               { key: 'Orders', label: 'Paid orders', sortable: true, align: 'right', render: (r) => <span className="tabular-nums">{r.Orders ?? 0}</span> },
               { key: 'SpentCents', label: 'Lifetime value', sortable: true, align: 'right', render: (r) => <span className="font-semibold tabular-nums text-mist">{fmtCents(r.SpentCents ?? 0, r.Currency || 'ZAR')}</span> },

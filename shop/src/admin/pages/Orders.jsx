@@ -89,7 +89,7 @@ const Orders = () => {
         <>
           {pager}
           <Table
-            rowHref={(r) => `/orders/${r.Id}`}
+            rowHref={(r) => `/admin/orders/${r.Id}`}
             sort={sort}
             onSort={setSort}
             selectable
@@ -97,7 +97,7 @@ const Orders = () => {
             onToggle={toggle}
             onToggleAll={(ids) => setSelected(new Set(ids))}
             columns={[
-              { key: 'Reference', label: 'Order', mobile: 'title', sortable: true, render: (r) => <Link to={`/orders/${r.Id}`} className="whitespace-nowrap font-mono text-[13px] font-medium text-mist hover:text-accent">{r.Reference}</Link> },
+              { key: 'Reference', label: 'Order', mobile: 'title', sortable: true, render: (r) => <Link to={`/admin/orders/${r.Id}`} className="whitespace-nowrap font-mono text-[13px] font-medium text-mist hover:text-accent">{r.Reference}</Link> },
               { key: 'Email', label: 'Customer', mobile: 'meta', sortable: true, render: (r) => <div className="flex flex-col leading-tight"><span className="text-mist">{[r.Name, r.Surname].filter(Boolean).join(' ') || '—'}</span><span className="break-all text-xs text-mist-dim">{r.Email}</span></div> },
               { key: 'Items', label: 'Items', mobile: 'hide', align: 'right', render: (r) => <span className="tabular-nums">{r.Items}</span> },
               { key: 'TotalCents', label: 'Total', sortable: true, align: 'right', render: (r) => <span className="font-semibold tabular-nums text-mist">{fmtCents(r.TotalCents, r.Currency)}</span> },

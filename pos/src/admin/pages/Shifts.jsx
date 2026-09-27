@@ -33,10 +33,10 @@ const Shifts = () => {
       </div>
       <ErrorNote error={error} />
       {loading && !data ? <SkeletonTable columns={7} rows={8} /> : (
-        <Table rows={data?.items ?? []} rowHref={(s) => `/shifts/${s.Id}`} empty={<EmptyState icon={<Clock className="h-5 w-5" />} title="No shifts yet" text="Tellers open a shift on the till before selling." />}
+        <Table rows={data?.items ?? []} rowHref={(s) => `/admin/shifts/${s.Id}`} empty={<EmptyState icon={<Clock className="h-5 w-5" />} title="No shifts yet" text="Tellers open a shift on the till before selling." />}
           columns={[
             { key: 'Id', label: '#', mobile: 'hide', render: (s) => <span className="font-mono text-mist-dim">{s.Id}</span> },
-            { key: 'TellerName', label: 'Teller', mobile: 'title', render: (s) => <Link to={`/shifts/${s.Id}`} className="font-medium text-mist hover:text-accent">{s.TellerName}</Link> },
+            { key: 'TellerName', label: 'Teller', mobile: 'title', render: (s) => <Link to={`/admin/shifts/${s.Id}`} className="font-medium text-mist hover:text-accent">{s.TellerName}</Link> },
             { key: 'RegisterName', label: 'Register', mobile: 'meta' },
             { key: 'OpenedAt', label: 'Opened', mobile: 'meta', render: (s) => <span className="text-mist-muted">{fmtDate(s.OpenedAt)}</span> },
             { key: 'ClosedAt', label: 'Closed', mobile: 'hide', render: (s) => <span className="text-mist-muted">{s.ClosedAt ? fmtDate(s.ClosedAt) : '—'}</span> },
@@ -72,8 +72,8 @@ const ShiftDetail = () => {
   return (
     <div className="flex flex-col gap-5">
       <PageHead title={`Shift #${s.Id} · ${s.RegisterName}`} subtitle={<span className="flex flex-wrap items-center gap-2"><Badge tone={s.Status === 'open' ? 'green' : 'gray'} dot>{s.Status}</Badge><span>{s.TellerName} · opened {fmtDate(s.OpenedAt)}{s.ClosedAt ? ` · closed ${fmtDate(s.ClosedAt)} by ${s.ClosedBy}` : ''}</span></span>}>
-        <Link to="/shifts" className="btn-ghost">Back</Link>
-        <Link to={`/sales?shift=${s.Id}`} className="btn-ghost">Sales on this shift</Link>
+        <Link to="/admin/shifts" className="btn-ghost">Back</Link>
+        <Link to={`/admin/sales?shift=${s.Id}`} className="btn-ghost">Sales on this shift</Link>
         <button type="button" onClick={() => window.print()} className="btn-ghost"><Printer className="h-4 w-4" /> Print</button>
         {s.Status === 'open' ? <button type="button" onClick={() => setClosing(true)} className="btn-danger"><Lock className="h-4 w-4" /> Force close</button> : null}
       </PageHead>

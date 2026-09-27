@@ -1,9 +1,13 @@
-import {api} from '../shared/services/api';
-export const preview=import.meta.env.DEV&&import.meta.env.MODE==='preview';
+import { cloudgate, workflow, preview } from './platform';
+export { preview } from './platform';
 export const previewRole=()=>sessionStorage.getItem('events.preview.role')||'';
 const routes={catalog:'catalog',workspace:'workspace',reserve:'orders','order-cancel':'orders','waitlist-join':'waitlist','waitlist-notify':'waitlist','check-in':'checkin','check-in-undo':'checkin','staff-save':'staff',settings:'settings'};
 export async function call(op,data={},admin=false,route){
- route=route||routes[op]||'events';if(!preview)return api.post('/'+route,{...data,op});
+ route=route||routes[op]||'events';if(!preview){
+  if(!workflow)throw new Error('Configure the Events workflow gateway before connecting.');
+  try{return await workflow.post('/'+route,{...data,op});}
+  catch(error){if(error.status===401&&cloudgate.auth.enabled&&await cloudgate.auth.refresh())return workflow.post('/'+route,{...data,op});throw error;}
+ }
  const r=await fetch('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json','X-Events-Preview':'1','X-Preview-Role':previewRole()},body:JSON.stringify({...data,op})});const value=await r.json();if(!r.ok||value.error)throw new Error(value.error||'Request failed.');return value;
 }
 export const money=(n,currency='USD')=>new Intl.NumberFormat('en',{style:'currency',currency}).format((n||0)/100);

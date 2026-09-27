@@ -1,0 +1,10 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import '@cloudgatedevs/cloudgate-client-react/react/styles.css';
+import './admin/admin.css';
+import './storefront/storefront.css';
+import './shared/ui/motion.css';
+import './index.css';
+import './sdk.css';
+import { App } from './App';
+createRoot(document.getElementById('root')).render(<App />);

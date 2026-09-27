@@ -2,8 +2,8 @@
   "id": "booking",
   "name": "Cloudgate Booking",
   "category": "Appointments",
-  "version": "1.9.0",
-  "description": "A configurable booking site and business back office: a media library, service photos, custom categories, staff, resources, availability, payments, customer accounts and appointment management.",
+  "version": "2.0.0",
+  "description": "A booking site with service discovery, appointments, staff, resources, availability, payments and customer accounts, built on the shared Cloudgate React back office.",
   "folder": "booking",
   "framework": "React",
   "devCommand": "npm install && npm run dev",
@@ -22,14 +22,14 @@
     "idp"
   ],
   "features": [
-    "Modern back office with grouped navigation, a schedule dashboard, responsive layouts and tenant theme colours",
+    "Shared Cloudgate React SDK for the back office, permissions, profile, users, media, appearance, analytics, logs and developer tools",
     "Create, edit, hide and delete services with uploaded photos, custom categories and team assignments; existing appointment history is preserved",
-    "Back-office media library with multiple image uploads, cropping, folder and usage filters, URL copying and unused-image cleanup",
+    "SDK media library for service, team and homepage images, with Booking reference checks before deletion",
     "Editable team photos with upload, cropping and media reuse; personal IdP profile photos for customers and administrators",
     "Configurable homepage text and photos for consulting, lessons, repairs, personal care and other appointment businesses",
     "Service discovery with search, category filters and a responsive photo-led design",
     "Customer login and signup, saved contact details, appointment history and secure guest-booking claims",
-    "Custom app name, logo, icon, favicon and theme colours with image uploads and live preview",
+    "Shared app branding and theme managed through the Cloudgate React SDK",
     "Front-desk reservations for existing or new clients with private payment links and safe recovery",
     "Weekly calendar and server-verified promotion, deposit and balance quotes",
     "Multi-service booking with qualified therapists, room availability and cleanup buffers",
@@ -37,7 +37,7 @@
     "Self-service rescheduling, cancellation, booking access links and calendar downloads",
     "Back office calendar, clients, staff hours, resources, waitlist, promotions and reports",
     "Email outbox and scheduled reminders; payment recovery and protected refunds",
-    "Logs page in the back office: this business\u2019s workflow calls, timings and errors, read from Cloudgate",
+    "Logs page in the back office: this business’s workflow calls, timings and errors, read from Cloudgate",
     "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
   ],
   "requirements": [
@@ -87,5 +87,20 @@
     "file": ".template/workflow-template.json",
     "schema": ".template/schema.sql",
     "sampleData": ".template/sample-data.sql"
+  },
+  "appSettings": {
+    "app_tagline": "Bookings and appointments",
+    "app_description": "Discover services, book appointments and manage your bookings.",
+    "theme_mode": "light",
+    "theme_density": "flex",
+    "theme_primary": "#4f46e5",
+    "theme_secondary": "#7c3aed",
+    "theme_neutral": "#64748b",
+    "theme_success": "#15803d",
+    "theme_warning": "#a16207",
+    "theme_danger": "#be123c",
+    "theme_info": "#0369a1",
+    "enable_public_website": "true",
+    "require_public_website_login": "false"
   }
 }

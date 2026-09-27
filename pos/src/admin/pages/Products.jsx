@@ -104,13 +104,13 @@ const Products = () => {
     { key: 'Name', label: 'Product', mobile: 'title', render: (p) => (
       <span className="flex items-center gap-3">
         {p.ImageUrl ? <Img small src={p.ImageUrl} alt="" wrapClassName="h-9 w-9 shrink-0 rounded-lg border border-ink-700" className="h-9 w-9 object-cover" /> : <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ink-800 text-mist-dim"><Package className="h-4 w-4" /></span>}
-        <span className="min-w-0"><Link to={`/products/${p.Id}`} className="block truncate font-medium text-mist hover:text-accent">{p.Name}</Link><span className="block truncate font-mono text-[11px] text-mist-dim">{[p.Sku, p.Barcode].filter(Boolean).join(' · ') || '—'}</span></span>
+        <span className="min-w-0"><Link to={`/admin/products/${p.Id}`} className="block truncate font-medium text-mist hover:text-accent">{p.Name}</Link><span className="block truncate font-mono text-[11px] text-mist-dim">{[p.Sku, p.Barcode].filter(Boolean).join(' · ') || '—'}</span></span>
       </span>) },
     { key: 'CategoryName', label: 'Category', mobile: 'meta', render: (p) => <span className="text-mist-muted">{p.CategoryName || '—'}</span> },
     { key: 'PriceCents', label: 'Price', align: 'right', render: (p) => <span className="tabular-nums text-mist">{fmtCents(p.PriceCents, currency)}{p.IsWeighed ? <span className="text-xs text-mist-dim">/{p.Unit}</span> : null}</span> },
     { key: 'StockQty', label: 'Stock', align: 'right', render: (p) => (p.TrackInventory ? <span className={`tabular-nums ${Number(p.StockQty) <= 0 ? 'text-red-600' : Number(p.StockQty) <= Number(p.LowStockThreshold ?? 5) ? 'text-amber-600' : 'text-mist'}`}>{Number(p.StockQty)}{p.Unit !== 'each' ? ` ${p.Unit}` : ''}</span> : <span className="text-xs text-mist-dim">not tracked</span>) },
     { key: 'Status', label: 'Status', render: (p) => <Badge tone={p.Status === 'active' ? 'green' : 'gray'} dot>{p.Status}</Badge> },
-    { key: 'actions', label: '', mobile: 'actions', render: (p) => <span className="flex gap-1"><button type="button" onClick={() => printLabels([p.Id])} className="btn-ghost btn-sm" title="Print label"><Tag className="h-4 w-4" /></button><Link to={`/products/${p.Id}`} className="btn-ghost btn-sm">Edit</Link></span> },
+    { key: 'actions', label: '', mobile: 'actions', render: (p) => <span className="flex gap-1"><button type="button" onClick={() => printLabels([p.Id])} className="btn-ghost btn-sm" title="Print label"><Tag className="h-4 w-4" /></button><Link to={`/admin/products/${p.Id}`} className="btn-ghost btn-sm">Edit</Link></span> },
   ], [currency]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -118,7 +118,7 @@ const Products = () => {
       <PageHead title="Products" subtitle="Everything the tills can sell. Scan a barcode to find a product.">
         <button type="button" onClick={() => setImporting(true)} className="btn-ghost"><FileUp className="h-4 w-4" /> Import</button>
         <button type="button" onClick={() => setScanning((v) => !v)} className={`btn-ghost ${scanning ? '!bg-accent-soft !text-accent-600' : ''}`}><Camera className="h-4 w-4" /> Scan</button>
-        <Link to="/products/new" className="btn-primary">New product</Link>
+        <Link to="/admin/products/new" className="btn-primary">New product</Link>
       </PageHead>
       {scanning ? <BarcodeScanner active onScan={onScan} compact className="max-w-md" /> : null}
 
@@ -139,7 +139,7 @@ const Products = () => {
       ) : null}
       {loading && !data ? <SkeletonTable columns={6} rows={8} /> : (
         <Table columns={columns} rows={rows} selectable selected={selected} onToggle={(id) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; })} onToggleAll={(ids) => setSelected((s) => (ids.every((id) => s.has(id)) ? new Set() : new Set(ids)))}
-          empty={<EmptyState icon={<Package className="h-5 w-5" />} title={search ? `Nothing matches “${search}”` : 'No products yet'} text={search ? 'Try another name, SKU or barcode.' : 'Add your first product or import a spreadsheet.'} action={<Link to="/products/new" className="btn-primary">New product</Link>} />} />
+          empty={<EmptyState icon={<Package className="h-5 w-5" />} title={search ? `Nothing matches “${search}”` : 'No products yet'} text={search ? 'Try another name, SKU or barcode.' : 'Add your first product or import a spreadsheet.'} action={<Link to="/admin/products/new" className="btn-primary">New product</Link>} />} />
       )}
       {total > PAGE ? <Pager page={page} pages={pages} total={total} from={page * PAGE + 1} to={Math.min(total, (page + 1) * PAGE)} noun="products" onPage={(p) => setParam({ page: p })} /> : null}
 

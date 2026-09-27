@@ -1,9 +1,13 @@
-import {api} from '../shared/services/api';
-export const preview=import.meta.env.DEV&&import.meta.env.MODE==='preview';
+import {cloudgate, workflow, preview} from './platform';
+export { preview } from './platform';
 export const previewRole=()=>sessionStorage.getItem('courses.preview.role')||'';
 const routes={'catalog':'catalog','preview-lesson':'catalog','certificate-verify':'catalog','workspace':'workspace','admin-data':'workspace','enroll':'enrollments','enrollment-status':'enrollments','learn':'learning','lesson-complete':'learning','quiz-submit':'learning','discussion-post':'learning','discussion-moderate':'learning','session-save':'sessions','attendance-save':'sessions','settings':'settings'};
 export async function call(op,data={},admin=false,route){
- route=route||routes[op]||'courses';if(!preview)return api.post('/'+route,{...data,op});
+ route=route||routes[op]||'courses';if(!preview){
+  if(!workflow)throw new Error('Configure the Academy workflow gateway before connecting.');
+  try{return await workflow.post('/'+route,{...data,op});}
+  catch(error){if(error.status===401&&cloudgate.auth.enabled&&await cloudgate.auth.refresh())return workflow.post('/'+route,{...data,op});throw error;}
+ }
  const r=await fetch('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json','X-Academy-Preview':'1','X-Preview-Role':previewRole()},body:JSON.stringify({...data,op})});const value=await r.json();if(!r.ok||value.error)throw new Error(value.error||'Request failed.');return value;
 }
 export const money=(n,currency='USD')=>new Intl.NumberFormat('en',{style:'currency',currency}).format((n||0)/100);

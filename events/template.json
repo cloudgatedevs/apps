@@ -2,8 +2,8 @@
   "id": "events",
   "name": "Cloudgate Events",
   "category": "Events & Ticketing",
-  "version": "1.2.0",
-  "description": "Event discovery, ticket sales, QR admission and an organiser back office with Cloudgate payments, media, email and themes.",
+  "version": "2.0.0",
+  "description": "Event discovery, ticket sales, QR admission and an organiser workspace built on the shared Cloudgate React back office.",
   "folder": "events",
   "framework": "React",
   "devCommand": "npm install && npm run dev",
@@ -23,8 +23,7 @@
     "Wallet checkout and verified ticket issuance",
     "QR tickets and mobile check-in",
     "Attendee management, refunds and reports",
-    "Cloudgate identity, email, media, logging and theme presets",
-    "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+    "Shared Cloudgate React SDK for authentication, profile, users, roles, media, branding, themes, analytics, logs and developer tools"
   ],
   "requirements": [
     "wallet",
@@ -68,5 +67,21 @@
     "file": ".template/workflow-template.json",
     "schema": ".template/schema.sql",
     "sampleData": ".template/sample-data.sql"
+  },
+  "appSettings": {
+    "app_tagline": "Events and experiences",
+    "app_description": "Discover live events, book your place and keep your admission tickets together.",
+    "theme_mode": "dark",
+    "theme_density": "flex",
+    "theme_primary": "#d6be91",
+    "theme_secondary": "#9eab90",
+    "theme_neutral": "#7c8177",
+    "theme_success": "#438573",
+    "theme_warning": "#aa7c40",
+    "theme_danger": "#b9526b",
+    "theme_info": "#6383b8",
+    "theme_custom_palette": "{\"name\":\"Events Nocturne\",\"colors\":{\"theme_primary\":\"#d6be91\",\"theme_secondary\":\"#9eab90\",\"theme_neutral\":\"#7c8177\",\"theme_success\":\"#438573\",\"theme_warning\":\"#aa7c40\",\"theme_danger\":\"#b9526b\",\"theme_info\":\"#6383b8\"}}",
+    "enable_public_website": "true",
+    "require_public_website_login": "false"
   }
 }

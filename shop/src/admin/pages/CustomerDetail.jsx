@@ -36,7 +36,7 @@ const CustomerDetail = () => {
   return (
     <div className="flex flex-col gap-6">
       <PageHead title={customerName(c)} subtitle={<span className="inline-flex flex-wrap items-center gap-2">Customer since {fmtDate(c.CreatedAt)} {c.IdpUserId ? <Badge tone="blue">account #{c.IdpUserId}</Badge> : <Badge tone="gray">guest</Badge>}{c.MarketingOptIn ? <Badge tone="green">marketing opt-in</Badge> : null}</span>}>
-        <Link to="/customers" className="btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back</span></Link>
+        <Link to="/admin/customers" className="btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back</span></Link>
         <a href={`mailto:${c.Email}`} className="btn-ghost">Email</a>
       </PageHead>
 
@@ -50,9 +50,9 @@ const CustomerDetail = () => {
         <section className="flex flex-col gap-3">
           <h2 className="text-[15px] font-semibold text-mist">Orders</h2>
           <Table
-            rowHref={(r) => `/orders/${r.Id}`}
+            rowHref={(r) => `/admin/orders/${r.Id}`}
             columns={[
-              { key: 'Reference', label: 'Order', mobile: 'title', render: (r) => <Link to={`/orders/${r.Id}`} className="whitespace-nowrap font-mono text-[13px] font-medium text-mist hover:text-accent">{r.Reference}</Link> },
+              { key: 'Reference', label: 'Order', mobile: 'title', render: (r) => <Link to={`/admin/orders/${r.Id}`} className="whitespace-nowrap font-mono text-[13px] font-medium text-mist hover:text-accent">{r.Reference}</Link> },
               { key: 'Items', label: 'Items', mobile: 'hide', align: 'right', render: (r) => <span className="tabular-nums">{r.Items}</span> },
               { key: 'TotalCents', label: 'Total', align: 'right', render: (r) => <span className="font-semibold tabular-nums text-mist">{fmtCents(r.TotalCents, r.Currency)}</span> },
               { key: 'PaymentStatus', label: 'Payment', render: (r) => <Badge tone={paymentStatusTone(r.PaymentStatus)}>{r.PaymentStatus}</Badge> },

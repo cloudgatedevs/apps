@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {loadEnv} from 'vite';
-import {createCloudgateClient} from '@cloudgatedevs/cloudgate-client';
+import {createCloudgateClient} from '@cloudgatedevs/cloudgate-client-react';
 const env=loadEnv('development',process.cwd(),'VITE_');
 assert.equal(env.VITE_CLOUDGATE_API_ENV,'sbx','Smoke tests must target sandbox.');
 const client=createCloudgateClient({baseUrl:`${env.VITE_CLOUDGATE_API_URL}/sbx/${env.VITE_CLOUDGATE_API_PROJECT}`,apiKey:env.VITE_API_KEY,apiSecret:env.VITE_API_SECRET,timeoutMs:20000});

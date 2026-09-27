@@ -1,6 +1,4 @@
 const SETTINGS = { logo_url: 'Logo', icon_url: 'App icon', favicon_url: 'Favicon', hero_image_url: 'Homepage banner', about_image_url: 'About image' };
-export const MEDIA_FOLDERS = { 'booking/services': 'Services', 'booking/team': 'Team', 'booking/branding': 'Branding', 'booking/library': 'General library' };
-export const folderLabel = path => MEDIA_FOLDERS[path] || path.slice('booking/'.length);
 export function isBookingFolder(path) {
   return typeof path === 'string' && path.startsWith('booking/') && path.split('/').every(part => part && part !== '.' && part !== '..' && !part.includes('\\'));
 }
@@ -49,8 +47,7 @@ export function deletionCandidates(ids, files, data) {
   });
 }
 
-// The host caps each page. Read every page before filtering by app folder so
-// booking photos remain visible even when other apps have a large library.
+// Read every server-capped page before checking Booking's image references.
 export async function loadMediaPages(readPage) {
   const files = new Map();
   let skip = 0;

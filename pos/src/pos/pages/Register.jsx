@@ -141,9 +141,9 @@ const Register = () => {
           <div className="shrink-0 border-b border-ink-700 bg-zinc-950 p-2"><BarcodeScanner active={camera} onScan={onScan} compact className="mx-auto max-w-xl" /></div>
         ) : null}
         <div className="flex shrink-0 gap-1.5 overflow-x-auto border-b border-ink-700 bg-white px-3 py-2 [scrollbar-width:none]">
-          <button type="button" onClick={() => setCategoryId(null)} className={`chip shrink-0 ${categoryId === null ? '!bg-mist !text-white' : ''}`}>All</button>
+          <button type="button" onClick={() => setCategoryId(null)} className={`chip shrink-0 ${categoryId === null ? '!bg-mist !text-ink-950' : ''}`}>All</button>
           {categories.map((c) => (
-            <button key={c.Id} type="button" onClick={() => setCategoryId(c.Id)} className={`chip shrink-0 ${categoryId === c.Id ? '!bg-mist !text-white' : ''}`}>
+            <button key={c.Id} type="button" onClick={() => setCategoryId(c.Id)} className={`chip shrink-0 ${categoryId === c.Id ? '!bg-mist !text-ink-950' : ''}`}>
               {c.Color ? <span className="h-2 w-2 rounded-full" style={{ background: c.Color }} /> : null}{c.Name}
             </button>
           ))}

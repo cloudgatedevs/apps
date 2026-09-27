@@ -1,3 +1,4 @@
+import { useSettings } from '@cloudgatedevs/cloudgate-client-react/react';
 import { useEffect, useRef, useState } from 'react';
 import JsBarcode from 'jsbarcode';
 import { Mail, Printer } from 'lucide-react';
@@ -16,7 +17,8 @@ const qtyText = (i) => (i.Unit && i.Unit !== 'each' ? `${Number(i.Qty)} ${i.Unit
 
 /** Receipt sheet (80mm layout when printed) with print and e-mail actions. */
 const Receipt = ({ sale, showActions = true, className = '' }) => {
-  const s = sale?.Settings ?? {};
+  const { settings: appearance } = useSettings();
+  const s = { ...sale?.Settings, store_logo_url: appearance.app_logo_url };
   const cur = sale?.Currency || s.currency || 'ZAR';
   const barcode = useRef(null);
   const [email, setEmail] = useState(sale?.CustomerEmail || '');

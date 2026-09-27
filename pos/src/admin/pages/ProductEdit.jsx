@@ -79,12 +79,12 @@ const ProductEdit = () => {
     if (owner) { toast.error(`Barcode ${form.barcode} already belongs to ${owner.Name}.`); return; }
     setBusy(true);
     try {
-      if (isNew) { const p = await adminApi.products.create(payload()); toast.success('Product created.'); navigate(`/products/${p.Id}`, { replace: true }); }
+      if (isNew) { const p = await adminApi.products.create(payload()); toast.success('Product created.'); navigate(`/admin/products/${p.Id}`, { replace: true }); }
       else { setData(await adminApi.products.update(Number(id), payload())); toast.success('Saved.'); }
     } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
   const remove = async () => {
-    try { const r = await adminApi.products.remove(Number(id)); toast.success(r.archived ? 'Product has sales, so it was deactivated instead of deleted.' : 'Product deleted.'); navigate('/products'); } catch (err) { toast.error(errorMessage(err)); }
+    try { const r = await adminApi.products.remove(Number(id)); toast.success(r.archived ? 'Product has sales, so it was deactivated instead of deleted.' : 'Product deleted.'); navigate('/admin/products'); } catch (err) { toast.error(errorMessage(err)); }
   };
   const addExtra = async () => {
     if (!extra?.barcode?.trim()) { toast.error('Scan or type the barcode.'); return; }
@@ -100,7 +100,7 @@ const ProductEdit = () => {
     <form onSubmit={save} className="flex flex-col gap-5">
       <PageHead title={isNew ? 'New product' : form.name || 'Edit product'} subtitle={isNew ? 'Scan the barcode, set a price, and it is on the tills.' : <>{data?.Status === 'active' ? <Badge tone="green" dot>active</Badge> : <Badge tone="gray" dot>inactive</Badge>}{data?.Sold30d ? <span className="ml-2">{Number(data.Sold30d)} sold in the last 30 days</span> : null}</>}>
         {!isNew ? <button type="button" onClick={() => adminApi.products.labels([Number(id)]).then(setLabels)} className="btn-ghost"><Tag className="h-4 w-4" /> Label</button> : null}
-        <Link to="/products" className="btn-ghost">Back</Link>
+        <Link to="/admin/products" className="btn-ghost">Back</Link>
         <button type="submit" disabled={busy} className="btn-primary">{busy ? 'Saving…' : isNew ? 'Create product' : 'Save'}</button>
       </PageHead>
 
@@ -115,7 +115,7 @@ const ProductEdit = () => {
                 <button type="button" onClick={() => setScanning((v) => !v)} className={`btn-ghost shrink-0 ${scanning ? '!bg-accent-soft !text-accent-600' : ''}`}><Camera className="h-4 w-4" /> {scanning ? 'Stop' : 'Scan'}</button>
               </div>
             </div>
-            {owner ? <Notice tone="warn" className="mt-3">This barcode already belongs to <Link to={`/products/${owner.Id}`} className="font-medium underline">{owner.Name}</Link>. Use a different code or edit that product instead.</Notice> : null}
+            {owner ? <Notice tone="warn" className="mt-3">This barcode already belongs to <Link to={`/admin/products/${owner.Id}`} className="font-medium underline">{owner.Name}</Link>. Use a different code or edit that product instead.</Notice> : null}
             {scanning ? <BarcodeScanner active onScan={applyScan} className="mt-3 max-w-md" /> : null}
             {!isNew ? (
               <div className="mt-4">
@@ -156,7 +156,7 @@ const ProductEdit = () => {
             {form.trackInventory ? (
               <div className="mt-3 grid gap-4 sm:grid-cols-3">
                 {isNew ? <Field label="Opening stock" htmlFor="p-stock"><input id="p-stock" value={form.stockQty} onChange={set('stockQty')} className="input" inputMode="decimal" placeholder="0" /></Field>
-                  : <Field label="On hand"><div className="flex items-center gap-2"><span className="text-lg font-semibold tabular-nums text-mist">{Number(data?.StockQty ?? 0)} {form.unit !== 'each' ? form.unit : ''}</span><Link to={`/inventory?product=${id}`} className="text-xs text-accent hover:text-accent-600">Adjust</Link></div></Field>}
+                  : <Field label="On hand"><div className="flex items-center gap-2"><span className="text-lg font-semibold tabular-nums text-mist">{Number(data?.StockQty ?? 0)} {form.unit !== 'each' ? form.unit : ''}</span><Link to={`/admin/inventory?product=${id}`} className="text-xs text-accent hover:text-accent-600">Adjust</Link></div></Field>}
                 <Field label="Low stock alert" hint={`Blank uses the store default (${settings.data?.low_stock_threshold ?? 5}).`} htmlFor="p-low"><input id="p-low" value={form.lowStockThreshold} onChange={set('lowStockThreshold')} className="input" inputMode="decimal" /></Field>
               </div>
             ) : null}
@@ -199,9 +199,9 @@ const ProductEdit = () => {
           </div>
         ) : null}
       </Modal>
-      <MediaPicker open={choosing} onClose={() => setChoosing(false)} preferFolder="pos/products" title={`Choose an image for ${form.name || 'the product'}`} onUploadInstead={() => setUploading(true)}
+      <MediaPicker open={choosing} onClose={() => setChoosing(false)} preferFolder="pos/media" title={`Choose an image for ${form.name || 'the product'}`} onUploadInstead={() => setUploading(true)}
         onPick={(files) => { const f = files[0]; if (f?.url) setForm((x) => ({ ...x, imageUrl: f.url, imageFileId: f.id || '' })); }} />
-      <ImageUploader open={uploading} onClose={() => setUploading(false)} path="pos/products" aspect={1} maxFiles={1} title={`Image for ${form.name || 'the product'}`}
+      <ImageUploader open={uploading} onClose={() => setUploading(false)} path="media" aspect={1} maxFiles={1} title={`Image for ${form.name || 'the product'}`}
         onUploaded={(done) => { const f = done[0]; if (f?.url) setForm((x) => ({ ...x, imageUrl: f.url, imageFileId: f.id || '' })); setUploading(false); }} />
       <LabelSheet open={!!labels} onClose={() => setLabels(null)} products={labels ?? []} defaultSize={settings.data?.label_size} />
       <p className="text-xs text-mist-dim">{data ? `Price ${fmtCents(data.PriceCents, currency)} · updated ${data.UpdatedAt}` : ''}</p>

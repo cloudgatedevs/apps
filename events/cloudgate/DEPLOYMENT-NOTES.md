@@ -1,5 +1,24 @@
 # Events deployment
 
+## React SDK migration (2.0)
+
+Shared administration, authentication and appearance now come from
+`@cloudgatedevs/cloudgate-client-react`. Events retains event authoring,
+reservations, tickets, admission, refunds, staff assignments and business settings.
+Workflows, database schema and deployed IDs are unchanged.
+
+App Store rollout fills `VITE_CLOUDGATE_WEB_APP_ID` separately for each environment
+and initializes native Nocturne theme/public-site defaults from `appSettings`.
+Saved owner choices are preserved on update. Local connected development also
+needs the Events web app ID. Staff need the SDK `backoffice.access` permission
+in addition to active event assignments; workflow authorization remains enforced.
+
+See [the current app README](../README.md) for routes, configuration and checks.
+The deployment history below describes the existing workflows, not verification
+of the new SDK administrator pages.
+
+## Existing workflow deployment
+
 The Events controller is published in the `events` tenant. The development gateway is `http://events.localhost:44301`, with `/sbx/events` and `/prod/events` routes. IDs are recorded in `deployment.json` and `resources.json`.
 
 All 14 workflows have logging enabled and data masking disabled. `catalog` allows anonymous access; normal business routes validate Cloudgate IdP identity and perform server-side role/ownership checks. `reconcile`, `refund-reconcile` and `notifications` accept scheduler invocations only. Both environments have their own database file. The production database contains no sample events or customer data.

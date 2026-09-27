@@ -31,7 +31,7 @@ const Tellers = () => {
             { key: 'SalesCount', label: 'Sales', align: 'right' },
             { key: 'SalesTotalCents', label: 'Takings', align: 'right', render: (t) => <span className="tabular-nums font-medium">{fmtCents(t.SalesTotalCents, currency)}</span> },
             { key: 'RefundsCents', label: 'Refunds', align: 'right', render: (t) => <span className="tabular-nums text-mist-muted">{fmtCents(t.RefundsCents, currency)}</span> },
-            { key: 'actions', label: '', mobile: 'actions', render: (t) => <Link to={`/sales?teller=${t.TellerUserId}`} className="btn-ghost btn-sm">Sales</Link> },
+            { key: 'actions', label: '', mobile: 'actions', render: (t) => <Link to={`/admin/sales?teller=${t.TellerUserId}`} className="btn-ghost btn-sm">Sales</Link> },
           ]} />
       )}
     </div>

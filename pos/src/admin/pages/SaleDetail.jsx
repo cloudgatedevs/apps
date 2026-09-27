@@ -67,8 +67,8 @@ const SaleDetail = () => {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHead title={s.Reference} subtitle={<span className="flex flex-wrap items-center gap-2"><Badge tone={SALE_TONE[s.Status] ?? 'gray'} dot>{String(s.Status).replace('_', ' ')}</Badge><span>{fmtDate(s.CompletedAt || s.CreatedAt)} · {s.TellerName} on {s.RegisterName || 'no register'}{s.ShiftId ? <> · <Link to={`/shifts/${s.ShiftId}`} className="text-accent hover:text-accent-600">shift #{s.ShiftId}</Link></> : null}</span></span>}>
-        <Link to="/sales" className="btn-ghost">Back</Link>
+      <PageHead title={s.Reference} subtitle={<span className="flex flex-wrap items-center gap-2"><Badge tone={SALE_TONE[s.Status] ?? 'gray'} dot>{String(s.Status).replace('_', ' ')}</Badge><span>{fmtDate(s.CompletedAt || s.CreatedAt)} · {s.TellerName} on {s.RegisterName || 'no register'}{s.ShiftId ? <> · <Link to={`/admin/shifts/${s.ShiftId}`} className="text-accent hover:text-accent-600">shift #{s.ShiftId}</Link></> : null}</span></span>}>
+        <Link to="/admin/sales" className="btn-ghost">Back</Link>
         {voidable ? <button type="button" onClick={doVoid} disabled={busy} className="btn-danger"><Ban className="h-4 w-4" /> Void</button> : null}
         {refundable ? <button type="button" onClick={() => setRefunding(true)} className="btn-primary">Refund…</button> : null}
       </PageHead>
@@ -78,7 +78,7 @@ const SaleDetail = () => {
             <h2 className="text-[15px] font-semibold text-mist">Items</h2>
             <table className="mt-2 w-full text-sm">
               <thead className="text-left text-xs text-mist-dim"><tr><th className="pb-1">Product</th><th className="pb-1 text-right">Qty</th><th className="pb-1 text-right">Price</th><th className="pb-1 text-right">Discount</th><th className="pb-1 text-right">Tax</th><th className="pb-1 text-right">Total</th></tr></thead>
-              <tbody>{(s.Items ?? []).map((i) => <tr key={i.Id} className="border-t border-ink-700"><td className="py-1.5"><Link to={`/products/${i.ProductId}`} className="text-mist hover:text-accent">{i.Name}</Link>{Number(i.RefundedQty) ? <span className="ml-2 text-xs text-amber-700">{Number(i.RefundedQty)} refunded</span> : null}</td><td className="py-1.5 text-right tabular-nums">{Number(i.Qty)}{i.Unit !== 'each' ? ` ${i.Unit}` : ''}</td><td className="py-1.5 text-right tabular-nums">{fmtCents(i.UnitPriceCents, cur)}</td><td className="py-1.5 text-right tabular-nums text-mist-muted">{i.DiscountCents ? `−${fmtCents(i.DiscountCents, cur)}` : ''}</td><td className="py-1.5 text-right tabular-nums text-mist-muted">{fmtCents(i.TaxCents, cur)}</td><td className="py-1.5 text-right tabular-nums font-medium">{fmtCents(i.LineTotalCents, cur)}</td></tr>)}</tbody>
+              <tbody>{(s.Items ?? []).map((i) => <tr key={i.Id} className="border-t border-ink-700"><td className="py-1.5"><Link to={`/admin/products/${i.ProductId}`} className="text-mist hover:text-accent">{i.Name}</Link>{Number(i.RefundedQty) ? <span className="ml-2 text-xs text-amber-700">{Number(i.RefundedQty)} refunded</span> : null}</td><td className="py-1.5 text-right tabular-nums">{Number(i.Qty)}{i.Unit !== 'each' ? ` ${i.Unit}` : ''}</td><td className="py-1.5 text-right tabular-nums">{fmtCents(i.UnitPriceCents, cur)}</td><td className="py-1.5 text-right tabular-nums text-mist-muted">{i.DiscountCents ? `−${fmtCents(i.DiscountCents, cur)}` : ''}</td><td className="py-1.5 text-right tabular-nums text-mist-muted">{fmtCents(i.TaxCents, cur)}</td><td className="py-1.5 text-right tabular-nums font-medium">{fmtCents(i.LineTotalCents, cur)}</td></tr>)}</tbody>
               <tfoot className="text-mist">
                 {s.DiscountCents ? <tr className="border-t border-ink-700"><td className="pt-2" colSpan={5}>Sale discount</td><td className="pt-2 text-right tabular-nums">−{fmtCents(s.DiscountCents, cur)}</td></tr> : null}
                 <tr className="border-t border-ink-700 font-semibold"><td className="pt-2" colSpan={5}>Total</td><td className="pt-2 text-right tabular-nums">{fmtCents(s.TotalCents, cur)}</td></tr>
@@ -95,7 +95,7 @@ const SaleDetail = () => {
               {!s.Payments?.length ? <li className="py-2 text-mist-dim">No payment recorded.</li> : null}
             </ul>
           </section>
-          {s.CustomerName || s.CustomerEmail || s.Note ? <section className="card p-4 text-sm"><h2 className="text-[15px] font-semibold text-mist">Customer</h2><p className="mt-1 text-mist">{s.CustomerName}{s.CustomerId ? <> · <Link to={`/customers/${s.CustomerId}`} className="text-accent">profile</Link></> : null}</p><p className="text-mist-muted">{s.CustomerEmail}</p>{s.Note ? <p className="mt-2 text-mist-muted">{s.Note}</p> : null}</section> : null}
+          {s.CustomerName || s.CustomerEmail || s.Note ? <section className="card p-4 text-sm"><h2 className="text-[15px] font-semibold text-mist">Customer</h2><p className="mt-1 text-mist">{s.CustomerName}{s.CustomerId ? <> · <Link to={`/admin/customers/${s.CustomerId}`} className="text-accent">profile</Link></> : null}</p><p className="text-mist-muted">{s.CustomerEmail}</p>{s.Note ? <p className="mt-2 text-mist-muted">{s.Note}</p> : null}</section> : null}
         </div>
         <div><Receipt sale={s} /></div>
       </div>

@@ -119,7 +119,5 @@ export const adminApi = {
   settings: {
     get: () => call('/admin-settings', 'get').then((r) => r?.values ?? {}),
     set: (values) => call('/admin-settings', 'set', { values }).then((r) => r?.values ?? {}),
-    /** Sends a test message through the saved SMTP settings. Resolves to { sent, reason?, via? }. */
-    sendTest: (to) => call('/admin-settings', 'send-test', { to }),
   },
 };

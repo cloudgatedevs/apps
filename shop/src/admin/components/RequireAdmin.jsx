@@ -14,12 +14,12 @@ const RequireAdmin = () => {
   const { currentUser, logout } = useAuthContext();
   const role = currentUser?.user?.role;
 
-  if (isAdminRole(role)) return <Outlet />;
+  if (isAdminRole(role)) return <div className="shop-ui"><Outlet /></div>;
 
   return (
-    <div className="flex min-h-[100dvh] w-full items-center justify-center p-6">
+    <div className="shop-ui flex min-h-[50dvh] w-full items-center justify-center p-6">
       <div className="card w-full max-w-md p-8 text-center">
-        <p className="text-[15px] font-semibold text-mist">Back office access required</p>
+        <h1 className="text-[15px] font-semibold text-mist">Shop administrator access required</h1>
         <p className="mt-2 text-sm text-mist-muted">
           You are signed in as <span className="text-mist">{currentUser?.user?.emailAddress || 'this account'}</span>
           {role ? <> with the role <span className="text-mist">{role}</span></> : ' without a role'}.

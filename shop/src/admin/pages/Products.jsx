@@ -103,7 +103,7 @@ const Products = () => {
           Low stock
         </label>
         <button onClick={reload} className="btn-ghost">Refresh</button>
-        <Link to="/products/new" className="btn-primary">New product</Link>
+        <Link to="/admin/products/new" className="btn-primary">New product</Link>
       </PageHead>
 
       <SearchBar
@@ -121,7 +121,7 @@ const Products = () => {
         <>
           {pager}
           <Table
-            rowHref={(r) => `/products/${r.Id}`}
+            rowHref={(r) => `/admin/products/${r.Id}`}
             sort={sort}
             onSort={setSort}
             selectable
@@ -135,7 +135,7 @@ const Products = () => {
                   <div className="flex items-center gap-3">
                     <Thumb src={r.ThumbUrl || r.ImageUrl} alt={r.Name} />
                     <div className="min-w-0 leading-tight">
-                      <Link to={`/products/${r.Id}`} className="font-medium text-mist hover:text-accent">{r.Name}</Link>
+                      <Link to={`/admin/products/${r.Id}`} className="font-medium text-mist hover:text-accent">{r.Name}</Link>
                       <p className="truncate text-xs text-mist-dim">{[r.Sku, r.Brand].filter(Boolean).join(' · ') || '—'}</p>
                     </div>
                   </div>
@@ -160,7 +160,7 @@ const Products = () => {
             empty={
               query || status || lowStock
                 ? <EmptyState compact title="No products match this view" text="Try clearing the search or the filters." action={<button type="button" onClick={() => { setSearch(''); setParam({ q: '', status: '', lowStock: '' }); }} className="btn-ghost btn-sm">Clear filters</button>} />
-                : <EmptyState icon={<IconProducts className="h-5 w-5" />} title="No products yet" text="Create your first product, add photos and variants, then publish it to the store." action={<Link to="/products/new" className="btn-primary">New product</Link>} />
+                : <EmptyState icon={<IconProducts className="h-5 w-5" />} title="No products yet" text="Create your first product, add photos and variants, then publish it to the store." action={<Link to="/admin/products/new" className="btn-primary">New product</Link>} />
             }
           />
           {pager}

@@ -1,16 +1,15 @@
 // Image upload with cropping, the same way the Cloudgate hub does it: an Uppy Dashboard for
 // picking files (drag and drop, multiple files, webcam, progress), a react-easy-crop step for
-// each picture before it is sent, and Uppy's XHR plugin posting to the IdP files endpoint.
+// each picture before it is sent, and the SDK handling storage and the current authentication session.
 //
 //   <ImageUploader open={open} onClose={() => setOpen(false)} onUploaded={(files) => …}
-//                  path="pos/products" aspect={1} maxFiles={10} />
+//                  path="media" aspect={1} maxFiles={10} />
 //
 // `onUploaded` receives the endpoint's JSON for every successful file
 // ({ id, fileId, url, thumbUrl, name, size }). Cropping is optional per file ("Use original").
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Uppy from '@uppy/core';
-import { Dashboard } from '@uppy/react';
-import XHRUpload from '@uppy/xhr-upload';
+import Dashboard from '@uppy/react/lib/Dashboard.js';
 import Webcam from '@uppy/webcam';
 import Cropper from 'react-easy-crop';
 import '@uppy/core/dist/style.min.css';
@@ -18,7 +17,7 @@ import '@uppy/dashboard/dist/style.min.css';
 import '@uppy/webcam/dist/style.min.css';
 import 'react-easy-crop/react-easy-crop.css';
 import { Modal } from '@/shared/ui/forms';
-import { uploadEndpoint, authHeaders } from '@/shared/services/files';
+import { uploadImage } from '@/shared/services/files';
 import { getCroppedBlob, getResizedBlob } from '@/shared/lib/imageCropExport';
 
 const ASPECTS = [
@@ -27,8 +26,6 @@ const ASPECTS = [
   { key: 'landscape', label: 'Landscape 3:2', value: 3 / 2 },
   { key: 'free', label: 'Free', value: null },
 ];
-
-const unwrap = (raw) => (raw && typeof raw === 'object' && 'result' in raw ? raw.result : raw);
 
 /** Crop dialog for one file. Resolves with a Blob (cropped or resized original) or null when cancelled. */
 const CropStep = ({ file, aspect: initialAspect, onDone, onCancel }) => {
@@ -103,24 +100,17 @@ export const ImageUploader = ({ open, onClose, onUploaded, path = 'uploads', asp
       allowMultipleUploadBatches: true,
       restrictions: { maxNumberOfFiles: maxFiles, allowedFileTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], maxFileSize: 25 * 1024 * 1024 },
     })
-      .use(XHRUpload, {
-        id: 'XHRUpload',
-        endpoint: uploadEndpoint(path),
-        fieldName: 'file',
-        formData: true,
-        headers: () => authHeaders(),
-        limit: 2,
-        getResponseData: (xhr) => {
-          try { return unwrap(JSON.parse(xhr.responseText)); } catch { return {}; }
-        },
-        getResponseError: (responseText) => {
-          try {
-            const j = JSON.parse(responseText);
-            return new Error(j?.error?.message || j?.Message || j?.message || 'Upload failed');
-          } catch { return new Error('Upload failed'); }
-        },
-      })
       .use(Webcam, { id: 'Webcam', modes: ['picture'], mirror: true, showVideoSourceDropdown: true });
+    u.addUploader(async ids => {
+      const files = ids.map(id => u.getFile(id)).filter(Boolean);
+      u.emit('upload-start', files);
+      await Promise.all(files.map(async file => {
+        try {
+          const body = await uploadImage(new File([file.data], file.name, { type: file.type }), { path });
+          u.emit('upload-success', file, { status: 200, body, uploadURL: body.url });
+        } catch (error) { u.emit('upload-error', file, error); }
+      }));
+    });
     return u;
   }, [path, maxFiles]);
 

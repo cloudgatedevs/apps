@@ -41,8 +41,8 @@ const Stepper = ({ step, onStep }) => (
       const active = key === step;
       return (
         <li key={key} className="flex items-center gap-2">
-          <button type="button" onClick={() => done && onStep(key)} disabled={!done} className={`flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition ${active ? 'bg-primary text-primary-fg' : done ? 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200' : 'text-zinc-400'}`}>
-            <span className={`grid h-6 w-6 place-items-center rounded-full text-xs font-semibold ${active ? 'bg-white text-zinc-900' : done ? 'bg-emerald-600 text-white' : 'bg-zinc-200 text-zinc-500'}`}>{done ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : i + 1}</span>
+          <button type="button" onClick={() => done && onStep(key)} disabled={!done} className={`flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition ${active ? 'bg-primary text-primary-fg' : done ? 'bg-ink-800 text-mist hover:bg-ink-700' : 'text-mist-dim'}`}>
+            <span className={`grid h-6 w-6 place-items-center rounded-full text-xs font-semibold ${active ? 'bg-ink-850 text-mist' : done ? 'bg-emerald-600 text-white' : 'bg-ink-700 text-mist-dim'}`}>{done ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : i + 1}</span>
             <span className={active ? 'font-medium' : ''}>{label}</span>
           </button>
           {i < STEPS.length - 1 ? <span className="h-px w-6 bg-zinc-300" aria-hidden="true" /> : null}
@@ -186,16 +186,16 @@ const Checkout = () => {
             <section className="card flex flex-col gap-5 p-5">
               <h2 className="font-semibold">Review</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-zinc-200 p-4 text-sm">
-                  <div className="mb-1 flex items-center justify-between"><span className="label">Contact</span><button type="button" onClick={() => setStep('contact')} className="text-xs text-zinc-500 underline hover:text-zinc-900">Edit</button></div>
-                  <p className="text-zinc-900">{form.name} {form.surname}</p><p className="text-zinc-600">{form.email}</p>{form.phone ? <p className="text-zinc-600">{form.phone}</p> : null}
+                <div className="rounded-xl border border-ink-700 p-4 text-sm">
+                  <div className="mb-1 flex items-center justify-between"><span className="label">Contact</span><button type="button" onClick={() => setStep('contact')} className="text-xs text-mist-dim underline hover:text-mist">Edit</button></div>
+                  <p className="text-mist">{form.name} {form.surname}</p><p className="text-mist-muted">{form.email}</p>{form.phone ? <p className="text-mist-muted">{form.phone}</p> : null}
                 </div>
-                <div className="rounded-xl border border-zinc-200 p-4 text-sm">
-                  <div className="mb-1 flex items-center justify-between"><span className="label">Delivery</span><button type="button" onClick={() => setStep('delivery')} className="text-xs text-zinc-500 underline hover:text-zinc-900">Edit</button></div>
-                  <p className="whitespace-pre-line text-zinc-600">{addressLines.join('\n')}</p>
+                <div className="rounded-xl border border-ink-700 p-4 text-sm">
+                  <div className="mb-1 flex items-center justify-between"><span className="label">Delivery</span><button type="button" onClick={() => setStep('delivery')} className="text-xs text-mist-dim underline hover:text-mist">Edit</button></div>
+                  <p className="whitespace-pre-line text-mist-muted">{addressLines.join('\n')}</p>
                 </div>
               </div>
-              {form.customerNote ? <p className="rounded-xl bg-zinc-50 px-4 py-3 text-sm text-zinc-600"><span className="label mr-2">Note</span>{form.customerNote}</p> : null}
+              {form.customerNote ? <p className="rounded-xl bg-ink-900 px-4 py-3 text-sm text-mist-muted"><span className="label mr-2">Note</span>{form.customerNote}</p> : null}
               <div className="flex items-center justify-between"><button type="button" onClick={() => setStep('delivery')} className="btn-ghost">Back</button><button type="submit" disabled={submitting || blocking} className="btn-primary h-11">{submitting ? 'Preparing secure payment…' : `Pay ${fmtCents(total, currency)}`}</button></div>
             </section>
           ) : null}
@@ -204,23 +204,23 @@ const Checkout = () => {
 
       <aside className="card flex h-fit flex-col gap-3 p-5 lg:sticky lg:top-24">
         <h2 className="font-semibold">Order summary</h2>
-        <ul className="flex flex-col divide-y divide-zinc-100">
+        <ul className="flex flex-col divide-y divide-ink-700">
           {items.map((it) => (
             <li key={it.variantId} className="flex items-center gap-3 py-3 text-sm">
-              <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">{it.imageUrl ? <Img src={it.imageUrl} alt="" wrapClassName="h-full w-full" className="h-full w-full object-cover" /> : null}</span>
-              <span className="min-w-0 grow"><span className="block truncate text-zinc-900">{it.title}</span><span className="text-xs text-zinc-500">{it.variantTitle && it.variantTitle !== 'Default' ? `${it.variantTitle} · ` : ''}× {it.qty}</span></span>
+              <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-ink-700 bg-ink-900">{it.imageUrl ? <Img src={it.imageUrl} alt="" wrapClassName="h-full w-full" className="h-full w-full object-cover" /> : null}</span>
+              <span className="min-w-0 grow"><span className="block truncate text-mist">{it.title}</span><span className="text-xs text-mist-dim">{it.variantTitle && it.variantTitle !== 'Default' ? `${it.variantTitle} · ` : ''}× {it.qty}</span></span>
               <span className="tabular-nums">{fmtCents(it.lineTotalCents, currency)}</span>
             </li>
           ))}
         </ul>
-        <div className="flex justify-between text-sm"><span className="text-zinc-600">Subtotal</span><span className="tabular-nums">{fmtCents(subtotalCents, currency)}</span></div>
-        <div className="flex justify-between text-sm"><span className="text-zinc-600">Shipping</span><span className="tabular-nums">{shipping === 0 ? 'Free' : fmtCents(shipping, currency)}</span></div>
-        <div className="flex justify-between border-t border-zinc-200 pt-3 text-base font-semibold"><span>Total</span><span className="tabular-nums">{fmtCents(total, currency)}</span></div>
-        {step === 'review' ? <button type="submit" disabled={submitting || loading || blocking} className="btn-primary mt-2 h-11">{submitting ? 'Preparing secure payment…' : `Pay ${fmtCents(total, currency)}`}</button> : <p className="mt-1 text-xs text-zinc-500">Complete the steps to pay.</p>}
-        <p className="text-xs text-zinc-500">You will be taken to a secure card payment page powered by Cloudgate Wallet, then brought back here.</p>
+        <div className="flex justify-between text-sm"><span className="text-mist-muted">Subtotal</span><span className="tabular-nums">{fmtCents(subtotalCents, currency)}</span></div>
+        <div className="flex justify-between text-sm"><span className="text-mist-muted">Shipping</span><span className="tabular-nums">{shipping === 0 ? 'Free' : fmtCents(shipping, currency)}</span></div>
+        <div className="flex justify-between border-t border-ink-700 pt-3 text-base font-semibold"><span>Total</span><span className="tabular-nums">{fmtCents(total, currency)}</span></div>
+        {step === 'review' ? <button type="submit" disabled={submitting || loading || blocking} className="btn-primary mt-2 h-11">{submitting ? 'Preparing secure payment…' : `Pay ${fmtCents(total, currency)}`}</button> : <p className="mt-1 text-xs text-mist-dim">Complete the steps to pay.</p>}
+        <p className="text-xs text-mist-dim">You will be taken to a secure card payment page powered by Cloudgate Wallet, then brought back here.</p>
         <VerifiedLink />
-        {settings.checkout_note ? <p className="rounded-lg bg-zinc-50 px-3 py-2 text-xs text-zinc-600">{settings.checkout_note}</p> : null}
-        <Link to="/cart" className="text-xs text-zinc-500 hover:text-zinc-900"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back to cart</span></Link>
+        {settings.checkout_note ? <p className="rounded-lg bg-ink-900 px-3 py-2 text-xs text-mist-muted">{settings.checkout_note}</p> : null}
+        <Link to="/cart" className="text-xs text-mist-dim hover:text-mist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back to cart</span></Link>
       </aside>
     </form>
   );

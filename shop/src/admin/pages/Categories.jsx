@@ -152,9 +152,9 @@ const Categories = () => {
         ) : null}
       </Modal>
 
-      <MediaPicker open={choosing} onClose={() => setChoosing(false)} preferFolder="shop/categories" title="Choose category image" onUploadInstead={() => setUploading(true)}
+      <MediaPicker open={choosing} onClose={() => setChoosing(false)} preferFolder="shop/media" title="Choose category image" onUploadInstead={() => setUploading(true)}
         onPick={(files) => { const f = files[0]; if (f?.url) { setEditing((e) => (e ? { ...e, imageUrl: f.url } : e)); toast.success('Image selected.'); } }} />
-      <ImageUploader open={uploading} onClose={() => setUploading(false)} path="shop/categories" aspect={3 / 2} maxFiles={1} title="Category image"
+      <ImageUploader open={uploading} onClose={() => setUploading(false)} path="shop/media" aspect={3 / 2} maxFiles={1} title="Category image"
         onUploaded={(done) => { const f = done[0]; if (f?.url) { setEditing((e) => (e ? { ...e, imageUrl: f.url } : e)); toast.success('Image uploaded.'); } setUploading(false); }} />
     </div>
   );

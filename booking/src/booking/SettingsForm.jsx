@@ -1,23 +1,22 @@
-import PaymentWebsiteHint from '../shared/PaymentWebsiteHint';
-import {SmtpSettings} from '../shared/CloudgateSmtpSettings';
+import PaymentWebsiteHint from './PaymentWebsiteHint';
 import React, { useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { Button, ErrorBox, Field } from './ui';
-import BrandingEditor, { Asset } from './BrandingEditor';
-import { BRAND_DEFAULTS, imageUrl } from './branding-model';
+import { Asset } from './Asset';
+import { imageUrl } from './branding-model';
 
 const groups = [
   ['Your business', [['name','Business name'],['tagline','Tagline'],['description','About your business'],['address','Address'],['phone','Phone'],['email','Contact email'],['website_url','Live website URL']]],
   ['Booking rules', [['timezone','IANA timezone'],['currency','Currency code'],['lead_minutes','Minimum notice (minutes)'],['horizon_days','Book ahead (days)'],['cancel_hours','Cancellation cutoff (hours)'],['hold_minutes','Payment hold (minutes)'],['slot_minutes','Time slot interval (minutes)'],['reminder_hours','Reminder before visit (hours)'],['cancellation_policy','Cancellation policy']]],
 ];
 export default function SettingsForm({ data, save, busy }) {
-  const [value, setValue] = useState(() => ({ ...BRAND_DEFAULTS, hero_image_url:'', about_image_url:'', hero_kicker:'BOOK ONLINE', hero_title:'Book your next appointment.', hero_subtitle:'Choose a service. Find a time that works for you.', services_title:'Explore our services.', services_intro:'Browse services, compare options and book your preferred time.', ...data })), [error, setError] = useState('');
+  const [value, setValue] = useState(() => ({ hero_image_url:'', about_image_url:'', hero_kicker:'BOOK ONLINE', hero_title:'Book your next appointment.', hero_subtitle:'Choose a service. Find a time that works for you.', services_title:'Explore our services.', services_intro:'Browse services, compare options and book your preferred time.', ...data })), [error, setError] = useState('');
   const change = (key, next) => setValue(previous => ({ ...previous, [key]: next }));
   const submit = async e => {
     e.preventDefault(); setError('');
     try {
-      for (const key of ['logo_url','icon_url','favicon_url','hero_image_url','about_image_url']) if (value[key].trim() && !imageUrl(value[key])) throw new Error('Use an HTTPS image URL or a path starting with /.');
-      const keys = [...Object.keys(BRAND_DEFAULTS), 'hero_image_url','about_image_url','hero_kicker','hero_title','hero_subtitle','services_title','services_intro', ...groups.flatMap(([,fields]) => fields.map(([key]) => key))];
+      for (const key of ['hero_image_url','about_image_url']) if (value[key].trim() && !imageUrl(value[key])) throw new Error('Use an HTTPS image URL or a path starting with /.');
+      const keys = ['hero_image_url','about_image_url','hero_kicker','hero_title','hero_subtitle','services_title','services_intro', ...groups.flatMap(([,fields]) => fields.map(([key]) => key))];
       await save(Object.fromEntries(keys.map(key => [key, value[key] ?? ''])));
     } catch (err) { setError(err); }
   };
@@ -30,7 +29,6 @@ export default function SettingsForm({ data, save, busy }) {
       <ErrorBox error={error}/>
       <details className="homepage-other-settings"><summary>Homepage text and about photo</summary><div className="form-grid">{[['hero_kicker','Banner label'],['hero_title','Banner heading'],['hero_subtitle','Banner description'],['services_title','Services heading'],['services_intro','Services introduction']].map(([key,label])=><Field key={key} label={label}><input value={value[key]} maxLength={key==='hero_title'?90:200} onChange={e=>change(key,e.target.value)}/></Field>)}</div><Asset label="About photo" hint="The image in your About section further down the homepage." value={value.about_image_url} change={v=>change('about_image_url',v)} aspect={1.5} path="booking/branding"/></details>
     </section>
-    {group(groups[0])}<BrandingEditor value={value} change={change}/>{groups.slice(1).map(group)}<ErrorBox error={error}/><Button busy={busy}>Save business settings</Button>
-    <SmtpSettings/>
+    {group(groups[0])}{groups.slice(1).map(group)}<ErrorBox error={error}/><Button busy={busy}>Save business settings</Button>
   </form>;
 }

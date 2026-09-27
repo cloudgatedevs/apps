@@ -1,3 +1,4 @@
+import { UiPortalScope } from '@/shared/ui/scope';
 // Dropdown menu and tooltip built on Radix primitives: keyboard navigation, focus management,
 // collision-aware positioning and open/close animation come from the primitive; each app's
 // CSS supplies the `.menu` / `.menu-item` / `.tooltip` looks.
@@ -10,7 +11,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 export const Dropdown = ({ trigger, items, align = 'end', label }) => (
   <DropdownMenu.Root modal={false}>
     <DropdownMenu.Trigger asChild>{trigger}</DropdownMenu.Trigger>
-    <DropdownMenu.Portal>
+    <DropdownMenu.Portal><UiPortalScope>
       <DropdownMenu.Content align={align} sideOffset={6} className="ui-menu menu z-50 min-w-[11rem]" onCloseAutoFocus={(e) => e.preventDefault()}>
         {label ? <DropdownMenu.Label className="menu-label">{label}</DropdownMenu.Label> : null}
         {items.filter(Boolean).map((it, i) =>
@@ -25,7 +26,7 @@ export const Dropdown = ({ trigger, items, align = 'end', label }) => (
           ),
         )}
       </DropdownMenu.Content>
-    </DropdownMenu.Portal>
+    </UiPortalScope></DropdownMenu.Portal>
   </DropdownMenu.Root>
 );
 
@@ -36,12 +37,12 @@ export const Tooltip = ({ text, side = 'top', children }) =>
   text ? (
     <TooltipPrimitive.Root>
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
-      <TooltipPrimitive.Portal>
+      <TooltipPrimitive.Portal><UiPortalScope>
         <TooltipPrimitive.Content side={side} sideOffset={6} className="ui-menu tooltip z-50">
           {text}
           <TooltipPrimitive.Arrow className="tooltip-arrow" />
         </TooltipPrimitive.Content>
-      </TooltipPrimitive.Portal>
+      </UiPortalScope></TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>
   ) : (
     children

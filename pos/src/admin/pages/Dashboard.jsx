@@ -88,9 +88,9 @@ const Dashboard = () => {
 
       <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
         <section className="card overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3"><h2 className="text-[15px] font-semibold text-mist">Recent sales</h2><Link to="/sales" className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent-600">All sales <ArrowRight className="h-3.5 w-3.5" /></Link></div>
+          <div className="flex items-center justify-between px-4 py-3"><h2 className="text-[15px] font-semibold text-mist">Recent sales</h2><Link to="/admin/sales" className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent-600">All sales <ArrowRight className="h-3.5 w-3.5" /></Link></div>
           {recent.loading ? <div className="p-4"><SkeletonTable columns={4} rows={5} /></div> : (
-            <Table rows={recent.data ?? []} rowHref={(r) => `/sales/${r.Id}`} empty={<EmptyState icon={<Receipt className="h-5 w-5" />} title="No sales yet" text="Sales from the tills appear here as they happen." compact />}
+            <Table rows={recent.data ?? []} rowHref={(r) => `/admin/sales/${r.Id}`} empty={<EmptyState icon={<Receipt className="h-5 w-5" />} title="No sales yet" text="Sales from the tills appear here as they happen." compact />}
               columns={[
                 { key: 'Reference', label: 'Receipt', mobile: 'title', render: (r) => <span className="font-mono text-mist">{r.Reference}</span> },
                 { key: 'TellerName', label: 'Teller', mobile: 'meta' },
@@ -110,9 +110,9 @@ const Dashboard = () => {
             </ul>
           </section>
           <section className="card p-4">
-            <div className="flex items-center justify-between"><h2 className="text-[15px] font-semibold text-mist">Low stock</h2><Link to="/inventory?low=1" className="text-xs font-medium text-accent hover:text-accent-600">Inventory</Link></div>
+            <div className="flex items-center justify-between"><h2 className="text-[15px] font-semibold text-mist">Low stock</h2><Link to="/admin/inventory?low=1" className="text-xs font-medium text-accent hover:text-accent-600">Inventory</Link></div>
             <ul className="mt-2 divide-y divide-ink-700">
-              {(low.data?.items ?? []).map((p) => <li key={p.Id} className="flex items-center justify-between py-1.5 text-sm"><Link to={`/products/${p.Id}`} className="truncate text-mist hover:text-accent">{p.Name}</Link><span className={`tabular-nums text-xs font-medium ${Number(p.StockQty) <= 0 ? 'text-red-600' : 'text-amber-600'}`}>{Number(p.StockQty)} {p.Unit !== 'each' ? p.Unit : 'left'}</span></li>)}
+              {(low.data?.items ?? []).map((p) => <li key={p.Id} className="flex items-center justify-between py-1.5 text-sm"><Link to={`/admin/products/${p.Id}`} className="truncate text-mist hover:text-accent">{p.Name}</Link><span className={`tabular-nums text-xs font-medium ${Number(p.StockQty) <= 0 ? 'text-red-600' : 'text-amber-600'}`}>{Number(p.StockQty)} {p.Unit !== 'each' ? p.Unit : 'left'}</span></li>)}
               {!low.loading && !low.data?.items?.length ? <li className="py-2 text-sm text-mist-dim">Everything is in stock.</li> : null}
             </ul>
           </section>

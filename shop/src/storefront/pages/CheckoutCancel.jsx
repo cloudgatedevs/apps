@@ -8,7 +8,7 @@ const CheckoutCancel = () => {
     <div className="container-x py-16">
       <div className="card mx-auto max-w-xl p-8 text-center">
         <h1 className="font-display text-3xl tracking-tight">Payment cancelled</h1>
-        <p className="mt-2 text-zinc-600">
+        <p className="mt-2 text-mist-muted">
           Nothing was charged{reference ? <> for order <span className="font-mono">{reference}</span></> : null}. Your cart is exactly as you left it.
         </p>
         <div className="mt-6 flex justify-center gap-3">

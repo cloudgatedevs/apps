@@ -104,16 +104,16 @@ const Dashboard = () => {
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="text-[15px] font-semibold text-mist">Recent orders</h2>
-            <Link to="/orders" className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent-600">View all <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
+            <Link to="/admin/orders" className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent-600">View all <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
           </div>
           <ErrorNote error={recent.error} />
           {recent.loading ? (
             <SkeletonTable columns={5} rows={5} />
           ) : (
             <Table
-              rowHref={(r) => `/orders/${r.Id}`}
+              rowHref={(r) => `/admin/orders/${r.Id}`}
               columns={[
-                { key: 'Reference', label: 'Order', mobile: 'title', render: (r) => <Link to={`/orders/${r.Id}`} className="whitespace-nowrap font-mono text-[13px] font-medium text-mist hover:text-accent">{r.Reference}</Link> },
+                { key: 'Reference', label: 'Order', mobile: 'title', render: (r) => <Link to={`/admin/orders/${r.Id}`} className="whitespace-nowrap font-mono text-[13px] font-medium text-mist hover:text-accent">{r.Reference}</Link> },
                 { key: 'Email', label: 'Customer', mobile: 'meta', render: (r) => <span className="block max-w-[9rem] truncate text-mist-muted">{[r.Name, r.Surname].filter(Boolean).join(' ') || r.Email}</span> },
                 { key: 'TotalCents', label: 'Total', render: (r) => <span className="font-semibold tabular-nums text-mist">{fmtCents(r.TotalCents, r.Currency)}</span> },
                 { key: 'Status', label: 'Status', render: (r) => <Badge tone={orderStatusTone(r.Status)}>{r.Status}</Badge> },
@@ -128,16 +128,16 @@ const Dashboard = () => {
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="text-[15px] font-semibold text-mist">Low stock</h2>
-            <Link to="/inventory?lowStock=1" className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent-600">Inventory <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
+            <Link to="/admin/inventory?lowStock=1" className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent-600">Inventory <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
           </div>
           <ErrorNote error={low.error} />
           {low.loading ? (
             <SkeletonTable columns={3} rows={4} />
           ) : (
             <Table
-              rowHref={(r) => `/products/${r.ProductId}`}
+              rowHref={(r) => `/admin/products/${r.ProductId}`}
               columns={[
-                { key: 'ProductName', label: 'Product', mobile: 'title', render: (r) => <Link to={`/products/${r.ProductId}`} className="text-mist hover:text-accent">{r.ProductName}</Link> },
+                { key: 'ProductName', label: 'Product', mobile: 'title', render: (r) => <Link to={`/admin/products/${r.ProductId}`} className="text-mist hover:text-accent">{r.ProductName}</Link> },
                 { key: 'Title', label: 'Variant', mobile: 'meta', render: (r) => <span className="text-mist-muted">{r.Title}{r.Sku ? <span className="ml-2 font-mono text-xs text-mist-dim">{r.Sku}</span> : null}</span> },
                 { key: 'AvailableQty', label: 'Available', align: 'right', render: (r) => <span className={`font-semibold tabular-nums ${r.AvailableQty <= 0 ? 'text-red-600' : 'text-amber-600'}`}>{r.AvailableQty}</span> },
               ]}

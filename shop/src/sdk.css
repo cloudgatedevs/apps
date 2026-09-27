@@ -1,0 +1,14 @@
+/* Shop components inherit the SDK appearance without restyling native pages. */
+.shop-ui, .shop-store {
+  --c-primary: var(--accent); --c-primary-fg: var(--accent-fg);
+  --c-secondary: var(--secondary); --c-secondary-fg: var(--secondary-fg);
+  --safe-top: env(safe-area-inset-top, 0px); --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px); --safe-left: env(safe-area-inset-left, 0px);
+  --skeleton-base: rgb(var(--mist) / .06); --skeleton-highlight: rgb(var(--mist) / .12);
+  --focus-ring: rgb(var(--accent));
+  color: rgb(var(--mist)); color-scheme: inherit; min-width: 0;
+}
+.shop-ui .bg-white { background-color: rgb(var(--ink-850)); }
+:where(.shop-store) .text-secondary { color: var(--cgw-chart-2); }
+.shop-ui .uppy-StatusBar-actionBtn--upload { background: rgb(var(--accent)) !important; color: rgb(var(--accent-fg)) !important; }
+.shop-ui .uppy-DashboardContent-back, .shop-ui .uppy-DashboardContent-addMore { color: rgb(var(--accent)) !important; }

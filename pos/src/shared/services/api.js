@@ -1,7 +1,4 @@
-// Cloudgate workflow-API access — powered by @cloudgatedevs/cloudgate-client.
-//
-// The React client talks ONLY to Cloudgate workflow endpoints — never to any
-// backend service or database directly.
+// POS workflow access through the Cloudgate React SDK transport and shared session.
 //
 // The request base is composed from three .env keys rather than one hardcoded
 // URL, so moving between publish slots is a one-value change:
@@ -20,8 +17,9 @@
 //   const data   = await api.get('/example/list', { take: 20 });
 //   const result = await api.post('/example/create', { name: 'Acme' });
 
-import { CloudgateError, createCloudgateClient } from '@cloudgatedevs/cloudgate-client';
-import { auth } from './auth';
+import { CloudgateError, createCloudgateClient } from '@cloudgatedevs/cloudgate-client-react';
+import { cloudgate as platform } from '@/platform';
+const auth = platform.auth;
 import { explainApiError } from './api-error';
 
 const trimSlashes = (value) => String(value ?? '').trim().replace(/^\/+|\/+$/g, '');
@@ -33,9 +31,9 @@ const GATEWAY_URL = String(import.meta.env.VITE_CLOUDGATE_API_URL ?? '')
 /** Publish slot the app is pointed at — "sbx" or "prod". */
 export const apiEnv = trimSlashes(import.meta.env.VITE_CLOUDGATE_API_ENV) || 'sbx';
 
-const API_PROJECT = trimSlashes(import.meta.env.VITE_CLOUDGATE_API_PROJECT) || 'api';
+const API_PROJECT = trimSlashes(import.meta.env.VITE_CLOUDGATE_API_PROJECT) || 'pos';
 
-/** Fully composed request base, e.g. https://apps.example.com/sbx/api */
+/** Fully composed request base, e.g. https://apps.example.com/sbx/pos */
 export const apiBaseUrl = GATEWAY_URL ? [GATEWAY_URL, apiEnv, API_PROJECT].join('/') : '';
 
 export const apiConfigured = Boolean(apiBaseUrl);

@@ -1,11 +1,12 @@
 // Small shared UI primitives for the admin console (and a few reused by the storefront).
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 /** Tiny async-fetch hook: const { data, loading, error, reload, setData } = useAsync(fn, [deps]) */
 export function useAsync(fn, deps = []) {
   const [state, setState] = useState({ data: null, loading: true, error: null });
   const [tick, setTick] = useState(0);
+  const reload = useCallback(() => setTick(t => t + 1), []);
   useEffect(() => {
     let alive = true;
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -19,7 +20,7 @@ export function useAsync(fn, deps = []) {
   }, [...deps, tick]);
   return {
     ...state,
-    reload: () => setTick((t) => t + 1),
+    reload,
     /** Replace the loaded data locally (optimistic updates) without a refetch. */
     setData: (next) => setState((s) => ({ ...s, data: typeof next === 'function' ? next(s.data) : next })),
   };

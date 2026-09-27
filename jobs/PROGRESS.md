@@ -1,3 +1,5 @@
+> Historical implementation record. Jobs 2.0 uses the Cloudgate React SDK; see README.md for current routes and configuration.
+
 # Jobs implementation progress
 
 2026-09-10: Source implementation and local verification complete. App lives in `D:/repos/GitHub/apps/jobs`. Root `apps.json` and `README.md` now include Jobs. Existing Booking, Shop and POS source was not changed.

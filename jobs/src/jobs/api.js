@@ -1,11 +1,15 @@
-import { api } from '../shared/services/api';
-export const preview=import.meta.env.DEV&&(import.meta.env.MODE==='preview'||!import.meta.env.VITE_CLOUDGATE_API_URL);
+import { cloudgate, workflow, preview } from './platform';
+export { preview } from './platform';
 export const previewRole=()=>sessionStorage.getItem('jobs.preview.role')||'';
 const routes={catalog:'catalog',workspace:'workspace','admin-data':'workspace',settings:'settings','quote-preview':'quotes','quote-save':'quotes','quote-send':'quotes','quote-accept':'quotes','quote-decline':'quotes','document':'documents','attachment-add':'attachments','attachment-read':'attachments','attachment-visibility':'attachments'};
 export async function call(op,data={},admin=false,route){
   route=route||routes[op]||(op.startsWith('invoice')?'invoices':op.startsWith('request')?'requests':'jobs');
   let result;
-  if(!preview)result=await api.post('/'+route,{...data,op});
+  if(!preview){
+    if(!workflow)throw new Error('Configure the Jobs workflow gateway before connecting.');
+    try{result=await workflow.post('/'+route,{...data,op});}
+    catch(error){if(error.status===401&&cloudgate.auth.enabled&&await cloudgate.auth.refresh())result=await workflow.post('/'+route,{...data,op});else throw error;}
+  }
   else{const response=await fetch('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json','X-Jobs-Preview':'1','X-Preview-Role':previewRole()},body:JSON.stringify({...data,op})});result=await response.json();if(!response.ok)throw new Error(result.error||'Request failed.');}
   if(result?.error)throw new Error(result.error);return result;
 }

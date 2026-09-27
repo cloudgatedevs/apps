@@ -1,13 +1,14 @@
-import { NavLink, Outlet } from 'react-router-dom';
-import { Clock, LogOut, Receipt, RotateCcw, Settings, ShoppingCart, Wifi, WifiOff } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Clock, LogOut, UserRound, Receipt, RotateCcw, Settings, ShoppingCart, Wifi, WifiOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { useAuthContext, getProfileDisplayName, isAdminRole } from '@/shared/auth';
+import { useAuthContext, getProfileDisplayName } from '@/shared/auth';
 import { Tooltip } from '@/shared/ui/menus';
 import { utcDate } from '@/shared/ui/ui';
 import { useTill } from '@/pos/state/TillProvider';
 import { useLiveStatus, liveEnabled } from '@/admin/services/live';
 import { smallImageUrl } from '@/shared/services/imageUrl';
-import { AppVersion } from '@/shared/CloudgateAbout';
+import { useSettings, usePermissions } from '@cloudgatedevs/cloudgate-client-react/react';
+import sdk from '@cloudgatedevs/cloudgate-client-react/package.json';
 
 const NAV = [
   { to: '/', label: 'Register', icon: ShoppingCart, end: true },
@@ -27,18 +28,21 @@ const openedAgo = (iso) => {
 };
 
 /** Till chrome: brand + nav on a bar in the store's primary colour; the page fills the rest. */
-const Shell = () => {
-  const { settings, shift, teller } = useTill();
+const Shell = ({ children }) => {
+  const { shift, teller } = useTill();
+  const { settings: appearance } = useSettings();
+  const { can } = usePermissions();
+  const settings = { store_name: appearance.app_name, store_logo_url: appearance.app_logo_url, store_icon_url: appearance.app_icon_url };
   const { logout } = useAuthContext();
   const [live, setLive] = useState('idle');
   useLiveStatus(useCallback((s) => setLive(s), []));
   const name = getProfileDisplayName({ name: teller?.name, surname: teller?.surname, email: teller?.emailAddress });
-  // Admins get a shortcut to the back office (its own entry page, so a full navigation).
-  const isAdmin = isAdminRole(teller?.role);
+  // Show the SDK back office to users with its native access permission.
+  const isAdmin = can('backoffice.access');
 
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-ink-950">
-      <header className="flex h-14 shrink-0 items-center gap-3 px-3 text-white" style={{ background: 'rgb(var(--c-primary))' }}>
+      <header className="pos-header flex h-14 shrink-0 items-center gap-3 px-3" style={{ background: 'rgb(var(--c-primary))', color: 'rgb(var(--c-primary-fg))' }}>
         <div className="flex min-w-0 items-center gap-2">
           {settings.store_icon_url || settings.store_logo_url
             ? <img src={smallImageUrl(settings.store_icon_url || settings.store_logo_url)} alt="" className="h-8 w-8 rounded-lg bg-white/10 object-contain p-0.5" />
@@ -47,7 +51,7 @@ const Shell = () => {
         </div>
         <nav className="ml-2 flex items-center gap-1">
           {NAV.map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} className={navClass}>
+            <NavLink key={to} to={to} end={end} aria-label={label} className={navClass}>
               <Icon className="h-4 w-4" /><span className="hidden md:inline">{label}</span>
             </NavLink>
           ))}
@@ -63,19 +67,20 @@ const Shell = () => {
           ) : null}
           <div className="hidden min-w-0 text-right leading-tight lg:block">
             <p className="truncate text-[13px] font-medium">{name}</p>
-            <p className="truncate text-[11px] text-white/60">{teller?.role || 'User'} · <AppVersion className="!opacity-100" /></p>
+            <p className="truncate text-[11px] text-white/60">{teller?.role || 'User'} · <span>SDK v{sdk.version}</span></p>
           </div>
           {isAdmin ? (
             <Tooltip text="Back office">
               <a href="/admin" aria-label="Back office" className="grid h-9 w-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"><Settings className="h-4 w-4" /></a>
             </Tooltip>
           ) : null}
+          <Tooltip text="My profile"><NavLink to="/account/profile" aria-label="My profile" className="grid h-9 w-9 place-items-center rounded-lg text-white/80 hover:bg-white/10"><UserRound className="h-4 w-4" /></NavLink></Tooltip>
           <Tooltip text="Sign out">
             <button type="button" onClick={() => logout(true)} aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"><LogOut className="h-4 w-4" /></button>
           </Tooltip>
         </div>
       </header>
-      <main className="min-h-0 grow overflow-hidden"><Outlet /></main>
+      <main className="min-h-0 grow overflow-hidden">{children}</main>
     </div>
   );
 };

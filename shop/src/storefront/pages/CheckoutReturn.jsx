@@ -89,26 +89,26 @@ const CheckoutReturn = () => {
           <>
             <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-700"><Check className="h-7 w-7" aria-hidden="true" /></div>
             <h1 className="font-display mt-4 text-3xl tracking-tight">Thank you, your order is confirmed</h1>
-            <p className="mt-2 text-zinc-600">Order <span className="font-mono font-medium text-zinc-900">{order.reference}</span>. A confirmation is on its way to {order.email}.</p>
+            <p className="mt-2 text-mist-muted">Order <span className="font-mono font-medium text-mist">{order.reference}</span>. A confirmation is on its way to {order.email}.</p>
           </>
         ) : cancelled ? (
           <>
             <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-red-100 text-red-700"><X className="h-7 w-7" aria-hidden="true" /></div>
             <h1 className="font-display mt-4 text-3xl tracking-tight">Payment was not completed</h1>
-            <p className="mt-2 text-zinc-600">Order {order.reference} was cancelled and nothing was charged. Your cart is still here if you want to try again.</p>
+            <p className="mt-2 text-mist-muted">Order {order.reference} was cancelled and nothing was charged. Your cart is still here if you want to try again.</p>
             <Link to="/cart" className="btn-primary mt-6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back to cart</span></Link>
           </>
         ) : (
           <>
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-ink-700 border-t-zinc-900" />
             <h1 className="font-display mt-4 text-3xl tracking-tight">Confirming your payment…</h1>
-            <p className="mt-2 text-zinc-600">Order <span className="font-mono">{reference}</span>. This usually takes a few seconds.</p>
+            <p className="mt-2 text-mist-muted">Order <span className="font-mono">{reference}</span>. This usually takes a few seconds.</p>
             {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
             {polls > MAX_POLLS ? (
               <div className="mt-6 flex flex-col items-center gap-3">
-                <p className="text-sm text-zinc-600">Still waiting for the payment provider. If you completed payment, it will be confirmed shortly.</p>
+                <p className="text-sm text-mist-muted">Still waiting for the payment provider. If you completed payment, it will be confirmed shortly.</p>
                 <button type="button" onClick={() => { setPolls(1); check(); }} className="btn-ghost">Check again</button>
-                {order?.paymentUrl ? <a href={order.paymentUrl} className="text-sm text-zinc-600 underline">Return to the payment page</a> : null}
+                {order?.paymentUrl ? <a href={order.paymentUrl} className="text-sm text-mist-muted underline">Return to the payment page</a> : null}
               </div>
             ) : null}
           </>
@@ -118,23 +118,23 @@ const CheckoutReturn = () => {
       {order?.items?.length ? (
         <div className="card mx-auto w-full max-w-2xl p-6">
           <h2 className="mb-3 font-semibold">Order details</h2>
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-ink-700">
             {order.items.map((i, n) => (
               <li key={n} className="flex items-center gap-3 py-3 text-sm">
-                <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">{i.ImageUrl ? <img src={i.ImageUrl} alt="" className="h-full w-full object-cover" /> : null}</span>
-                <span className="min-w-0 grow"><span className="block truncate">{i.Title}</span><span className="text-xs text-zinc-500">{i.VariantTitle && i.VariantTitle !== 'Default' ? `${i.VariantTitle} · ` : ''}× {i.Qty}</span></span>
+                <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-ink-700 bg-ink-900">{i.ImageUrl ? <img src={i.ImageUrl} alt="" className="h-full w-full object-cover" /> : null}</span>
+                <span className="min-w-0 grow"><span className="block truncate">{i.Title}</span><span className="text-xs text-mist-dim">{i.VariantTitle && i.VariantTitle !== 'Default' ? `${i.VariantTitle} · ` : ''}× {i.Qty}</span></span>
                 <span className="tabular-nums">{fmtCents(i.LineTotalCents, order.currency)}</span>
               </li>
             ))}
           </ul>
-          <div className="mt-3 flex flex-col gap-1 border-t border-zinc-200 pt-3 text-sm">
-            <div className="flex justify-between"><span className="text-zinc-600">Subtotal</span><span className="tabular-nums">{fmtCents(order.subtotalCents, order.currency)}</span></div>
-            <div className="flex justify-between"><span className="text-zinc-600">Shipping</span><span className="tabular-nums">{order.shippingCents ? fmtCents(order.shippingCents, order.currency) : 'Free'}</span></div>
-            <div className="flex justify-between"><span className="text-zinc-600">Tax (included)</span><span className="tabular-nums">{fmtCents(order.taxCents, order.currency)}</span></div>
+          <div className="mt-3 flex flex-col gap-1 border-t border-ink-700 pt-3 text-sm">
+            <div className="flex justify-between"><span className="text-mist-muted">Subtotal</span><span className="tabular-nums">{fmtCents(order.subtotalCents, order.currency)}</span></div>
+            <div className="flex justify-between"><span className="text-mist-muted">Shipping</span><span className="tabular-nums">{order.shippingCents ? fmtCents(order.shippingCents, order.currency) : 'Free'}</span></div>
+            <div className="flex justify-between"><span className="text-mist-muted">Tax (included)</span><span className="tabular-nums">{fmtCents(order.taxCents, order.currency)}</span></div>
             <div className="flex justify-between text-base font-semibold"><span>Total</span><span className="tabular-nums">{fmtCents(order.totalCents, order.currency)}</span></div>
           </div>
           {order.shippingAddress ? (
-            <p className="mt-4 whitespace-pre-line text-sm text-zinc-600">
+            <p className="mt-4 whitespace-pre-line text-sm text-mist-muted">
               Delivering to {order.name}
               {'\n'}{[order.shippingAddress.line1, order.shippingAddress.line2, [order.shippingAddress.city, order.shippingAddress.region].filter(Boolean).join(', '), [order.shippingAddress.postalCode, order.shippingAddress.country].filter(Boolean).join(' ')].filter(Boolean).join('\n')}
             </p>

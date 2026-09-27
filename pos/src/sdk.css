@@ -1,0 +1,17 @@
+/* Shared SDK palette, scoped to the app's retail and till components. */
+.pos-ui {
+  --c-primary: var(--accent); --c-primary-fg: var(--accent-fg);
+  --c-secondary: var(--secondary); --c-secondary-fg: var(--secondary-fg);
+  color: rgb(var(--mist)); color-scheme: inherit; min-width: 0;
+}
+.pos-ui .pos-primary { color: rgb(var(--c-primary-fg)); }
+.pos-ui .pos-header a, .pos-ui .pos-header button, .pos-ui .pos-header p, .pos-ui .pos-header span { color: inherit; }
+.pos-ui .pos-header a[aria-current="page"] { background: rgb(var(--c-primary-fg) / .15); }
+.pos-ui .pos-header a:hover, .pos-ui .pos-header button:hover { background: rgb(var(--c-primary-fg) / .1); }
+.pos-ui .bg-white, .pos-ui .pos-tile, .pos-ui .pos-key { background-color: rgb(var(--ink-850)); }
+.pos-ui .pos-tile:hover, .pos-ui .pos-key:active { background-color: rgb(var(--ink-800)); }
+.pos-ui .uppy-StatusBar-actionBtn--upload { background: rgb(var(--accent)) !important; color: rgb(var(--accent-fg)) !important; }
+.pos-ui .uppy-DashboardContent-back, .pos-ui .uppy-DashboardContent-addMore { color: rgb(var(--accent)) !important; }
+@media print {
+  .pos-ui .pos-receipt, .pos-ui .pos-print { color: #000 !important; background: #fff !important; }
+}

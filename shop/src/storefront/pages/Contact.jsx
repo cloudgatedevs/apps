@@ -12,7 +12,7 @@ const Field = ({ label, children, hint }) => (
   <label className="flex flex-col gap-1.5">
     <span className="label">{label}</span>
     {children}
-    {hint ? <span className="text-xs text-zinc-500">{hint}</span> : null}
+    {hint ? <span className="text-xs text-mist-dim">{hint}</span> : null}
   </label>
 );
 
@@ -52,18 +52,18 @@ const Contact = () => {
         <div className="flex flex-col gap-8">
           <div>
             <Breadcrumb items={[['Contact']]} />
-            <h1 className="font-display mt-4 text-4xl tracking-tight text-zinc-900 sm:text-5xl">We’d love to hear from you.</h1>
-            <p className="mt-4 text-lg leading-8 text-zinc-500">Questions about an order, a product, or anything else: send a note and a real person will reply{settings.contact_hours ? ` during ${settings.contact_hours.replace(/^\s*monday/i, 'Monday')}` : ''}.</p>
+            <h1 className="font-display mt-4 text-4xl tracking-tight text-mist sm:text-5xl">We’d love to hear from you.</h1>
+            <p className="mt-4 text-lg leading-8 text-mist-dim">Questions about an order, a product, or anything else: send a note and a real person will reply{settings.contact_hours ? ` during ${settings.contact_hours.replace(/^\s*monday/i, 'Monday')}` : ''}.</p>
           </div>
           <dl className="flex flex-col gap-4 text-sm">
-            {settings.support_email ? <div><dt className="eyebrow mb-1">Email</dt><dd><a href={`mailto:${settings.support_email}`} className="text-zinc-900 underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-900">{settings.support_email}</a></dd></div> : null}
-            {settings.contact_phone ? <div><dt className="eyebrow mb-1">Phone</dt><dd><a href={`tel:${settings.contact_phone}`} className="text-zinc-900">{settings.contact_phone}</a></dd></div> : null}
-            {settings.contact_hours ? <div><dt className="eyebrow mb-1">Hours</dt><dd className="text-zinc-700">{settings.contact_hours}</dd></div> : null}
-            {settings.contact_address ? <div><dt className="eyebrow mb-1">Address</dt><dd className="whitespace-pre-line text-zinc-700">{settings.contact_address}</dd></div> : null}
+            {settings.support_email ? <div><dt className="eyebrow mb-1">Email</dt><dd><a href={`mailto:${settings.support_email}`} className="text-mist underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-900">{settings.support_email}</a></dd></div> : null}
+            {settings.contact_phone ? <div><dt className="eyebrow mb-1">Phone</dt><dd><a href={`tel:${settings.contact_phone}`} className="text-mist">{settings.contact_phone}</a></dd></div> : null}
+            {settings.contact_hours ? <div><dt className="eyebrow mb-1">Hours</dt><dd className="text-mist-muted">{settings.contact_hours}</dd></div> : null}
+            {settings.contact_address ? <div><dt className="eyebrow mb-1">Address</dt><dd className="whitespace-pre-line text-mist-muted">{settings.contact_address}</dd></div> : null}
           </dl>
           {faq || shipping ? (
-            <div className="rounded-2xl border border-zinc-200 bg-white p-5 text-sm">
-              <p className="font-medium text-zinc-900">Looking for a quick answer?</p>
+            <div className="rounded-2xl border border-ink-700 bg-ink-850 p-5 text-sm">
+              <p className="font-medium text-mist">Looking for a quick answer?</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {faq ? <Link to={`/pages/${faq.Slug}`} className="chip">{faq.Title}</Link> : null}
                 {shipping ? <Link to={`/pages/${shipping.Slug}`} className="chip">{shipping.Title}</Link> : null}
@@ -77,8 +77,8 @@ const Contact = () => {
           {sent ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
               <span className="grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-700"><Check className="h-7 w-7" aria-hidden="true" /></span>
-              <p className="font-display text-2xl text-zinc-900">Thanks, your message is on its way.</p>
-              <p className="max-w-sm text-sm text-zinc-500">We reply to {form.email}. If it is urgent, the details on the left reach us fastest.</p>
+              <p className="font-display text-2xl text-mist">Thanks, your message is on its way.</p>
+              <p className="max-w-sm text-sm text-mist-dim">We reply to {form.email}. If it is urgent, the details on the left reach us fastest.</p>
               <Link to="/shop" className="btn-ghost mt-4">Continue shopping</Link>
             </div>
           ) : (
@@ -95,7 +95,7 @@ const Contact = () => {
               {/* Honeypot: hidden from people, filled in by bots. */}
               <div className="hidden" aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" value={form.website} onChange={set('website')} /></label></div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-zinc-500">By sending this you agree to our {(pages.footer ?? []).some((p) => /privacy/i.test(p.Slug)) ? <Link to="/pages/privacy" className="underline">privacy policy</Link> : 'privacy policy'}.</p>
+                <p className="text-xs text-mist-dim">By sending this you agree to our {(pages.footer ?? []).some((p) => /privacy/i.test(p.Slug)) ? <Link to="/pages/privacy" className="underline">privacy policy</Link> : 'privacy policy'}.</p>
                 <button type="submit" disabled={busy} className="btn-primary">{busy ? 'Sending…' : 'Send message'}</button>
               </div>
             </form>

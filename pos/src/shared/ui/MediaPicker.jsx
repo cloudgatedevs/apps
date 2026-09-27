@@ -1,7 +1,4 @@
-// Pick images that are already in the tenant's media library (IdP file store) instead of
-// uploading again. Used wherever an image is set in the back office: store logo and icon,
-// category tiles and product photos. Lists every folder ("*"), with folder chips and a name
-// search; single or multi select; "Upload new…" hands over to the crop uploader.
+// Pick existing product photos from the SDK media folder, or open the crop uploader.
 import { useEffect, useMemo, useState } from 'react';
 import { Search, Upload, Check } from 'lucide-react';
 import { Modal } from '@/shared/ui/forms';
@@ -10,7 +7,7 @@ import { SkeletonTiles } from '@/shared/ui/skeleton';
 import { listImages } from '@/shared/services/files';
 
 const PAGE = 200;
-const FOLDER_LABEL = { 'pos/products': 'Products', 'pos/branding': 'Branding', uploads: 'Uploads' };
+const FOLDER_LABEL = { 'pos/media': 'Products' };
 const folderLabel = (p) => FOLDER_LABEL[p] ?? (p || 'Other');
 
 /**
@@ -29,7 +26,7 @@ export const MediaPicker = ({ open, onClose, onPick, multiple = false, preferFol
     setPicked(new Map());
     setQ('');
     setState({ items: null, loading: true, error: null });
-    listImages({ path: '*', take: PAGE })
+    listImages({ path: 'media', take: PAGE })
       .then((r) => {
         if (!live) return;
         const items = r?.items ?? [];

@@ -1,0 +1,14 @@
+/* Event pages inherit the SDK palette without styling platform pages. */
+.events-ui {
+  --green: rgb(var(--accent)); --on-primary: rgb(var(--accent-fg));
+  --brand-accent: rgb(var(--secondary)); --cream: rgb(var(--ink-950));
+  --ink: rgb(var(--mist)); --muted: rgb(var(--mist-muted)); --line: rgb(var(--ink-700));
+  --surface: rgb(var(--ink-850)); --sage: rgb(var(--ink-800));
+  color: var(--ink); background: var(--cream); color-scheme: inherit; min-width: 0;
+}
+.events-ui .events-workspace { max-width: none; padding: 0; min-width: 0; }
+.events-ui .events-workspace .page-heading { margin-bottom: 24px; }
+.events-ui .events-workspace .page-heading h1 { font-size: 26px; }
+.events-ui .events-workspace .page-heading .eyebrow { margin-bottom: 6px; }
+.events-ui .events-workspace .button { min-height: 36px; padding: 8px 13px; }
+.events-ui .events-workspace .panel { background: var(--surface); }

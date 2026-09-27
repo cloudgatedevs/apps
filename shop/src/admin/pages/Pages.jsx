@@ -29,16 +29,16 @@ const Pages = () => {
     <div className="flex flex-col gap-6">
       <PageHead title="Pages" subtitle="Content pages on the storefront: about, shipping & returns, terms, privacy, FAQ and anything else you add. Written in Markdown.">
         <button onClick={reload} className="btn-ghost">Refresh</button>
-        <Link to="/pages/new" className="btn-primary">New page</Link>
+        <Link to="/admin/pages/new" className="btn-primary">New page</Link>
       </PageHead>
       <ErrorNote error={error} />
       {loading && !data ? (
         <SkeletonTable columns={5} rows={6} />
       ) : (
         <Table
-          rowHref={(r) => `/pages/${r.Id}`}
+          rowHref={(r) => `/admin/pages/${r.Id}`}
           columns={[
-            { key: 'Title', label: 'Page', mobile: 'title', render: (r) => <div className="leading-tight"><Link to={`/pages/${r.Id}`} className="font-medium text-mist hover:text-accent">{r.Title}</Link><p className="text-xs text-mist-dim"><span className="font-mono">/pages/{r.Slug}</span>{r.Summary ? ` · ${r.Summary}` : ''}</p></div> },
+            { key: 'Title', label: 'Page', mobile: 'title', render: (r) => <div className="leading-tight"><Link to={`/admin/pages/${r.Id}`} className="font-medium text-mist hover:text-accent">{r.Title}</Link><p className="text-xs text-mist-dim"><span className="font-mono">/pages/{r.Slug}</span>{r.Summary ? ` · ${r.Summary}` : ''}</p></div> },
             { key: 'Status', label: 'Status', render: (r) => <Badge tone={r.Status === 'published' ? 'green' : 'amber'} dot>{r.Status}</Badge> },
             { key: 'placement', label: 'Shown in', mobile: 'meta', render: (r) => <span className="text-mist-muted">{[r.ShowInNav ? 'Navigation' : null, r.ShowInFooter ? 'Footer' : null].filter(Boolean).join(' + ') || 'Link only'}</span> },
             { key: 'BodyLength', label: 'Length', mobile: 'hide', align: 'right', render: (r) => <span className="tabular-nums text-mist-dim">{Math.round((r.BodyLength || 0) / 6)} words</span> },
@@ -61,7 +61,7 @@ const Pages = () => {
             },
           ]}
           rows={rows}
-          empty={<EmptyState icon={<IconPages className="h-5 w-5" />} title="No pages yet" text="Add an About page, delivery information or anything else customers should be able to read." action={<Link to="/pages/new" className="btn-primary">New page</Link>} />}
+          empty={<EmptyState icon={<IconPages className="h-5 w-5" />} title="No pages yet" text="Add an About page, delivery information or anything else customers should be able to read." action={<Link to="/admin/pages/new" className="btn-primary">New page</Link>} />}
         />
       )}
     </div>

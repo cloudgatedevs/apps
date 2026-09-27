@@ -123,7 +123,7 @@ const Inventory = () => {
                   <div className="flex items-center gap-3">
                     {r.ThumbUrl ? <Img src={r.ThumbUrl} alt="" wrapClassName="h-9 w-9 shrink-0 rounded-lg border border-ink-700" className="h-9 w-9 object-cover" /> : null}
                     <div className="min-w-0 leading-tight">
-                      <Link to={`/products/${r.ProductId}`} className="font-medium text-mist hover:text-accent">{r.ProductName}</Link>
+                      <Link to={`/admin/products/${r.ProductId}`} className="font-medium text-mist hover:text-accent">{r.ProductName}</Link>
                       <p className="text-xs text-mist-dim">{r.Title}{r.Sku ? <span className="ml-2 font-mono">{r.Sku}</span> : null}</p>
                     </div>
                   </div>
@@ -139,7 +139,7 @@ const Inventory = () => {
             rows={rows}
             empty={query || lowStock || outOfStock || productId
               ? <EmptyState compact title="No variants match this view" action={<button type="button" onClick={() => { setSearch(''); setParam({ q: '', lowStock: '', outOfStock: '', productId: '' }); }} className="btn-ghost btn-sm">Clear filters</button>} />
-              : <EmptyState icon={<IconInventory className="h-5 w-5" />} title="Nothing to count yet" text="Variants appear here as soon as you create a product." action={<Link to="/products/new" className="btn-primary">New product</Link>} />}
+              : <EmptyState icon={<IconInventory className="h-5 w-5" />} title="Nothing to count yet" text="Variants appear here as soon as you create a product." action={<Link to="/admin/products/new" className="btn-primary">New product</Link>} />}
           />
           {pager}
         </>

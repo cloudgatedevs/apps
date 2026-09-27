@@ -1,58 +1,50 @@
-# Cloudgate POS
+# Cloudgate POS 2.0
 
-## Version 1.3.0 — Website analytics
+POS uses `@cloudgatedevs/cloudgate-client-react` for authentication and the shared back office. The app owns the retail workflows and the cashier till. One Vite SPA serves both from `index.html`.
 
-**Back office → Analytics** (`/admin/analytics`) uses the same Cloudgate Web App Insights data and administrator authentication as the verified Jobs implementation. Includes views, sessions, signed-in visitors, previous-period comparisons, bounce rate, session duration, pages, countries, sources and device/browser breakdowns. Period filters, page and visitor pagination, and signed-in visitor workflow calls are included. The page and its dialogs follow this app's back-office theme.
+| Area | Routes | Responsibility |
+| --- | --- | --- |
+| Cashier till | `/`, `/sales`, `/returns`, `/shift` | Barcode scanning, cart, parked sales, cash and Wallet checkout, receipts, returns, cash movements and closing shifts |
+| Retail back office | `/admin`, `/admin/products`, `/admin/inventory`, `/admin/sales`, etc. | Products, categories, stock, suppliers, customers, registers, teller activity, retail reports and sales/shift detail |
+| POS settings | `/admin/business` | Legal receipt identity, currency, tax, receipt text/numbering, payment methods and till rules |
+| Shared back office | `/admin/appearance`, `/admin/theme`, `/admin/users`, `/admin/roles`, `/admin/media`, `/admin/analytics`, `/admin/logs`, etc. | SDK appearance, theme, identity, users/roles, media, website settings, email configuration, notifications and developer tools |
+| Cashier profile | `/account/profile` | SDK profile, available to signed-in tellers without back-office access |
+| Customer payment return | `/pay/done`, `/pay/cancel` | Public customer phone return; the cashier independently checks Wallet status |
 
-Uses the existing `POST /api/idp/{tenant}/admin/analytics/{overview|pages|sessions}` APIs. The published website ID and analytics environment are derived automatically from Cloudgate's published metadata; local development falls back to the App Store installation mapping. Requests require an active Admin IdP user. No new environment settings, workflows or database migrations are needed. Update/rebuild the app on the Cloudgate server that already supports Jobs Analytics.
+The SDK requires native `backoffice.access` permission for the back office and its feature permissions for shared pages. Retail modules additionally require the POS Admin role, also checked by their workflows. Any active signed-in IdP user can use the till. “Teller activity” is the retail sales/shift history; account administration lives in the SDK Users page.
 
-Run `npm run test:analytics` and `npm run build` before publishing. Shared Analytics source and client tests are copied unchanged from Jobs; app-specific styles live in `src/shared/cloudgate-app-analytics-theme.css`.
-
-A point-of-sale system built entirely on **Cloudgate**: the backend is a set of Cloudgate workflow
-actions over a SQLite database, sign-in is the Cloudgate IdP, and card payments run through the
-**Cloudgate Wallet** (hosted checkout the customer pays on their phone). The frontend is one Vite
-project with two entry points that build into two separate bundles:
-
-| Entry | URL | Who | What it is |
-| --- | --- | --- | --- |
-| `index.html` → `src/pos/` | `/` | Any signed-in IdP user (the default **User** role is enough) | The till: sign in, open a shift on a register, scan or tap products, take cash or card, print or e-mail the receipt. Parked sales, returns, cash in/out, cash-up. |
-| `admin.html` → `src/admin/` | `/admin` | IdP users with the **Admin** role | The back office: dashboard, products (camera barcode capture, labels, CSV import), categories, inventory (adjustments, goods received, stock take, ledger), suppliers, sales with refunds and voids, shifts with Z reports, tellers, customers, reports with CSV export, media, workflow logs, settings (store, receipts, money, till rules, e-mail, theme). |
-
-Sign-in is required before either screen shows anything. Anyone with an account can use the till; only
-users with the Admin role get into the back office, enforced on the client and again in every workflow.
-
-Shared code lives in `src/shared/` (auth, API client, UI kit, money and error helpers).
-
-## Barcode scanning
-
-The main feature. Two inputs work everywhere a barcode is expected (the till, the product form, goods
-received, stock take):
-
-- **Camera** (`src/pos/components/BarcodeScanner.jsx`): ZXing in the browser reads EAN-13/8, UPC-A/E,
-  Code 128/39, ITF and QR from any camera (rear camera preferred on phones), with a cooldown so a code
-  held in front of the lens is not added ten times. Needs HTTPS (or localhost) for camera access.
-- **USB / Bluetooth scanner** (`src/pos/components/useScannerInput.js`): keyboard-wedge scanners type
-  the code and press Enter; the hook recognises the fast burst and hands it over without touching the
-  focused field.
-
-Products have one primary barcode plus any number of extra barcodes (multipacks with a pack quantity,
-alternative packaging), and the till also resolves SKUs. The product form warns when a code already
-belongs to another product.
-
-## Run it
+## Run and build
 
 ```bash
 npm install
-npm run dev              # http://localhost:3001  (till)  ·  http://localhost:3001/admin  (back office)
-npm run build            # production build -> dist/ (both bundles, reads .env.production)
-npm run build:dev        # sandbox build (reads .env.development)
-npm run cloudgate:deploy # push cloudgate/workflows/* to the tenant and publish (see cloudgate/README.md)
-npm run cloudgate:smoke  # end-to-end checks; POS_TELLER_TOKEN / POS_ADMIN_TOKEN=<idp jwt> drive the two halves
+npm run dev          # http://localhost:3001 and /admin
+npm run build:dev    # sandbox build, development mode, dist/
+npm run build        # production build, production mode, dist/
 ```
 
-Copy `.env.example` to `.env` and fill in the tenant values. The three gateway keys compose the request base
-`{VITE_CLOUDGATE_API_URL}/{VITE_CLOUDGATE_API_ENV}/{VITE_CLOUDGATE_API_PROJECT}`; the controller path is `pos`.
-Restart the dev server after changing `.env`.
+Copy `.env.example` to `.env` and replace the placeholders with your local tenant values. Set `VITE_CLOUDGATE_WEB_APP_ID` to the POS web app ID so the SDK can load app-specific settings. Published app metadata can also resolve its identity. The workflow request base is `{VITE_CLOUDGATE_API_URL}/{VITE_CLOUDGATE_API_ENV}/{VITE_CLOUDGATE_API_PROJECT}`. The default controller path is `pos`; use the assigned path if installation adds a suffix. Restart Vite after environment changes.
+
+Use `.env.development` with `VITE_CLOUDGATE_API_ENV=sbx` for sandbox and `.env.production` with `VITE_CLOUDGATE_API_ENV=prod` for production. Each file must contain the matching tenant, app identity, gateway and signing credentials. Vite also loads `.env` and `.env.local`; avoid conflicting overrides. Build mode selects files, it does not automatically change an explicitly configured API environment.
+
+Cloudgate previews under `.api.cloudgate.dev` are allowed by Vite. Serve the generated SPA with an `index.html` fallback for `/admin/*`, till paths and `/pay/*`.
+
+## App Store rollout
+
+`template.json` and the POS entry in `../apps.json` carry the same version, development/production build commands, workflow package and native `appSettings` defaults. The rollout fills `{{webAppId}}`, tenant, controller and environment credentials in the Vite configuration. Defaults enable the website with sign-in required, which makes the cashier till available while keeping it private. Payment return pages remain public even if the website is disabled.
+
+The POS Slate palette and compact back-office layout are native SDK settings. The till follows the same colours and appearance, including the app name/logo. Legal business details printed on receipts remain in POS settings. Browser receipts use the SDK logo; the existing receipt-email workflow and its business data remain in the workflow package.
+
+Product photos upload through the SDK to `pos/media`; shared branding uses `pos/branding`. The app checks fresh product references (including inactive products) and native appearance before allowing deletion through its media UI. This is an app-side guard, not a transactional server-side foreign-key constraint.
+
+## Validation
+
+```bash
+npm test             # real SQLite refund regressions, client recovery, media guard and rollout checks
+npx playwright install chromium  # once, if Chromium is not installed
+npm run test:ui      # isolated SQLite workflows + browser SDK integration
+```
+
+The browser test starts temporary loopback servers on 3594/3595, uses a new temporary database, and shuts them down afterwards. It simulates native SDK services, identity and Wallet responses. It does not call a live tenant, charge a card or send email. Real camera hardware, receipt printers and hosted payment settlement still require testing in the configured environment.
 
 ## Backend
 
@@ -75,7 +67,7 @@ token; till actions accept any signed-in user, admin actions only the admin role
 | `admin-tellers` | admin | `list` (derived from shifts and sales) |
 | `admin-dashboard` | admin | `stats`, `by-hour`, `by-day`, `top`, `by-teller`, `by-category`, `by-method`, `recent`, `wallet-status` |
 | `admin-reports` | admin | `summary`, `products`, `categories`, `tellers`, `methods`, `tax`, `z-reports` for a date range |
-| `admin-settings` | admin | `get` (never returns the SMTP password), `set`, `send-test` |
+| `admin-settings` | admin | Business settings: `get`, `set`; email transport is configured in the SDK |
 
 Workflows publish small events on the Cloudgate WebSocket channel **`pos-events`** (`sale.completed`, `sale.refunded`,
 `stock.adjusted`); the till and the back office subscribe with Basic credentials from `.env` and refetch.
@@ -90,40 +82,16 @@ the wallet reports success, then the sale completes and stock is written. The cu
 
 ## Project layout
 
+```text
+src/main.jsx, App.jsx, platform.js  SDK composition, routing and platform configuration
+src/pos/                          cashier screens, cart, scanner, payment and receipt UI
+src/admin/                        retail routes, pages and workflow services
+src/shared/                       retail UI, SDK adapters, refund recovery and money helpers
+cloudgate/                        existing schema, workflows, deployment and refund tests
+.template/                        installable workflow/schema/sample-data package
+tests/                            SDK integration, rollout and media guard checks
 ```
-cloudgate/           schema.sql, deploy.py, smoke.py, bundle.py, workflows/<route>/
-src/
-  pos/               main.jsx, App.jsx, pos.css, state/TillProvider.jsx, pages/ (Register, Sales, Returns, ShiftPage, PayDone),
-                     components/ (BarcodeScanner, useScannerInput, TenderModal, Receipt, Keypad, LineEditor, HeldSales, SaleExtras, Shell)
-  admin/             main.jsx, App.jsx, admin.css, components/, pages/, services/adminApi.js, services/live.js
-  shared/            auth/, services/ (api, auth, files), ui/ (ui, forms, menus, skeleton, ImageUploader, MediaPicker), lib/ (money, errors)
-.template/           App Store bundle: workflow-template.json, schema.sql, sample-data.sql (generated by cloudgate/bundle.py)
-template.json        the App Store manifest entry (mirrored into ../apps.json)
-```
 
-### Template 1.2.0 — workflow logs in the back office
+Barcode scanning uses ZXing for cameras and a keyboard-wedge hook for USB/Bluetooth scanners. Camera access requires HTTPS or localhost. Product forms, goods received and stock take retain barcode capture, CSV import and label printing.
 
-**About & Powered by Cloudgate.** A *Powered by Cloudgate* badge at the bottom of the back-office sidebar opens **About** (`/admin/about`): the app and its version, the tenancy this build talks to and links into the Cloudgate hub. Shared files `src/shared/CloudgateAbout.jsx` + `cloudgate-about.css`, the same in every App Store app.
-
-**Back office → Logs** shows every workflow call the till and the back office make to Cloudgate, read
-from Cloudgate's own log store: stat tiles (calls, success rate, errors, average and p95 duration against
-the previous period), calls per hour/day, a per-action table and a paged list with outcome / action /
-minimum-duration filters. The detail drawer shows one call's request and response (masked when the action
-has *Mask data* on) and its node-by-node session logs.
-
-The page is `src/shared/CloudgateWorkflowLogs.jsx` (+ its stylesheet) and
-`src/shared/services/workflowLogsApi.js`, the same files as in Shop, Booking and Jobs. It calls the IdP admin
-API `POST /api/idp/{tenant}/admin/workflow-logs/{list|summary|get|nodes}` with the IdP bearer token
-(Admin role required — tellers never see it) and names its own scope from `VITE_CLOUDGATE_API_PROJECT`
-and `VITE_CLOUDGATE_API_ENV`. Requires a Cloudgate host with that API; older hosts get an explanatory empty
-state. No workflow or schema change — installed tenants only rebuild the frontend.
-
-### Template 1.1.1 — refund safety
-
-Cash and card refunds now use the durable `refunds` action with stable request keys, confirmed-status accounting, and recovery controls in the till and back office. The package contains the schema upgrade and matching callers. See [cloudgate/REFUNDS.md](cloudgate/REFUNDS.md) for the contract and checks.
-
-## Shared Cloudgate email delivery
-
-Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
-
-This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
+Cloudgate delivers receipt email through tenant delivery; configure optional SMTP in the SDK. App-local legacy SMTP values are not used for delivery. Refunds use the existing durable `refunds` action with stable request keys and confirmed-status accounting; see `cloudgate/REFUNDS.md` for the contract. The SDK migration does not modify the workflow package or database schema.

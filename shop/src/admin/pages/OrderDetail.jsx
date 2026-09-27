@@ -86,7 +86,7 @@ const OrderDetail = () => {
   return (
     <div className="flex flex-col gap-6">
       <PageHead title={o.Reference} subtitle={<span className="inline-flex flex-wrap items-center gap-2">Placed {fmtDate(o.CreatedAt)} <Badge tone={orderStatusTone(o.Status)} dot>{o.Status}</Badge> <Badge tone={paymentStatusTone(o.PaymentStatus)}>payment {o.PaymentStatus}</Badge> <Badge tone="gray">{o.FulfillmentStatus}</Badge></span>}>
-        <Link to="/orders" className="btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back</span></Link>
+        <Link to="/admin/orders" className="btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back</span></Link>
         <Dropdown trigger={<button type="button" className="btn-ghost" disabled={busy}>More ▾</button>} items={moreActions} />
         {primary ? <button type="button" disabled={busy} onClick={() => setStatus(primary)} className="btn-primary">Mark {primary}{primary === 'shipped' ? '…' : ''}</button> : null}
       </PageHead>
@@ -102,7 +102,7 @@ const OrderDetail = () => {
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-3">
                         {i.ImageUrl ? <Img src={i.ImageUrl} alt="" wrapClassName="h-10 w-10 shrink-0 rounded-lg border border-ink-700" className="h-10 w-10 object-cover" /> : null}
-                        <div className="leading-tight"><Link to={`/products/${i.ProductId}`} className="text-mist hover:text-accent">{i.Title}</Link><p className="text-xs text-mist-dim">{i.VariantTitle}{i.Sku ? ` · ${i.Sku}` : ''}</p></div>
+                        <div className="leading-tight"><Link to={`/admin/products/${i.ProductId}`} className="text-mist hover:text-accent">{i.Title}</Link><p className="text-xs text-mist-dim">{i.VariantTitle}{i.Sku ? ` · ${i.Sku}` : ''}</p></div>
                       </div>
                     </td>
                     <td className="px-4 py-2.5 tabular-nums">{i.Qty}</td>
@@ -146,7 +146,7 @@ const OrderDetail = () => {
         <div className="flex flex-col gap-6">
           <section className="card flex flex-col gap-3 p-4 text-sm">
             <h2 className="text-sm font-semibold text-mist">Customer</h2>
-            <p className="text-mist">{o.CustomerId ? <Link to={`/customers/${o.CustomerId}`} className="hover:text-accent">{[o.Name, o.Surname].filter(Boolean).join(' ') || o.Email}</Link> : ([o.Name, o.Surname].filter(Boolean).join(' ') || '—')}</p>
+            <p className="text-mist">{o.CustomerId ? <Link to={`/admin/customers/${o.CustomerId}`} className="hover:text-accent">{[o.Name, o.Surname].filter(Boolean).join(' ') || o.Email}</Link> : ([o.Name, o.Surname].filter(Boolean).join(' ') || '—')}</p>
             <p className="break-all text-mist-muted">{o.Email}</p>
             {o.Phone ? <p className="text-mist-muted">{o.Phone}</p> : null}
             {o.IdpUserId ? <Badge tone="blue">account #{o.IdpUserId}</Badge> : <Badge tone="gray">guest</Badge>}

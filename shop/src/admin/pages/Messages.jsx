@@ -71,7 +71,7 @@ const Messages = () => {
                 <button type="button" onClick={() => view(m)} className={`flex w-full items-start gap-4 px-4 py-3 text-left transition hover:bg-ink-900 ${m.Status === 'new' ? 'bg-accent-soft/40' : ''}`}>
                   <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${m.Status === 'new' ? 'bg-accent' : 'bg-transparent'}`} />
                   <span className="min-w-0 grow">
-                    <span className="flex flex-wrap items-center gap-2"><span className={`text-sm ${m.Status === 'new' ? 'font-semibold text-mist' : 'font-medium text-mist'}`}>{m.Name || m.Email}</span><span className="text-xs text-mist-dim">{m.Email}</span>{m.OrderReference ? <Link to={`/orders?q=${encodeURIComponent(m.OrderReference)}`} onClick={(e) => e.stopPropagation()} className="font-mono text-xs text-accent">{m.OrderReference}</Link> : null}</span>
+                    <span className="flex flex-wrap items-center gap-2"><span className={`text-sm ${m.Status === 'new' ? 'font-semibold text-mist' : 'font-medium text-mist'}`}>{m.Name || m.Email}</span><span className="text-xs text-mist-dim">{m.Email}</span>{m.OrderReference ? <Link to={`/admin/orders?q=${encodeURIComponent(m.OrderReference)}`} onClick={(e) => e.stopPropagation()} className="font-mono text-xs text-accent">{m.OrderReference}</Link> : null}</span>
                     <span className="block truncate text-sm text-mist">{m.Subject || '(no subject)'}</span>
                     <span className="block truncate text-xs text-mist-muted">{m.Message}</span>
                   </span>
@@ -99,7 +99,7 @@ const Messages = () => {
           <div className="flex flex-col gap-4 text-sm">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div><p className="label">From</p><p className="text-mist">{open.Name || '—'}</p><p className="break-all text-mist-muted">{open.Email}</p></div>
-              <div><p className="label">Order</p><p className="text-mist">{open.OrderReference ? <Link to={`/orders?q=${encodeURIComponent(open.OrderReference)}`} className="font-mono text-accent">{open.OrderReference}</Link> : '—'}</p></div>
+              <div><p className="label">Order</p><p className="text-mist">{open.OrderReference ? <Link to={`/admin/orders?q=${encodeURIComponent(open.OrderReference)}`} className="font-mono text-accent">{open.OrderReference}</Link> : '—'}</p></div>
               <div><p className="label">Account</p><p className="text-mist">{open.IdpUserId ? `#${open.IdpUserId}` : 'Guest'}</p></div>
             </div>
             <div className="whitespace-pre-wrap rounded-xl border border-ink-700 bg-ink-900 p-4 leading-relaxed text-mist">{open.Message}</div>

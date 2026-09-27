@@ -46,7 +46,7 @@ export const Modal = ({ open, title, description, onClose, children, footer, siz
 
   return (
     <Dialog.Root open={!!open} onOpenChange={(next) => { if (!next) onClose?.(); }}>
-      <Dialog.Portal>
+      <Dialog.Portal><div className="pos-ui" style={{ display: 'contents' }}>
         <Dialog.Overlay className="ui-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-[2px]" />
         <Dialog.Content
           className={`${panelClass} ${className}`}
@@ -73,7 +73,7 @@ export const Modal = ({ open, title, description, onClose, children, footer, siz
           <div className="min-h-0 grow overflow-y-auto px-5 py-4">{children}</div>
           {footer ? <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-current/10 px-5 py-3">{footer}</div> : null}
         </Dialog.Content>
-      </Dialog.Portal>
+      </div></Dialog.Portal>
     </Dialog.Root>
   );
 };

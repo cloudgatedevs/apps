@@ -48,7 +48,7 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError,KeyError,sqlite3.Error) as e:self.send(400,dict(error=str(e)))
         except Exception:self.send(500,dict(error='Preview request failed.'))
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=3016);args=parser.parse_args();DB.parent.mkdir(parents=True,exist_ok=True)
+    parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=3016);parser.add_argument('--db',type=Path,default=DB);args=parser.parse_args();DB=args.db.resolve();DB.parent.mkdir(parents=True,exist_ok=True)
     with connect() as c:
         c.executescript((ROOT/'schema.sql').read_text())
         if not c.execute('SELECT 1 FROM entities LIMIT 1').fetchone():c.executescript(seed_sql(include_staff=True))

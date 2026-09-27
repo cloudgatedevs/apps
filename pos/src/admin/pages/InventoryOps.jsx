@@ -36,13 +36,13 @@ const ReceiveStock = () => {
     const items = lines.filter((l) => Number(l.qty) > 0).map((l) => ({ productId: l.productId, qty: Number(l.qty), unitCostCents: toCents(l.cost) ?? 0 }));
     if (!items.length) { toast.error('Add at least one line.'); return; }
     setBusy(true);
-    try { const r = await adminApi.inventory.receive({ supplierId: supplierId ? Number(supplierId) : null, reference: reference || undefined, note, items }); toast.success(`${r.Reference} booked in.`); navigate(`/inventory/receipts/${r.Id}`); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
+    try { const r = await adminApi.inventory.receive({ supplierId: supplierId ? Number(supplierId) : null, reference: reference || undefined, note, items }); toast.success(`${r.Reference} booked in.`); navigate(`/admin/inventory/receipts/${r.Id}`); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
 
   return (
     <div className="flex flex-col gap-5">
       <PageHead title="Receive stock" subtitle="Scan each product on the delivery note. Quantities are added to the shelf count and the cost price is updated.">
-        <Link to="/inventory" className="btn-ghost">Cancel</Link>
+        <Link to="/admin/inventory" className="btn-ghost">Cancel</Link>
         <button type="button" onClick={save} disabled={busy || !lines.length} className="btn-primary">{busy ? 'Booking in…' : 'Book in'}</button>
       </PageHead>
       <div className="grid gap-4 lg:grid-cols-[1fr_18rem]">
@@ -93,14 +93,14 @@ const StockTake = () => {
     if (!items.length) { toast.error('Enter at least one counted quantity.'); return; }
     if (!(await confirm({ title: 'Apply stock count', text: `Apply the count for ${items.length} product${items.length === 1 ? '' : 's'}? Differences are written to the stock ledger.`, confirmLabel: 'Apply count' }))) return;
     setBusy(true);
-    try { const r = await adminApi.inventory.count({ items, reference: reference || undefined }); toast.success(`Count applied. ${r.counted} product${r.counted === 1 ? '' : 's'} adjusted.`); navigate('/inventory?tab=movements'); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
+    try { const r = await adminApi.inventory.count({ items, reference: reference || undefined }); toast.success(`Count applied. ${r.counted} product${r.counted === 1 ? '' : 's'} adjusted.`); navigate('/admin/inventory?tab=movements'); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
   const diffs = lines.filter((l) => l.counted !== '' && Number(l.counted) !== l.onHand).length;
   return (
     <div className="flex flex-col gap-5">
       <PageHead title="Stock take" subtitle="Count what is on the shelf. Only rows with a count are applied; blank rows are left alone.">
         <button type="button" onClick={loadAll} className="btn-ghost">Load every tracked product</button>
-        <Link to="/inventory" className="btn-ghost">Cancel</Link>
+        <Link to="/admin/inventory" className="btn-ghost">Cancel</Link>
         <button type="button" onClick={save} disabled={busy || !lines.length} className="btn-primary">{busy ? 'Applying…' : 'Apply count'}</button>
       </PageHead>
       <section className="card p-4">
@@ -138,11 +138,11 @@ const ReceiptDetail = () => {
   if (error) return <ErrorNote error={error} />;
   return (
     <div className="flex flex-col gap-5">
-      <PageHead title={data.Reference} subtitle={`${data.SupplierName || 'No supplier'} · received ${fmtDate(data.CreatedAt)} by ${data.CreatedBy}`}><Link to="/inventory?tab=receipts" className="btn-ghost">Back</Link></PageHead>
+      <PageHead title={data.Reference} subtitle={`${data.SupplierName || 'No supplier'} · received ${fmtDate(data.CreatedAt)} by ${data.CreatedBy}`}><Link to="/admin/inventory?tab=receipts" className="btn-ghost">Back</Link></PageHead>
       <section className="card p-4">
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-mist-dim"><tr><th className="pb-2">Product</th><th className="pb-2 text-right">Qty</th><th className="pb-2 text-right">Unit cost</th><th className="pb-2 text-right">Line</th></tr></thead>
-          <tbody>{(data.Items ?? []).map((i) => <tr key={i.Id} className="border-t border-ink-700"><td className="py-2"><Link to={`/products/${i.ProductId}`} className="text-mist hover:text-accent">{i.Name}</Link><span className="ml-2 font-mono text-[11px] text-mist-dim">{i.Sku}</span></td><td className="py-2 text-right tabular-nums">{Number(i.Qty)}</td><td className="py-2 text-right tabular-nums">{fmtCents(i.UnitCostCents, currency)}</td><td className="py-2 text-right tabular-nums">{fmtCents(Math.round(Number(i.Qty) * Number(i.UnitCostCents)), currency)}</td></tr>)}</tbody>
+          <tbody>{(data.Items ?? []).map((i) => <tr key={i.Id} className="border-t border-ink-700"><td className="py-2"><Link to={`/admin/products/${i.ProductId}`} className="text-mist hover:text-accent">{i.Name}</Link><span className="ml-2 font-mono text-[11px] text-mist-dim">{i.Sku}</span></td><td className="py-2 text-right tabular-nums">{Number(i.Qty)}</td><td className="py-2 text-right tabular-nums">{fmtCents(i.UnitCostCents, currency)}</td><td className="py-2 text-right tabular-nums">{fmtCents(Math.round(Number(i.Qty) * Number(i.UnitCostCents)), currency)}</td></tr>)}</tbody>
           <tfoot><tr className="border-t border-ink-700 font-semibold text-mist"><td className="pt-2" colSpan={3}>Total</td><td className="pt-2 text-right tabular-nums">{fmtCents(data.TotalCostCents, currency)}</td></tr></tfoot>
         </table>
         {data.Note ? <p className="mt-3 text-sm text-mist-muted">{data.Note}</p> : null}

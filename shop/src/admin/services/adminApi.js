@@ -120,8 +120,5 @@ export const adminApi = {
   settings: {
     get: () => call('/admin-settings', 'get').then((r) => r?.values ?? {}),
     set: (values) => call('/admin-settings', 'set', { values }).then((r) => r?.values ?? {}),
-    /** Sends a test message through the saved SMTP settings. Resolves to { sent, reason?, via? }. */
-    // (settings keys are documented in cloudgate/workflows/admin-settings/plan.py)
-    sendTest: (to) => call('/admin-settings', 'send-test', { to }),
   },
 };

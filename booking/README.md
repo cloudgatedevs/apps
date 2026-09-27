@@ -1,204 +1,97 @@
 # Cloudgate Booking
 
-## Version 1.9.0 — Website analytics
+Booking 2.0 uses `@cloudgatedevs/cloudgate-client-react@^0.1.0`. This project contains the booking product; the package supplies shared Cloudgate functionality.
 
-**Back office → Analytics** (`/admin#analytics`) uses the same Cloudgate Web App Insights data and administrator authentication as the verified Jobs implementation. Includes views, sessions, signed-in visitors, previous-period comparisons, bounce rate, session duration, pages, countries, sources and device/browser breakdowns. Period filters, page and visitor pagination, and signed-in visitor workflow calls are included. The page and its dialogs follow this app's back-office theme.
+## Ownership
 
-Uses the existing `POST /api/idp/{tenant}/admin/analytics/{overview|pages|sessions}` APIs. The published website ID and analytics environment are derived automatically from Cloudgate's published metadata; local development falls back to the App Store installation mapping. Requests require an active Admin IdP user. No new environment settings, workflows or database migrations are needed. Update/rebuild the app on the Cloudgate server that already supports Jobs Analytics.
+| This app | Cloudgate React SDK |
+|---|---|
+| Public service discovery and booking wizard | Authentication, session refresh and permission gates |
+| Customer appointments, saved contact details and guest-booking claims | Personal profile, profile photos and account security |
+| Overview, calendar, appointments, clients, services, team, rooms, waitlist and promotions | Back-office layout, navigation, responsive menu and developer/widget tools |
+| Booking reports, appointment email outbox, business details and booking rules | Analytics, workflow logs, users, roles, registration and notifications |
+| Service/team/homepage photo editors and image-reference checks | Media storage/library, appearance, theme, website settings, SMTP and payment administration |
+| Python booking workflows, SQLite and Wallet orchestration | Native platform API clients |
 
-Run `npm run test:analytics` and `npm run build` before publishing. Shared Analytics source and client tests are copied unchanged from Jobs; app-specific styles live in `src/shared/cloudgate-app-analytics-theme.css`.
+There is no copied `src/shared` platform implementation. Extend Booking modules in `src/booking`; change shared functionality in the React SDK project and update the npm dependency here.
 
-A booking product derived from Cloudgate Shop: two React/Vite entry points, shared Cloudgate client and IdP integration, Python workflow business logic, SQLite, native Wallet Payment nodes, and App Store packaging. The separate Shop and POS refund template updates are documented in their respective `cloudgate/REFUNDS.md` files.
+## Routes and configuration
 
-## Version 1.8.0 — Workflow logs in the back office
+`src/App.jsx` composes `CloudgateBackoffice` and one browser router. `/` is the customer website, `/book` is checkout, `/appointments` manages guest bookings, `/account` contains customer appointments and contact details, and `/account/profile` renders the SDK profile. Customer sign-in returns to `/account/callback`, preserving the booking destination and selected services.
 
-**About & Powered by Cloudgate.** A *Powered by Cloudgate* badge in the workspace sidebar opens **Business → About**: the app and its version, the tenancy this build talks to and links into the Cloudgate hub. Shared files `src/shared/CloudgateAbout.jsx` + `cloudgate-about.css`, the same in every App Store app.
+The back office starts at `/admin`. Custom pages use `/admin/calendar`, `/admin/appointments`, `/admin/services`, etc. Booking-specific settings are at `/admin/business`; `/admin/settings` belongs to the SDK website settings. Hash-based admin routes and `admin.html` have been removed. Serve real assets first and fall back to **`index.html` for all application routes**, including `/admin/*`.
 
-**Business → Logs** shows every workflow call this app makes to Cloudgate — the customer site, the workspace,
-and the scheduled `reconcile` and `notifications` workers — read from Cloudgate's own log store. Stat tiles
-(calls, success rate, errors, average and p95 duration against the previous period), calls per hour/day, a
-per-action table and a paged list with outcome / action / minimum-duration filters. The detail drawer shows one
-call's request and response (masked when the action has *Mask data* on in Cloudgate) and its node-by-node
-session logs.
+The SDK controls website access policy and self-registration. Back-office entry requires `backoffice.access`; shared pages also require their SDK permissions. Booking management additionally requires the verified `Admin`, `administrator` or `owner` role, matching the existing workflow authorization. Customer records and staff scheduling records remain distinct from IdP accounts.
 
-The page is `src/shared/CloudgateWorkflowLogs.jsx` (+ `cloudgate-workflow-logs.css`) and
-`src/shared/services/workflowLogsApi.js`, the same files as in Shop, POS and Jobs. It calls the IdP admin API
-`POST /api/idp/{tenant}/admin/workflow-logs/{list|summary|get|nodes}` with the IdP bearer token (Admin role
-required) and names its own scope from `VITE_CLOUDGATE_API_PROJECT` and `VITE_CLOUDGATE_API_ENV`; the backend
-resolves that through the tenant's App Store installs. The local preview shows an explanatory empty state.
-Requires a Cloudgate host with that API. Frontend only: no workflow or database change.
+Configure the values documented in `.env.example`:
 
-## Version 1.7.1 — Opaque back-office dialogs
+- `VITE_CLOUDGATE_API_URL`, `VITE_CLOUDGATE_API_PROJECT`, `VITE_CLOUDGATE_API_ENV`: booking workflow gateway, controller path and `sbx`/`prod` environment.
+- `VITE_IDP_BASE_URL`, `VITE_IDP_API_URL`, `VITE_IDP_TENANCY_NAME`: Cloudgate identity and native platform services.
+- `VITE_CLOUDGATE_WEB_APP_ID`: rollout fills `{{webAppId}}` with this environment's app GUID. Use your local Booking app ID for connected development. Published sites also discover this from `cg-analytics.json`.
+- `VITE_IDP_RETURN_URL`: optional configured origin for the customer callback; back-office sign-in returns to the requested admin page.
+- `VITE_API_KEY`, `VITE_API_SECRET`: existing App Store workflow gateway signing configuration, when required. These are browser-visible and do not replace IdP authorization. Never put payment-provider or SMTP secrets in Vite variables.
 
-Fixes transparent dialogs, form fields and panels in published builds. The back-office palette now uses an explicit light or dark base colour, avoiding undefined CSS variables generated when compiling `light-dark()`. Saved tenant colours are retained. Update the installed app through the App Store to rebuild and publish the corrected frontend.
+App name, logo, icon, theme and browser metadata come from the SDK appearance settings. The business name, contact details, About text, homepage content and booking policy remain in Booking settings. Existing app-local branding values are not migrated to Cloudgate appearance; configure appearance through the SDK. No Booking database migration or workflow changes are required for this frontend release.
 
-## Version 1.7.0 — Refreshed back office
+Image editors use the SDK file client and store files in `booking/media` or `booking/branding`. The shared Media page lists these folders. Before deletion, Booking checks a fresh snapshot of service, team and homepage references, plus SDK appearance references, and blocks removal of an image still in use. Personal profile photos use the SDK profile API. Local preview image URLs are only usable in the local simulator.
 
-The default theme is black (`#000000`), neutral grey (`#737373`) and white (`#ffffff`), with neutral headers, navigation and image overlays. New installations use this palette. Existing saved colours are retained; use **Settings → Theme colours → Restore default colours**, then **Save business settings**, to switch an existing business to the new defaults. Custom palettes remain available.
+## Rollout defaults
 
-**Settings → Homepage** is the first settings panel. Change the large background image behind the booking heading/search with Upload (including cropping), Library, or an image URL, then **Save changes**. A wide preview shows the chosen image. Homepage copy and the About photo are under the expandable section below it.
+`template.json` and the matching `apps.json` entry declare `appSettings`. New installs start
+with a light Indigo theme, flexible layout, public booking pages enabled and guest access allowed.
+The owner's chosen app name and deployment URL are used automatically. Branding, the full theme
+palette and website access can then be changed in the SDK back office.
 
-The workspace now shares the customer site's bold typography, rounded cards and consistent controls. A dark sidebar groups navigation into Workspace, Manage and Business. The overview brings together today's schedule, business readiness, team profiles and quick links. The same styling carries through services, media, calendar views, tables, reports, profile screens and edit forms.
+The backend validates these defaults before rollout and initializes native settings before building.
+Sandbox and production have separate settings and web app IDs. Updates initialize missing native
+settings but preserve every saved owner choice, including a disabled site or required visitor login.
+Existing workflow-local branding is not imported. Use the [manifest contract](../README.md#native-sdk-defaults)
+when packaging another app. Release the updated Cloudgate backend before using this manifest;
+tenant registration, IdP return URLs, Wallet readiness and Booking business policies are separate setup.
 
-Saved brand colours and photos remain in use. The navigation becomes a dismissible drawer on smaller screens, with keyboard focus management and hidden links removed from the tab order while closed. Browser hash navigation keeps the selected page in sync. The team-photo editor retains its square preview and adjacent controls, stacking them on phones.
-
-This release changes frontend presentation only. Existing workflows and databases need no update. Validation and screenshots are recorded in the workspace release handoff.
-
-## Version 1.6.0 — Team and personal profile photos
-
-Open **Team & hours → Edit** to upload/crop, reuse a library image, replace or remove a team member photo. Photos appear on team cards, calendar columns and the public team list. Team members are scheduling records, independent of IdP login accounts. Media usage protection now includes active and inactive team members, and the library has a Team folder.
-
-Open **My profile** in the workspace, or **My account → My profile** on the customer site, to upload, replace or remove your own IdP profile picture. Changes update the account avatar and sidebar immediately. Personal photos use the authenticated IdP profile API and do not require business media permissions.
-
-The Cloudgate backend provides `PUT` (multipart `file`) and `DELETE /api/idp/{tenancyName}/profile/picture`. The target is always the active signed-in IdP user; the route tenant must match the signed identity. Uploads accept PNG/JPEG/WebP/GIF up to 5 MB and 4096 pixels per side, normalize to a single-frame PNG at most 512 pixels, and strip identifying metadata. `GET /profile` returns the photo URL. Public photo URLs serve only pictures currently attached to active users in the named tenant. Existing stock avatars remain supported. Replaced image bytes are retained; reference-aware storage cleanup is a separate maintenance task.
-
-Existing installs need `cloudgate/migrations/1.6.0-team-photos.sql` before updating workflows. It is idempotent; fresh templates include the table. The migration is applied to the current Booking tenant's sandbox and production, and all six workflows are updated and published. Profile endpoints are compiled Cloudgate backend code and require that backend update; there is no extra photo workflow or IdpUser schema migration.
-
-Validation: 98 Booking checks (79 Python, 19 JavaScript), nine IdP photo tests, and the Cloudgate host build pass. Native browser verification is recorded in the release handoff.
-
-## Version 1.5.0 — Back-office media library
-
-Open **Media** in the workspace to manage uploaded service photos, logos, icons and banners. The page uses the same authenticated Cloudgate IdP file service as Shop/POS. It supports multiple uploads with per-image cropping, Services/Branding/General library folders, search, usage filters, copying/opening image URLs, and confirmed individual or bulk deletion of unused images. Service and branding editors reuse this library.
-
-Only `booking/...` folders appear in management; the existing image picker can still reuse images from the wider tenant library. All file-service pages are loaded before filtering. Usage checks cover saved services (including hidden services) and five branding/homepage image settings in the current booking environment. Retired services release their photos for cleanup. Deletion reloads file scope and current references before making authenticated host delete requests; it cannot atomically check references in other environments/apps or copied external links. Built-in `/images/...` assets are source files, not uploaded media.
-
-Local preview supports matching folder metadata, listing and guarded deletion; its tests use isolated temporary files. No additional booking workflow or database migration is needed for this release. The six published workflows remain at the 1.4 service-capable implementation. Existing pre-1.4 installations still need the service migration described below.
-
-Validation: 93 automated checks pass (75 Python, 18 JavaScript), production build passes. Native Cloudgate browsing, search, folder filters, URL copying and delete-confirmation cancellation were checked. Multiple uploads, crop/original image export, shared service-picker reuse and in-use protection were verified in an isolated preview. Desktop and phone layouts were visually checked; existing tenant files were not deleted.
-
-## Version 1.4.0 — Services for any appointment business
-
-Services now have individual photos with upload, cropping and media-library selection. Administrators can create, edit, hide and delete services, use custom categories, assign team members, set price and deposits, configure timing and optional resources, and add a booking question. Deleted services leave the catalog while existing appointment and payment history stays intact. Rescheduling uses the booked name, price, duration and buffer rather than later catalog edits.
-
-Homepage copy and photos can be changed under Settings. Default controls use service, business and team terminology. The original spa catalog remains optional sample data; images are stored per service and are not inferred from category names.
-
-Apply `cloudgate/migrations/1.4.0-services.sql` to existing databases before updating workflows. It is idempotent and is already applied to this local Cloudgate tenant's sandbox and production. Fresh installs include the schema automatically. The generated bundle still contains six workflows and 68 nodes. Validation: 83 tests pass, production build passes, and native image upload, service edits, public photo display and availability were verified in the browser.
-## Run the complete local preview
-
-Requires Node 22.12+ (tested on Node 24), Python 3.11+, and timezone data.
+## Local development
 
 ```sh
-npm install
-python -m pip install -r requirements.txt
+npm ci
 npm run dev:api
 # In a second terminal:
 npm run dev:preview
 ```
 
-- Customer site: http://127.0.0.1:3002/
-- Admin workspace: http://127.0.0.1:3002/admin
-- Local database: `.local/booking.sqlite`, persisted across restarts.
-- Local preview uses a separate, clearly labelled simulated payment provider. No card data or money is involved. Development API binds to loopback, rejects foreign browser origins, and requires a preview header. Its administrator shortcut is development-only; do not expose that API to a network or use it in production.
-- Preview emails are recorded in the outbox but are not sent.
-- `npm run dev:preview` explicitly selects the local simulator even when a Cloudgate `.env` exists. `npm run dev` uses the configured Cloudgate environment when present. Production builds always use Cloudgate.
+Open `http://127.0.0.1:3002/` or `/admin`. The Python API runs on port 3003 with `.local/booking.sqlite`. Preview has a development-only administrator adapter, simulated payments and local PNG media storage. Its appearance changes are temporary. Customer login, analytics, email, real Wallet payments and other native platform features require a connected Cloudgate environment. The preview adapter is excluded from production builds.
 
-### Branding and theme
+For connected development, set `.env` and run `npm run dev`. Do not use the preview simulator for hosted payment verification. The Vite configuration accepts Cloudgate's generated `*.api.cloudgate.dev` preview hosts.
 
-Open **Settings → Branding / Theme colours** in the workspace. Set the app name and short name, upload/crop or reuse a logo, app icon and favicon, and choose whether the app name appears beside the logo. Image URL fields support HTTPS and relative paths; local development image hosts are also accepted. Blank app names use the business name; removing icons restores the default leaf.
-
-Primary, accent and background colours have colour pickers, hex inputs, a live preview and a restore-defaults button. Preview changes stay inside the preview until **Save studio settings**. Saving applies the palette and branding to the site, workspace, browser metadata and home-screen manifest, including other open tabs in the same browser. Text on primary buttons and page backgrounds adjusts for contrast. Decorative service/staff colours remain independently configurable.
-
-Hosted images use the existing authenticated Cloudgate IdP file service in `booking/branding`. Local preview images are stored in `.local/media`; local image URLs are for preview only and must be uploaded to Cloudgate before use on a hosted site. Uploads preserve transparency, offer square/wide crops, resize to at most 1600 pixels (512 for icons) and export PNG under 4 MB.
-
-### Local Wallet integration
-
-Setting up the tenant Wallet enables hosted checkout, subject to its environment-specific
-readiness. The preview above continues to use its simulated provider until configured for
-Cloudgate. Provider webhooks are unavailable in the current local environment.
-
-Cloudgate's current Wallet `get` operation reads its stored payment record; it does not query
-the payment provider. Without webhooks, polling that operation cannot confirm a newly paid
-hosted checkout locally. The refund `refund-status` operation can query the provider, while
-Wallet ledger accounting still waits for webhooks. Keep simulated app tests and hosted
-provider/ledger validation separate; a redirect alone is not payment confirmation.
-
-## Implemented product
-
-Version 1.3.0 adds a Booksy-inspired customer experience with an original photo hero, service search, category filters, price/duration sorting, service cards and responsive booking/account pages. Existing tenant logos, icons and theme settings remain configurable.
-
-Customer **Log in / Sign up** uses the Booking tenant's hosted Cloudgate IdP, including its password recovery and registration flow. `/account/callback` consumes the IdP session and returns to the account or an in-progress booking. On a different callback hostname, selected services carry across and availability is selected again. The customer account provides saved name/phone details, upcoming/history views and account-authorized appointment management. Guest booking is still supported. Linking an existing guest appointment requires its private access key; matching an email never grants ownership. An appointment can belong to only one account. Front-desk reservations do not become the staff member's customer appointments.
-
-Customer accounts require the connected Cloudgate environment (`npm run dev`); the isolated local preview retains guest checkout and explicitly explains that account authentication requires Cloudgate. Existing installations need `cloudgate/migrations/1.3.0-customer-accounts.sql` in both databases before updating the workflows. That migration and all six updated workflows have been applied and published for the current Booking tenant.
-
-Version 1.2.0 adds app branding, separate icons, image uploads/media reuse, theme colours, live preview, browser/home-screen metadata and explicit local preview mode.
-
-Version 1.1.0 adds an in-dashboard front-desk reservation wizard with existing-client lookup, server-checked availability, private payment links, and recoverable submission. The client pays from that link before confirmation. A released request is recorded so a delayed submission cannot create a replacement hold. The calendar now has a Monday–Sunday week view with staff filtering, multi-day leave, and appointment details. Both checkout flows display server-verified discounts, deposits, and balances; changed prices must be reviewed again.
-
-Customer experience: configurable branded site; categorized treatments; multi-service appointments (up to four services with one qualified therapist); therapist or first-available selection; business-local slot availability; intake questions; contact details and marketing consent; promotion codes; secure booking access links; full payment or percentage deposits; hosted checkout; payment verification; appointment view, calendar download, rescheduling and cancellation; waitlist registration.
-
-Back office: daily staff calendar, date and therapist filters; all appointments with search; check-in, completion and no-show states; cancellation and rescheduling; partial/full Wallet refunds; cash balance collection; client contact details, private notes and visit/payment history; service duration, cleanup buffer, pricing, deposits, intake and resource requirements; staff qualifications and weekly hours including split shifts; rooms; leave/blocked time; manual waitlist follow-up; expiring promotions; date-filtered financial and treatment reports; CSV exports; email outbox; business, booking-policy and SMTP settings; audit history.
-
-Payment and scheduling rules: prices are computed on the server in integer minor units. Holds expire after a configurable interval. Confirmation requires a verified provider result with matching payment ID, amount and currency. Repeated successful polls do not double-charge the ledger. Late payment changes the booking to `payment_review` and does not take a slot from a later customer. SQLite triggers enforce staff/resource conflicts and blocked-time conflicts; a revision guard rejects mutations computed from stale snapshots. Rescheduling and allocations change in one transaction. Refund requests are claimed locally and use the same stable key in Cloudgate Wallet. The backend persists each intent and reserves its amount before provider submission. Only a succeeded result with matching payment, amount, currency and request key changes the booking ledger. Pending and uncertain refunds remain visible in the dashboard; the recovery worker and Check refund status action perform read-only provider checks. Retrying an existing request reuses its original key.
-
-## Architecture
-
-```
-src/booking/main.jsx       Customer site and booking flow
-src/booking/admin.jsx      Admin workspace
-src/booking/style.css      Responsive design system
-src/booking/api.js         Cloudgate / local API transport, money and calendar helpers
-src/shared/               Reused Shop auth, client, file and UI infrastructure
-cloudgate/engine.py        Pure snapshot -> SQL transaction plan and result
-cloudgate/schema.sql       Tables, indexes, collision and revision guards
-cloudgate/seed.sql         Local sample studio
-cloudgate/local_server.py  Loopback test runtime, same engine and SQLite schema
-cloudgate/package.py       Native Cloudgate graph and App Store bundle generation
-cloudgate/notifications.py SMTP worker with bounded retries
-cloudgate/workflows/       Six generated graphs and node scripts
-.template/                Installable graph bundle, schema and sandbox sample data
-tests/                    Domain, generated-workflow and browser tests
-```
-
-The native Python bridge reads request and prior-node values as data through `WorkflowSessionKeyExecutionContext.GetKeys(sessionId)`. It never embeds request bodies or customer text in executable Python. Only Cloudgate's platform-owned `sessionid` is substituted. SQL strings use UTF-8 hex literals, protecting both SQL quoting and Cloudgate placeholder expansion. This requires the Cloudgate host API verified in the local platform source, CPython/pythonnet, SQLite JSON functions and the `Web.Core.Shared` assembly.
-
-## Native Cloudgate actions
-
-All actions are POST under `/{sbx|prod}/{projectPath}/`.
-
-| Action | Role |
-|---|---|
-| `booking` | Public catalog, slots, holds, management and waitlist; admin operations enforce the verified IdP role inside the engine |
-| `checkout` | Verify booking access, then create an idempotent hosted Wallet checkout |
-| `payment-status` | Read Wallet status, verify amount/currency, finalize once, queue email |
-| `refund` | IdP administrator, claim/refund or read-only refund-status, validate actual Wallet response and record confirmed result |
-| `reconcile` | Scheduled payment/refund recovery and hold expiry; separate gateway-protected worker |
-| `notifications` | Scheduled SMTP outbox with bounded retry; separate gateway-protected worker |
-
-Sandbox and production use separate SQLite files. Sample services, staff and rooms are applied to sandbox only. A production install begins with settings and an empty business catalog.
-
-Current connected tenant: `booking` (ID `5072`, display name `WebApp-project-booking@cloudgate.dev`). Open **Controllers → Still Studio Booking** to see its six published workflows. Controller ID: `7bf672cf-2d01-474f-0df8-08df0d4ae348`. Both `/sbx/booking/…` and `/prod/booking/…` routes are callable. Sandbox contains sample services/team; the production catalog is empty. All 68 nodes were read back after publication and checked against the reviewed scripts and wiring. No hosted customer payment, refund or outgoing email has been performed.
-
-The main `booking` workflow dispatches 20 public/admin operations through a shared Python engine (25 including internal operations). It serves catalog, availability, reservations and management plus the back-office entities/settings. The remaining five workflows isolate checkout, status, refunds, recovery and notifications. This is a compact implementation; splitting the main dispatcher by feature would improve workflow-level visibility and maintenance.
-
-Requires the Cloudgate backend migration `20260908032127_Added_DurableRefundRequests` and Wallet `refund-status` support. Older Wallet builds are not compatible with this refund flow.
-
-## Build and install
+## Validation and build
 
 ```sh
 npm test
-npm run test:ui     # Start both local servers first; adds labelled test records locally
+npx playwright install chromium   # Once, if Chromium is not installed
+npm run test:ui
 npm run build
-npm run cloudgate:package
 ```
 
-`npm run build` produces `dist/`. Static hosting must route `/admin` and `/admin/*` to `admin.html`, and all other application routes to `index.html`. Actual assets must be served before these fallbacks. No Node or Python web server is needed for the production frontend.
+`npm test` checks the Python engine, generated workflows and frontend domain helpers. `test:ui` starts its own Vite server and isolated temporary SQLite API on ports 3292/3293, then cleans them up. It exercises checkout, payment confirmation, rescheduling, administrative actions, refunds, custom settings, media protection, responsive navigation and SDK integration. Native Cloudgate APIs are mocked for these tests; they do not mutate hosted data. Optional `BOOKING_TEST_OUTPUT_DIR` saves screenshots.
 
-The package is listed in the repository's `apps.json` and `booking/template.json`. For a new installation, review and publish the six imported drafts using the Cloudgate builder, configure IdP return URL and gateway environment, complete Wallet onboarding, and add real services/team/hours/rooms. Payments automatically return to the browser's website; the website URL in Settings is an optional override and supplies a fixed address for email links or server-initiated checkout. Cloudgate sends email by default; custom SMTP is optional. Confirm the two schedules are enabled in the intended environment after publication. Run a hosted sandbox booking, cancellation, recovery, and refund before switching to production. Never put SMTP or payment-provider secrets in Vite variables; gateway signing credentials are browser-visible and are not a substitute for IdP authorization.
+Production output is `dist/`. `npm run build:dev` produces a build with source maps. The App Store entry is in `../apps.json` and `template.json`; keep them in sync. Only run `npm run cloudgate:package` when regenerating the workflow bundle from the Python sources. Publishing or updating an installed app is a separate deployment step.
 
-## Validation and limits
+## Booking backend
 
-The current `npm test` runs 54 Python tests and 8 JavaScript tests (62 total). Branding tests cover authorization, atomic validation, preservation of existing settings, safe asset URLs, removal/fallbacks, PNG storage and text contrast across 4,096 colours. The in-app browser verified cropping/upload, media reuse, separate icons, logo-only mode, dark/light palettes, save/reload, cross-tab updates and a 390px layout without horizontal overflow. Original preview settings were restored after verification. A real Booking IdP administrator login and sign-out/re-login were also verified. The callback now uses the configured origin with a clean `/admin` path, without query parameters or fragments, so the SDK can consume and remove the returned credentials. The six workflows are now published, and the signed-in workspace, public catalog, quotes, image uploads and branding saves work against Cloudgate sandbox. A native unpaid reservation was retried, checked and cancelled successfully; its slot was released. Settings saves cannot reset the internal concurrent-write revision.
+The backend remains a snapshot-to-transaction Python engine with SQLite collision/revision guards. Prices use integer minor units, holds expire, and payments are confirmed only after checking the provider result's payment ID, amount and currency. A redirect alone is not payment confirmation. Late payments enter review instead of reclaiming an occupied slot. Refund intents reserve their amount and retain a stable request key; pending or uncertain results never become a successful ledger entry until verified.
 
-Upgrades require `cloudgate/migrations/1.1.0-frontdesk.sql` and `cloudgate/migrations/1.2.0-branding.sql` before updating workflow scripts. Both are already applied to sandbox and production databases in the connected booking tenant and included in fresh installs. The six graphs were updated, published and read back to verify scripts and wiring. No drafts remain. The two background workers are configured to run every two minutes in both environments.
+All workflow actions are POST under `/{sbx|prod}/{projectPath}/`:
 
-The regression suite covers collisions, stale writes, payment idempotency, late payment, server pricing, deposits, cancellation cutoff, refund bounds, access control, malicious-looking text round trips and sandbox/production data separation. Refund tests use the actual Cloudgate DTO fields and cover pending-to-success recovery, failed/uncertain results, response validation and read-only status checks. Generated native scripts and graph branches execute against SQLite with stubbed session and Wallet boundaries. Earlier browser checks covered booking, simulated payment, confirmation, rescheduling, check-in, completion, partial refund, all admin screens, service creation and hiding and waitlist. `node tests/refund-browser.mjs` checks pending-refund UI and stable-key recovery. Production build passes.
+| Action | Purpose |
+|---|---|
+| `booking` | Catalog, availability, reservations, customer accounts and administrator operations |
+| `checkout` | Create an idempotent hosted Wallet checkout after checking booking access |
+| `payment-status` | Verify Wallet payment and finalize the booking once |
+| `refund` | Administrator refund submission or read-only status recovery |
+| `reconcile` | Scheduled payment/refund recovery and hold expiry |
+| `notifications` | Scheduled appointment email delivery with bounded retries |
 
-This is a substantial single-location booking V1, not full feature parity with every commercial salon platform. It does not include SMS/WhatsApp delivery, recurring memberships, gift-card liabilities, loyalty points, group-class capacity, marketplace discovery, payroll, multi-location operations, card-terminal integration, two-way Google/Outlook calendar sync, or staff self-service permissions. Waitlist matching/follow-up is manual. Reports are operational and do not constitute tax-accounting software. The calendar supports daily staff columns and a weekly appointment view. The backend currently loads a complete studio snapshot per action, suitable as a small-business baseline; high-volume deployment should add bounded queries and pagination. SMTP delivery is at least once; a crash after sending and before recording can produce a duplicate message. Refunds whose provider result is uncertain require manual reconciliation in Cloudgate Wallet.
+Sandbox and production use separate SQLite files; sandbox receives sample services, staff and rooms. Cloudgate handles outgoing email by default; optional SMTP configuration belongs to the SDK. Booking's email outbox shows appointment messages and delivery state.
 
-Future upgrades should preserve the database conflict guards and add migrations, payment-provider integration tests, role-specific staff access, and worker telemetry before broadening the product.
+Native scripts read request data through `WorkflowSessionKeyExecutionContext.GetKeys(sessionId)` and encode SQL values as UTF-8 hex literals. They require the Cloudgate Python bridge, SQLite JSON support and the existing Wallet durable-refund APIs. Preserve these boundaries and the generated-workflow tests when changing business logic.
 
-## Shared Cloudgate email delivery
-
-Cloudgate delivers app email by default. Custom SMTP is optional and is configured through `/api/idp/{tenant}/admin/email-settings/details`, `update`, and `delete`, using an active Admin IdP bearer token. Settings are shared by tenant apps and environments. Passwords are encrypted and write-only. App-local `smtp_*` values are no longer read for delivery or edited by these controls; they are not automatically migrated over existing Cloudgate settings.
-
-This release removes SMTP from App Store requirements and in-app setup checklists. Deploy the Cloudgate backend containing `WorkflowAppEmailSender.SendHtmlAsync` and the SMTP APIs before rolling out these app packages. Generated workflow bundles have been updated offline; existing installed workflows need the normal App Store update or reviewed MCP update/publication. No tenant settings or actual email delivery was changed while preparing this release.
+This is a single-location booking app. Staff self-service permissions, recurring memberships, multi-location operations, calendar synchronization, payroll and SMS/WhatsApp delivery are not implemented. Waitlist follow-up is manual. The engine reads a full studio snapshot per action; larger deployments should add bounded queries. Email delivery is at least once, and uncertain provider refunds require reconciliation in Cloudgate Wallet.

@@ -139,7 +139,7 @@ const ProductEdit = () => {
       if (creating) {
         const created = await adminApi.products.create(payload);
         toast.success('Product created. Add photos, then publish when it is ready.');
-        navigate(`/products/${created.Id}`, { replace: true });
+        navigate(`/admin/products/${created.Id}`, { replace: true });
       } else {
         const updated = await adminApi.products.update(Number(id), payload);
         setForm(fromServer(updated));
@@ -178,7 +178,7 @@ const ProductEdit = () => {
   const remove = async () => {
     try {
       const r = await adminApi.products.remove(Number(id));
-      navigate('/products', { replace: true, state: { notice: r.deleted ? 'Product deleted.' : 'Product archived (it has order history).' } });
+      navigate('/admin/products', { replace: true, state: { notice: r.deleted ? 'Product deleted.' : 'Product archived (it has order history).' } });
     } catch (err) {
       toast.error(errorMessage(err));
     }
@@ -248,7 +248,7 @@ const ProductEdit = () => {
           </span>
         )}
       >
-        <Link to="/products" className="btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back</span></Link>
+        <Link to="/admin/products" className="btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 h-4 w-4" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg><span>Back</span></Link>
         {!creating && form.status !== 'active' ? <button type="button" onClick={() => setStatus('active')} className="btn-ghost">Publish</button> : null}
         {!creating && form.status === 'active' ? <button type="button" onClick={() => setStatus('draft')} className="btn-ghost">Unpublish</button> : null}
         <Tooltip text="Ctrl S"><button type="submit" disabled={saving} className="btn-primary">{saving ? 'Saving…' : creating ? 'Create product' : 'Save changes'}</button></Tooltip>
@@ -325,7 +325,7 @@ const ProductEdit = () => {
                         {creating ? (
                           <input type="number" min="0" value={v.stockQty} onChange={(e) => updateVariant(i, { stockQty: e.target.value })} className="input w-20 py-1.5 tabular-nums" />
                         ) : (
-                          <Tooltip text="Adjust in Inventory"><Link to={`/inventory?productId=${id}`} className="tabular-nums text-accent hover:text-accent-600">{v.stockQty}</Link></Tooltip>
+                          <Tooltip text="Adjust in Inventory"><Link to={`/admin/inventory?productId=${id}`} className="tabular-nums text-accent hover:text-accent-600">{v.stockQty}</Link></Tooltip>
                         )}
                       </td>
                       <td className="py-2 pr-3"><input type="number" min="0" value={v.lowStockThreshold} onChange={(e) => updateVariant(i, { lowStockThreshold: e.target.value })} className="input w-16 py-1.5 tabular-nums" /></td>
@@ -417,9 +417,9 @@ const ProductEdit = () => {
 
       {!creating ? (
         <>
-        <MediaPicker open={choosing} onClose={() => setChoosing(false)} multiple preferFolder="shop/products" title={`Choose photos for ${form.name || 'product'}`} onUploadInstead={() => setUploading(true)}
+        <MediaPicker open={choosing} onClose={() => setChoosing(false)} multiple preferFolder="shop/media" title={`Choose photos for ${form.name || 'product'}`} onUploadInstead={() => setUploading(true)}
           onPick={(files) => onUploaded(files.map((f) => ({ url: f.url, thumbUrl: f.thumbUrl, id: f.id })))} />
-        <ImageUploader open={uploading} onClose={() => setUploading(false)} path="shop/products" aspect={1} maxFiles={10} title={`Photos for ${form.name || 'product'}`} onUploaded={onUploaded} />
+        <ImageUploader open={uploading} onClose={() => setUploading(false)} path="shop/media" aspect={1} maxFiles={10} title={`Photos for ${form.name || 'product'}`} onUploaded={onUploaded} />
         </>
       ) : null}
     </form>

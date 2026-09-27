@@ -1,5 +1,27 @@
 # Academy deployment
 
+## React SDK migration (2.0)
+
+The frontend now uses `@cloudgatedevs/cloudgate-client-react`. Shared administration
+pages and authentication come from the package. The workflows, schema and deployed
+IDs are unchanged. See [the app README](../README.md) for routes, permissions and
+environment settings. Local connected development also needs
+`VITE_CLOUDGATE_WEB_APP_ID` for the Courses app; App Store rollout supplies it.
+
+The manifest initializes the native Academy Midnight theme and enables the public
+website with guest access. Existing saved native settings remain unchanged on
+update. Instructors need `backoffice.access` in their IdP role as well as the
+existing active instructor record and course assignments.
+
+Migration checks passed: 18 domain tests, 4 media/manifest tests, sandbox and
+production builds, isolated browser learning/payment journeys and connected SDK
+composition with mocked native APIs. The configured live sandbox catalogue,
+lesson preview, nine authenticated route guards and three scheduler-only guards
+also passed. No real charges, refunds or emails were sent. The historical live
+administrator checks below predate this SDK migration.
+
+## Existing workflow deployment
+
 Tenant: `learner`. Controller: `courses` (Cloudgate Academy).
 
 All 13 workflows are published. Live action IDs are recorded in `deployment.json`.

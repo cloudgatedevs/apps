@@ -41,7 +41,7 @@ const Customers = () => {
   const total = data?.total ?? 0;
   const save = async (e) => {
     e.preventDefault(); setBusy(true);
-    try { const c = await adminApi.customers.create({ name: editing.name, email: editing.email, phone: editing.phone, notes: editing.notes }); toast.success('Customer added.'); setEditing(null); navigate(`/customers/${c.Id}`); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
+    try { const c = await adminApi.customers.create({ name: editing.name, email: editing.email, phone: editing.phone, notes: editing.notes }); toast.success('Customer added.'); setEditing(null); navigate(`/admin/customers/${c.Id}`); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
   return (
     <div className="flex flex-col gap-5">
@@ -49,9 +49,9 @@ const Customers = () => {
       <SearchBar value={draft} onChange={(e) => setDraft(e.target.value)} onSubmit={(e) => { e.preventDefault(); setParam({ q: draft.trim() }); }} onClear={() => { setDraft(''); setParam({ q: '' }); }} placeholder="Name, e-mail or phone…" />
       <ErrorNote error={error} />
       {loading && !data ? <SkeletonTable columns={5} rows={8} /> : (
-        <Table rows={data?.items ?? []} rowHref={(c) => `/customers/${c.Id}`} empty={<EmptyState icon={<Users className="h-5 w-5" />} title="No customers yet" text="Customers are created here or when a teller adds a name to a sale." />}
+        <Table rows={data?.items ?? []} rowHref={(c) => `/admin/customers/${c.Id}`} empty={<EmptyState icon={<Users className="h-5 w-5" />} title="No customers yet" text="Customers are created here or when a teller adds a name to a sale." />}
           columns={[
-            { key: 'Name', label: 'Customer', mobile: 'title', render: (c) => <Link to={`/customers/${c.Id}`} className="font-medium text-mist hover:text-accent">{c.Name}</Link> },
+            { key: 'Name', label: 'Customer', mobile: 'title', render: (c) => <Link to={`/admin/customers/${c.Id}`} className="font-medium text-mist hover:text-accent">{c.Name}</Link> },
             { key: 'Email', label: 'E-mail', mobile: 'meta', render: (c) => <span className="text-mist-muted">{c.Email || '—'}</span> },
             { key: 'Phone', label: 'Phone', mobile: 'hide', render: (c) => <span className="text-mist-muted">{c.Phone || '—'}</span> },
             { key: 'SalesCount', label: 'Sales', align: 'right' },
@@ -77,10 +77,10 @@ const CustomerDetail = () => {
     e.preventDefault(); setBusy(true);
     try { setData(await adminApi.customers.update(c.Id, { name: editing.name, email: editing.email, phone: editing.phone, notes: editing.notes })); toast.success('Saved.'); setEditing(null); } catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
   };
-  const remove = async () => { try { await adminApi.customers.remove(c.Id); toast.success('Customer deleted.'); navigate('/customers'); } catch (err) { toast.error(errorMessage(err)); } };
+  const remove = async () => { try { await adminApi.customers.remove(c.Id); toast.success('Customer deleted.'); navigate('/admin/customers'); } catch (err) { toast.error(errorMessage(err)); } };
   return (
     <div className="flex flex-col gap-5">
-      <PageHead title={c.Name} subtitle={[c.Email, c.Phone].filter(Boolean).join(' · ') || 'No contact details'}><Link to="/customers" className="btn-ghost">Back</Link><button type="button" onClick={() => setEditing({ id: c.Id, name: c.Name, email: c.Email ?? '', phone: c.Phone ?? '', notes: c.Notes ?? '' })} className="btn-primary">Edit</button></PageHead>
+      <PageHead title={c.Name} subtitle={[c.Email, c.Phone].filter(Boolean).join(' · ') || 'No contact details'}><Link to="/admin/customers" className="btn-ghost">Back</Link><button type="button" onClick={() => setEditing({ id: c.Id, name: c.Name, email: c.Email ?? '', phone: c.Phone ?? '', notes: c.Notes ?? '' })} className="btn-primary">Edit</button></PageHead>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="card p-4"><p className="text-[11px] font-semibold uppercase tracking-wide text-mist-dim">Sales</p><p className="text-xl font-semibold text-mist">{c.SalesCount}</p></div>
         <div className="card p-4"><p className="text-[11px] font-semibold uppercase tracking-wide text-mist-dim">Spent</p><p className="text-xl font-semibold tabular-nums text-mist">{fmtCents(c.SpentCents, currency)}</p></div>
@@ -89,7 +89,7 @@ const CustomerDetail = () => {
       {c.Notes ? <section className="card p-4 text-sm text-mist-muted">{c.Notes}</section> : null}
       <section className="card overflow-hidden">
         <h2 className="px-4 py-3 text-[15px] font-semibold text-mist">Recent sales</h2>
-        <Table rows={c.Sales ?? []} rowHref={(s) => `/sales/${s.Id}`} empty="No sales yet."
+        <Table rows={c.Sales ?? []} rowHref={(s) => `/admin/sales/${s.Id}`} empty="No sales yet."
           columns={[
             { key: 'Reference', label: 'Receipt', mobile: 'title', render: (s) => <span className="font-mono text-mist">{s.Reference}</span> },
             { key: 'CompletedAt', label: 'When', mobile: 'meta', render: (s) => <span className="text-mist-muted">{fmtDate(s.CompletedAt)}</span> },

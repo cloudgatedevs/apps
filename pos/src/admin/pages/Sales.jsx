@@ -34,7 +34,7 @@ const Sales = () => {
   return (
     <div className="flex flex-col gap-5">
       <PageHead title="Sales" subtitle={shiftId ? `Sales on shift #${shiftId}` : 'Every receipt from every till.'}>
-        {shiftId ? <Link to={`/shifts/${shiftId}`} className="btn-ghost">Back to shift</Link> : null}
+        {shiftId ? <Link to={`/admin/shifts/${shiftId}`} className="btn-ghost">Back to shift</Link> : null}
         <button onClick={reload} className="btn-ghost">Refresh</button>
       </PageHead>
       <SearchBar value={draft} onChange={(e) => setDraft(e.target.value)} onSubmit={(e) => { e.preventDefault(); setParam({ q: draft.trim() }); }} onClear={() => { setDraft(''); setParam({ q: '' }); }} placeholder="Receipt number, customer or teller…" mono>
@@ -46,9 +46,9 @@ const Sales = () => {
       </SearchBar>
       <ErrorNote error={error} />
       {loading && !data ? <SkeletonTable columns={7} rows={10} /> : (
-        <Table rows={data?.items ?? []} rowHref={(s) => `/sales/${s.Id}`} empty={<EmptyState icon={<Receipt className="h-5 w-5" />} title="No sales" text="Nothing matches these filters yet." />}
+        <Table rows={data?.items ?? []} rowHref={(s) => `/admin/sales/${s.Id}`} empty={<EmptyState icon={<Receipt className="h-5 w-5" />} title="No sales" text="Nothing matches these filters yet." />}
           columns={[
-            { key: 'Reference', label: 'Receipt', mobile: 'title', render: (s) => <Link to={`/sales/${s.Id}`} className="font-mono font-medium text-mist hover:text-accent">{s.Reference}</Link> },
+            { key: 'Reference', label: 'Receipt', mobile: 'title', render: (s) => <Link to={`/admin/sales/${s.Id}`} className="font-mono font-medium text-mist hover:text-accent">{s.Reference}</Link> },
             { key: 'CompletedAt', label: 'When', mobile: 'meta', render: (s) => <span className="text-mist-muted">{fmtDate(s.CompletedAt || s.CreatedAt)}</span> },
             { key: 'TellerName', label: 'Teller', mobile: 'meta', render: (s) => <span>{s.TellerName}<span className="ml-1 text-xs text-mist-dim">{s.RegisterName}</span></span> },
             { key: 'CustomerName', label: 'Customer', mobile: 'hide', render: (s) => <span className="text-mist-muted">{s.CustomerName || '—'}</span> },

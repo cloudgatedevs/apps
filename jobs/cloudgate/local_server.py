@@ -54,6 +54,6 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError,KeyError,sqlite3.Error) as ex:self.send(400,dict(error=str(ex)))
         except Exception as ex:self.send(500,dict(error='Preview error: '+str(ex)))
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=3011);args=parser.parse_args();DB.parent.mkdir(parents=True,exist_ok=True)
+    parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=3011);parser.add_argument('--db',type=Path,default=DB);args=parser.parse_args();DB=args.db.resolve();DB.parent.mkdir(parents=True,exist_ok=True)
     with connect() as c:c.executescript((ROOT/'schema.sql').read_text(encoding='utf8'));c.executescript(seed_sql(local=True))
     print('Jobs preview API http://127.0.0.1:'+str(args.port),flush=True);ThreadingHTTPServer(('127.0.0.1',args.port),Handler).serve_forever()

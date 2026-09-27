@@ -4,8 +4,8 @@
       "id": "shop",
       "name": "Cloudgate Shop",
       "category": "Commerce",
-      "version": "1.4.0",
-      "description": "A complete online store: catalogue with variants and stock, cart and hosted card checkout through Cloudgate Wallet, order tracking, and a full back office for products, inventory, orders, refunds, customers, content pages, email and theme colours.",
+      "version": "2.0.0",
+      "description": "Online storefront, variants, stock, hosted Wallet checkout, order tracking and commerce management with a shared Cloudgate React SDK back office.",
       "folder": "shop",
       "framework": "React",
       "devCommand": "npm install && npm run dev",
@@ -27,10 +27,8 @@
         "Card payments through Cloudgate Wallet, sandbox and production",
         "Products with variants, images, stock ledger and low-stock alerts",
         "Orders with shipping, tracking, refunds and customer emails",
-        "Editable pages, contact form, newsletter, theme colours and branding",
-        "Logs page in the back office: this shop\u2019s workflow calls, timings and errors, read from Cloudgate",
-        "Back office for IdP users with the Admin role",
-        "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+        "Editable store pages, contact messages, newsletter and storefront content",
+        "Cloudgate React SDK for authentication, profile, users, roles, media, appearance, themes, analytics, workflow logs and developer tools"
       ],
       "requirements": [
         "wallet",
@@ -94,14 +92,30 @@
           ".env"
         ],
         "example": ".env.example"
+      },
+      "appSettings": {
+        "app_tagline": "Considered essentials for everyday life.",
+        "app_description": "Thoughtfully made pieces, priced honestly, delivered with care.",
+        "theme_mode": "light",
+        "theme_density": "flex",
+        "theme_primary": "#18181b",
+        "theme_secondary": "#4f46e5",
+        "theme_neutral": "#71717a",
+        "theme_success": "#15803d",
+        "theme_warning": "#a16207",
+        "theme_danger": "#be123c",
+        "theme_info": "#0369a1",
+        "theme_custom_palette": "{\"name\":\"Shop Classic\",\"colors\":{\"theme_primary\":\"#18181b\",\"theme_secondary\":\"#4f46e5\",\"theme_neutral\":\"#71717a\",\"theme_success\":\"#15803d\",\"theme_warning\":\"#a16207\",\"theme_danger\":\"#be123c\",\"theme_info\":\"#0369a1\"}}",
+        "enable_public_website": "true",
+        "require_public_website_login": "false"
       }
     },
     {
       "id": "pos",
       "name": "Cloudgate POS",
       "category": "Commerce",
-      "version": "1.3.0",
-      "description": "A complete point-of-sale system: a touch-friendly till that scans barcodes with the device camera or a USB scanner, cash and card payments through Cloudgate Wallet, parked sales, returns and shift cash-ups, plus a back office for products, inventory (goods received and stock takes), sales, shifts, customers, reports and receipts.",
+      "version": "2.0.0",
+      "description": "Barcode point of sale with cash and Wallet payments, shifts, inventory, returns and a Cloudgate React SDK back office.",
       "folder": "pos",
       "framework": "React",
       "devCommand": "npm install && npm run dev",
@@ -125,9 +139,8 @@
         "Cash with change, and card payments by QR code through Cloudgate Wallet",
         "Shifts with opening float, cash in/out and Z reports; parked sales and returns",
         "Inventory with goods-received notes, stock takes, ledger and label printing",
-        "Logs page in the back office: this till\u2019s workflow calls, timings and errors, read from Cloudgate",
-        "Any signed-in user can run the till; the back office is for Admins only",
-        "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+        "Authenticated cashier till with independently authorised retail administration",
+        "Cloudgate React SDK for authentication, profile, users, roles, media, appearance, themes, analytics, workflow logs and developer tools"
       ],
       "requirements": [
         "wallet",
@@ -191,14 +204,30 @@
           ".env"
         ],
         "example": ".env.example"
+      },
+      "appSettings": {
+        "app_tagline": "Point of sale",
+        "app_description": "Sell, manage stock and close your shift with Cloudgate POS.",
+        "theme_mode": "light",
+        "theme_density": "compact",
+        "theme_primary": "#0f172a",
+        "theme_secondary": "#2563eb",
+        "theme_neutral": "#64748b",
+        "theme_success": "#15803d",
+        "theme_warning": "#a16207",
+        "theme_danger": "#be123c",
+        "theme_info": "#0369a1",
+        "theme_custom_palette": "{\"name\":\"POS Slate\",\"colors\":{\"theme_primary\":\"#0f172a\",\"theme_secondary\":\"#2563eb\",\"theme_neutral\":\"#64748b\",\"theme_success\":\"#15803d\",\"theme_warning\":\"#a16207\",\"theme_danger\":\"#be123c\",\"theme_info\":\"#0369a1\"}}",
+        "enable_public_website": "true",
+        "require_public_website_login": "true"
       }
     },
     {
       "id": "booking",
       "name": "Cloudgate Booking",
       "category": "Appointments",
-      "version": "1.9.0",
-      "description": "A configurable booking site and business back office: a media library, service photos, custom categories, staff, resources, availability, payments, customer accounts and appointment management.",
+      "version": "2.0.0",
+      "description": "A booking site with service discovery, appointments, staff, resources, availability, payments and customer accounts, built on the shared Cloudgate React back office.",
       "folder": "booking",
       "framework": "React",
       "devCommand": "npm install && npm run dev",
@@ -217,14 +246,14 @@
         "idp"
       ],
       "features": [
-        "Modern back office with grouped navigation, a schedule dashboard, responsive layouts and tenant theme colours",
+        "Shared Cloudgate React SDK for the back office, permissions, profile, users, media, appearance, analytics, logs and developer tools",
         "Create, edit, hide and delete services with uploaded photos, custom categories and team assignments; existing appointment history is preserved",
-        "Back-office media library with multiple image uploads, cropping, folder and usage filters, URL copying and unused-image cleanup",
+        "SDK media library for service, team and homepage images, with Booking reference checks before deletion",
         "Editable team photos with upload, cropping and media reuse; personal IdP profile photos for customers and administrators",
         "Configurable homepage text and photos for consulting, lessons, repairs, personal care and other appointment businesses",
         "Service discovery with search, category filters and a responsive photo-led design",
         "Customer login and signup, saved contact details, appointment history and secure guest-booking claims",
-        "Custom app name, logo, icon, favicon and theme colours with image uploads and live preview",
+        "Shared app branding and theme managed through the Cloudgate React SDK",
         "Front-desk reservations for existing or new clients with private payment links and safe recovery",
         "Weekly calendar and server-verified promotion, deposit and balance quotes",
         "Multi-service booking with qualified therapists, room availability and cleanup buffers",
@@ -282,18 +311,33 @@
         "file": ".template/workflow-template.json",
         "schema": ".template/schema.sql",
         "sampleData": ".template/sample-data.sql"
+      },
+      "appSettings": {
+        "app_tagline": "Bookings and appointments",
+        "app_description": "Discover services, book appointments and manage your bookings.",
+        "theme_mode": "light",
+        "theme_density": "flex",
+        "theme_primary": "#4f46e5",
+        "theme_secondary": "#7c3aed",
+        "theme_neutral": "#64748b",
+        "theme_success": "#15803d",
+        "theme_warning": "#a16207",
+        "theme_danger": "#be123c",
+        "theme_info": "#0369a1",
+        "enable_public_website": "true",
+        "require_public_website_login": "false"
       }
     },
     {
       "id": "jobs",
       "name": "Cloudgate Jobs",
       "category": "Field Service",
-      "version": "1.2.0",
-      "description": "A service-business website, customer portal and staff workspace for requests, quotes, job visits, invoices and Cloudgate Wallet payments, with custom branding and media management.",
+      "version": "2.0.0",
+      "description": "Service requests, quotes, scheduled job visits, invoices and customer payments with a shared Cloudgate React back office.",
       "folder": "jobs",
       "framework": "React",
       "devCommand": "npm install && npm run dev",
-      "devPort": 3002,
+      "devPort": 3010,
       "demoUrl": "https://jobs.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/jobs/banner.png",
       "adminPath": "/admin",
@@ -314,10 +358,8 @@
         "Downloadable quote, invoice and payment-receipt PDFs, operational reports and CSV export",
         "Private request and job photos with record-level access checks and staff-controlled visibility",
         "Recurring job generation, reminder outbox and scheduled payment, refund and email workers",
-        "Custom app name, logo, icon, favicon, colours and homepage imagery; Cloudgate media library with uploads and cropping",
         "Owner, office and assigned-technician access, customer ownership and activity history",
-        "Logs page in the back office: this business\u2019s workflow calls, timings and errors, read from Cloudgate",
-        "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+        "Shared Cloudgate React SDK for authentication, profile, users, roles, media, branding, themes, analytics, logs and developer tools"
       ],
       "requirements": [
         "wallet",
@@ -366,14 +408,30 @@
         "file": ".template/workflow-template.json",
         "schema": ".template/schema.sql",
         "sampleData": ".template/sample-data.sql"
+      },
+      "appSettings": {
+        "app_tagline": "Good work, made simple",
+        "app_description": "Request a quote, follow your jobs and manage payments in one place.",
+        "theme_mode": "light",
+        "theme_density": "flex",
+        "theme_primary": "#153d35",
+        "theme_secondary": "#a7cf70",
+        "theme_neutral": "#64748b",
+        "theme_success": "#15803d",
+        "theme_warning": "#a16207",
+        "theme_danger": "#be123c",
+        "theme_info": "#0369a1",
+        "theme_custom_palette": "{\"name\":\"Jobs Evergreen\",\"colors\":{\"theme_primary\":\"#153d35\",\"theme_secondary\":\"#a7cf70\",\"theme_neutral\":\"#64748b\",\"theme_success\":\"#15803d\",\"theme_warning\":\"#a16207\",\"theme_danger\":\"#be123c\",\"theme_info\":\"#0369a1\"}}",
+        "enable_public_website": "true",
+        "require_public_website_login": "false"
       }
     },
     {
       "id": "courses",
       "name": "Cloudgate Academy",
       "category": "Education",
-      "version": "1.2.0",
-      "description": "A branded learning academy with courses, enrolments, assessments, certificates and Cloudgate payments.",
+      "version": "2.0.0",
+      "description": "A learning academy with courses, enrolments, assessments, certificates and instructor tools, built on the shared Cloudgate React back office.",
       "folder": "courses",
       "framework": "React",
       "devCommand": "npm install && npm run dev",
@@ -390,14 +448,12 @@
         "idp"
       ],
       "features": [
+        "Shared Cloudgate React SDK for authentication, profile, users, roles, media, branding, themes, analytics, logs and developer tools",
         "Public searchable course catalogue and responsive learner portal",
         "Course authoring, ordered modules and lessons, preview lessons and publication validation",
         "Free and paid enrolments with verified Cloudgate Wallet checkout and refunds",
         "Lesson progress, quizzes with server-side scoring, attempt limits and certificates",
-        "Instructor assignments, live training sessions, attendance and learner discussions",
-        "Cloudgate media, shared SMTP, user management, logs, custom branding and About",
-        "Premium responsive design with six colour presets and individual theme controls",
-        "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+        "Instructor assignments, live training sessions, attendance and learner discussions"
       ],
       "requirements": [
         "wallet",
@@ -441,14 +497,30 @@
         "file": ".template/workflow-template.json",
         "schema": ".template/schema.sql",
         "sampleData": ".template/sample-data.sql"
+      },
+      "appSettings": {
+        "app_tagline": "Courses and learning",
+        "app_description": "Discover courses, build new skills and keep track of your progress.",
+        "theme_mode": "dark",
+        "theme_density": "flex",
+        "theme_primary": "#acb8ff",
+        "theme_secondary": "#d4f58a",
+        "theme_neutral": "#71778f",
+        "theme_success": "#438573",
+        "theme_warning": "#aa7c40",
+        "theme_danger": "#b9526b",
+        "theme_info": "#6383b8",
+        "theme_custom_palette": "{\"name\":\"Academy Midnight\",\"colors\":{\"theme_primary\":\"#acb8ff\",\"theme_secondary\":\"#d4f58a\",\"theme_neutral\":\"#71778f\",\"theme_success\":\"#438573\",\"theme_warning\":\"#aa7c40\",\"theme_danger\":\"#b9526b\",\"theme_info\":\"#6383b8\"}}",
+        "enable_public_website": "true",
+        "require_public_website_login": "false"
       }
     },
     {
       "id": "events",
       "name": "Cloudgate Events",
       "category": "Events & Ticketing",
-      "version": "1.2.0",
-      "description": "Event discovery, ticket sales, QR admission and an organiser back office with Cloudgate payments, media, email and themes.",
+      "version": "2.0.0",
+      "description": "Event discovery, ticket sales, QR admission and an organiser workspace built on the shared Cloudgate React back office.",
       "folder": "events",
       "framework": "React",
       "devCommand": "npm install && npm run dev",
@@ -468,8 +540,7 @@
         "Wallet checkout and verified ticket issuance",
         "QR tickets and mobile check-in",
         "Attendee management, refunds and reports",
-        "Cloudgate identity, email, media, logging and theme presets",
-        "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+        "Shared Cloudgate React SDK for authentication, profile, users, roles, media, branding, themes, analytics, logs and developer tools"
       ],
       "requirements": [
         "wallet",
@@ -513,6 +584,22 @@
         "file": ".template/workflow-template.json",
         "schema": ".template/schema.sql",
         "sampleData": ".template/sample-data.sql"
+      },
+      "appSettings": {
+        "app_tagline": "Events and experiences",
+        "app_description": "Discover live events, book your place and keep your admission tickets together.",
+        "theme_mode": "dark",
+        "theme_density": "flex",
+        "theme_primary": "#d6be91",
+        "theme_secondary": "#9eab90",
+        "theme_neutral": "#7c8177",
+        "theme_success": "#438573",
+        "theme_warning": "#aa7c40",
+        "theme_danger": "#b9526b",
+        "theme_info": "#6383b8",
+        "theme_custom_palette": "{\"name\":\"Events Nocturne\",\"colors\":{\"theme_primary\":\"#d6be91\",\"theme_secondary\":\"#9eab90\",\"theme_neutral\":\"#7c8177\",\"theme_success\":\"#438573\",\"theme_warning\":\"#aa7c40\",\"theme_danger\":\"#b9526b\",\"theme_info\":\"#6383b8\"}}",
+        "enable_public_website": "true",
+        "require_public_website_login": "false"
       }
     }
   ]

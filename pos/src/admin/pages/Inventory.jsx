@@ -67,8 +67,8 @@ const Inventory = () => {
   return (
     <div className="flex flex-col gap-5">
       <PageHead title="Inventory" subtitle="What is on the shelf, how it got there, and what came in from suppliers.">
-        <Link to="/inventory/count" className="btn-ghost"><ClipboardList className="h-4 w-4" /> Stock take</Link>
-        <Link to="/inventory/receive" className="btn-primary"><PackagePlus className="h-4 w-4" /> Receive stock</Link>
+        <Link to="/admin/inventory/count" className="btn-ghost"><ClipboardList className="h-4 w-4" /> Stock take</Link>
+        <Link to="/admin/inventory/receive" className="btn-primary"><PackagePlus className="h-4 w-4" /> Receive stock</Link>
       </PageHead>
       <div className="flex gap-1 border-b border-ink-700">
         {[['levels', 'Stock levels'], ['movements', 'Movements'], ['receipts', 'Goods received']].map(([k, l]) => <button key={k} type="button" onClick={() => setParam({ tab: k, page: '', product: '' })} className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === k ? 'border-accent text-accent-600' : 'border-transparent text-mist-muted hover:text-mist'}`}>{l}</button>)}
@@ -83,7 +83,7 @@ const Inventory = () => {
           {levels.loading && !levels.data ? <SkeletonTable columns={5} rows={8} /> : (
             <Table rows={levels.data?.items ?? []} empty={<EmptyState icon={<Boxes className="h-5 w-5" />} title="Nothing tracked" text="Products with stock tracking switched on appear here." />}
               columns={[
-                { key: 'Name', label: 'Product', mobile: 'title', render: (p) => <span><Link to={`/products/${p.Id}`} className="font-medium text-mist hover:text-accent">{p.Name}</Link><span className="block font-mono text-[11px] text-mist-dim">{[p.Sku, p.Barcode].filter(Boolean).join(' · ')}</span></span> },
+                { key: 'Name', label: 'Product', mobile: 'title', render: (p) => <span><Link to={`/admin/products/${p.Id}`} className="font-medium text-mist hover:text-accent">{p.Name}</Link><span className="block font-mono text-[11px] text-mist-dim">{[p.Sku, p.Barcode].filter(Boolean).join(' · ')}</span></span> },
                 { key: 'CategoryName', label: 'Category', mobile: 'meta', render: (p) => <span className="text-mist-muted">{p.CategoryName || '—'}</span> },
                 { key: 'StockQty', label: 'On hand', align: 'right', render: (p) => <span className={`tabular-nums font-medium ${Number(p.StockQty) <= 0 ? 'text-red-600' : Number(p.StockQty) <= Number(p.Threshold) ? 'text-amber-600' : 'text-mist'}`}>{Number(p.StockQty)}{p.Unit !== 'each' ? ` ${p.Unit}` : ''}</span> },
                 { key: 'Threshold', label: 'Alert at', align: 'right', render: (p) => <span className="tabular-nums text-mist-dim">{Number(p.Threshold)}</span> },
@@ -101,7 +101,7 @@ const Inventory = () => {
             <Table rows={movements.data?.items ?? []} empty="No stock movements yet."
               columns={[
                 { key: 'CreatedAt', label: 'When', mobile: 'meta', render: (m) => <span className="text-mist-muted">{fmtDate(m.CreatedAt)}</span> },
-                { key: 'ProductName', label: 'Product', mobile: 'title', render: (m) => <Link to={`/products/${m.ProductId}`} className="font-medium text-mist hover:text-accent">{m.ProductName}</Link> },
+                { key: 'ProductName', label: 'Product', mobile: 'title', render: (m) => <Link to={`/admin/products/${m.ProductId}`} className="font-medium text-mist hover:text-accent">{m.ProductName}</Link> },
                 { key: 'Reason', label: 'Reason', render: (m) => <span className="text-mist-muted">{REASONS[m.Reason] ?? m.Reason}{m.Reference ? <span className="ml-1 font-mono text-[11px] text-mist-dim">{m.Reference}</span> : null}</span> },
                 { key: 'Note', label: 'Note', mobile: 'hide', render: (m) => <span className="text-mist-dim">{m.Note || ''}</span> },
                 { key: 'Delta', label: 'Change', align: 'right', render: (m) => <span className={`tabular-nums font-medium ${Number(m.Delta) < 0 ? 'text-red-600' : 'text-emerald-700'}`}>{Number(m.Delta) > 0 ? '+' : ''}{Number(m.Delta)}</span> },
@@ -115,7 +115,7 @@ const Inventory = () => {
         <>
           <ErrorNote error={receipts.error} />
           {receipts.loading && !receipts.data ? <SkeletonTable columns={5} rows={6} /> : (
-            <Table rows={receipts.data?.items ?? []} rowHref={(r) => `/inventory/receipts/${r.Id}`} empty={<EmptyState icon={<PackagePlus className="h-5 w-5" />} title="No deliveries recorded" text="Receive stock to book a delivery in and update the shelf counts." action={<Link to="/inventory/receive" className="btn-primary">Receive stock</Link>} />}
+            <Table rows={receipts.data?.items ?? []} rowHref={(r) => `/admin/inventory/receipts/${r.Id}`} empty={<EmptyState icon={<PackagePlus className="h-5 w-5" />} title="No deliveries recorded" text="Receive stock to book a delivery in and update the shelf counts." action={<Link to="/admin/inventory/receive" className="btn-primary">Receive stock</Link>} />}
               columns={[
                 { key: 'Reference', label: 'Reference', mobile: 'title', render: (r) => <span className="font-mono text-mist">{r.Reference}</span> },
                 { key: 'SupplierName', label: 'Supplier', mobile: 'meta', render: (r) => <span className="text-mist-muted">{r.SupplierName || '—'}</span> },

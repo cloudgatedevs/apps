@@ -1,3 +1,4 @@
+import { useSettings } from '@cloudgatedevs/cloudgate-client-react/react';
 // "Set up your store" card on the dashboard: one line per thing a real store needs, each linking to
 // where it is edited, ticked off as soon as the value exists. Hides itself once everything is done.
 import { useMemo } from 'react';
@@ -11,22 +12,23 @@ import { Check } from 'lucide-react';
 const has = (v) => String(v ?? '').trim().length > 0;
 
 const ITEMS = (s, counts) => [
-  { key: 'name', label: 'Store name and address', done: has(s.store_name) && has(s.store_address), to: '/settings?tab=store', hint: 'Printed at the top of every receipt.' },
-  { key: 'logo', label: 'Logo and icon', done: has(s.store_logo_url) || has(s.store_icon_url), to: '/settings?tab=store', hint: 'Shown on the till, the back office and receipts.' },
-  { key: 'tax', label: 'Tax rate and VAT number', done: has(s.tax_number) && Number(s.tax_rate_bp) >= 0, to: '/settings?tab=money', hint: 'Receipts must show the tax they include.' },
-  { key: 'receipt', label: 'Receipt header and footer', done: has(s.receipt_footer), to: '/settings?tab=receipt', hint: 'Returns policy, thank-you line, opening hours.' },
-  { key: 'registers', label: 'A register for each till', done: (counts.registers ?? 0) > 0, to: '/registers', hint: 'Tellers open a shift on a register before selling.' },
-  { key: 'products', label: 'Products with barcodes', done: (counts.activeProducts ?? 0) > 0, to: '/products', hint: 'Scan them in with the camera or import a spreadsheet.' },
-  { key: 'tellers', label: 'Teller accounts', done: (counts.tellers ?? 0) > 0, to: '/tellers', hint: 'Create a user for each cashier in the Cloudgate hub; any role can use the till.' },
+  { key: 'name', label: 'Store name and address', done: has(s.store_name) && has(s.store_address), to: '/admin/business?tab=store', hint: 'Printed at the top of every receipt.' },
+  { key: 'logo', label: 'Logo and icon', done: has(s.store_logo_url) || has(s.store_icon_url), to: '/admin/appearance', hint: 'Shown on the till, the back office and receipts.' },
+  { key: 'tax', label: 'Tax rate and VAT number', done: has(s.tax_number) && Number(s.tax_rate_bp) >= 0, to: '/admin/business?tab=money', hint: 'Receipts must show the tax they include.' },
+  { key: 'receipt', label: 'Receipt header and footer', done: has(s.receipt_footer), to: '/admin/business?tab=receipt', hint: 'Returns policy, thank-you line, opening hours.' },
+  { key: 'registers', label: 'A register for each till', done: (counts.registers ?? 0) > 0, to: '/admin/registers', hint: 'Tellers open a shift on a register before selling.' },
+  { key: 'products', label: 'Products with barcodes', done: (counts.activeProducts ?? 0) > 0, to: '/admin/products', hint: 'Scan them in with the camera or import a spreadsheet.' },
+  { key: 'tellers', label: 'Teller accounts', done: (counts.tellers ?? 0) > 0, to: '/admin/tellers', hint: 'Create a user for each cashier in the Cloudgate hub; any role can use the till.' },
   { key: 'wallet', label: 'Cloudgate Wallet activated', done: counts.walletReady === true, to: walletUrl(), external: true, hint: 'Card payments run through the tenant wallet.' },
 ];
 
 const SetupChecklist = ({ activeProducts, walletReady, registers, tellers }) => {
+  const { settings: appearance } = useSettings();
   const settings = useAsync(() => adminApi.settings.get(), []);
   const [dismissed, setDismissed] = usePreference('admin.setup.dismissed', false);
   const [skipped, setSkipped] = usePreference('admin.setup.skipped', []);
   const skip = (key, on) => setSkipped((list) => (on ? [...new Set([...(list ?? []), key])] : (list ?? []).filter((k) => k !== key)));
-  const items = useMemo(() => (settings.data ? ITEMS(settings.data, { activeProducts, walletReady, registers, tellers }).map((it) => ({ ...it, skipped: !it.done && (skipped ?? []).includes(it.key), done: it.done || (skipped ?? []).includes(it.key) })) : []), [settings.data, activeProducts, walletReady, registers, tellers, skipped]);
+  const items = useMemo(() => (settings.data ? ITEMS({ ...settings.data, store_logo_url: appearance.app_logo_url, store_icon_url: appearance.app_icon_url }, { activeProducts, walletReady, registers, tellers }).map((it) => ({ ...it, skipped: !it.done && (skipped ?? []).includes(it.key), done: it.done || (skipped ?? []).includes(it.key) })) : []), [settings.data, appearance, activeProducts, walletReady, registers, tellers, skipped]);
   const done = items.filter((i) => i.done).length;
   const complete = items.length > 0 && done === items.length;
 

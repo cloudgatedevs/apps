@@ -104,7 +104,7 @@ const TenderModal = ({ open, onClose, onCompleted }) => {
 
   return (
     <Modal open={open} onClose={busy || card ? undefined : onClose} title="Take payment" description={`${totals.count} item${totals.count === 1 ? '' : 's'}`} size="md">
-      <div className="mb-4 flex items-baseline justify-between rounded-2xl px-5 py-4 text-white" style={{ background: 'rgb(var(--c-primary))' }}>
+      <div className="mb-4 flex items-baseline justify-between rounded-2xl px-5 py-4 text-white" style={{ background: 'rgb(var(--c-primary))', color: 'rgb(var(--c-primary-fg))' }}>
         <span className="text-sm opacity-80">Total due</span>
         <span className="text-3xl font-bold tabular-nums">{fmtCents(total, currency)}</span>
       </div>

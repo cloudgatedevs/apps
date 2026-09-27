@@ -6,7 +6,7 @@
 // (the Message is whatever the Function node raised). Auth failures are 401/403
 // with a similar envelope; ABP-hosted endpoints (IdP profile, file upload) use
 //   { "error": { "message": "..." }, "success": false }.
-import { CloudgateError } from '@cloudgatedevs/cloudgate-client';
+import { CloudgateError } from '@cloudgatedevs/cloudgate-client-react';
 
 export function errorMessage(err, fallback = 'Something went wrong. Please try again.') {
   if (!err) return fallback;

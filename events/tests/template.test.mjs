@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { test } from 'node:test';
+import { normalizeSettings, parseCustomPalette } from '@cloudgatedevs/cloudgate-client-react/platform';
+test('Events catalogue, SDK defaults and build modes stay consistent', async () => {
+  const template = JSON.parse(await readFile(new URL('../template.json', import.meta.url), 'utf8'));
+  const catalogue = JSON.parse(await readFile(new URL('../../apps.json', import.meta.url), 'utf8'));
+  const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  assert.deepEqual(catalogue.apps.find(app => app.id === template.id), template);
+  assert.equal(template.version, pkg.version);
+  assert.equal(template.appSettings.enable_public_website, 'true');
+  assert.equal(template.appSettings.require_public_website_login, 'false');
+  assert.equal(template.appSettings.app_name, undefined);
+  assert.equal(parseCustomPalette(template.appSettings.theme_custom_palette).name, 'Events Nocturne');
+  for (const [key, value] of Object.entries(template.appSettings)) assert.equal(normalizeSettings(template.appSettings)[key], value);
+  assert.equal(template.build.devBuildCommand, 'npm run build:dev');
+  assert.equal(pkg.scripts['build:dev'], 'vite build --mode development');
+  const env = await readFile(new URL('../.env.example', import.meta.url), 'utf8');
+  assert.match(env, /^VITE_CLOUDGATE_WEB_APP_ID=\{\{webAppId\}\}$/m);
+});

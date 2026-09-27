@@ -18,8 +18,3 @@ export function signupUrl(login) {
   url.pathname = url.pathname.slice(0, -5) + 'signup';
   return url.href;
 }
-export function hasBackOfficeAccess(user) {
-  // This controls navigation only. Cloudgate still authorizes every admin operation.
-  const role = user?.claims?.role ?? user?.claims?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-  return ['admin', 'administrator', 'owner'].includes(String(role || '').trim().toLowerCase());
-}

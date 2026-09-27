@@ -2,7 +2,6 @@
 // methods, theme), the categories, the teller's open shift, and the cart being rung up.
 // The cart lives here so it survives switching between Register / Sales / Shift screens.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
 import { posApi } from '@/pos/services/posApi';
 import { useAuthContext } from '@/shared/auth';
@@ -15,25 +14,8 @@ export const useTill = () => useContext(TillContext);
 
 const CART_KEY = 'pos.cart';
 
-const hexToRgb = (hex) => {
-  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex ?? '').trim());
-  if (!m) return null;
-  const n = parseInt(m[1], 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-};
-const fg = ([r, g, b]) => {
-  const lin = (c) => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
-  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b) > 0.4 ? [24, 24, 27] : [255, 255, 255];
-};
-const applyTheme = (primary, secondary) => {
-  const root = document.documentElement.style;
-  const set = (name, hex, fallback) => { const rgb = hexToRgb(hex) ?? fallback; root.setProperty(`--c-${name}`, rgb.join(' ')); root.setProperty(`--c-${name}-fg`, fg(rgb).join(' ')); };
-  set('primary', primary, [15, 23, 42]);
-  set('secondary', secondary, [37, 99, 235]);
-};
-
 /** Cart line: { key, productId, name, sku, barcode, unit, isWeighed, unitPriceCents, qty, discountCents, stockQty, trackInventory } */
-const TillProvider = () => {
+const TillProvider = ({ children }) => {
   const { currentUser, logout } = useAuthContext();
   const [settings, setSettings] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -56,8 +38,6 @@ const TillProvider = () => {
         setSettings(s);
         setCategories(c);
         setShift(sh);
-        applyTheme(s.theme_primary, s.theme_secondary);
-        if (s.store_name) document.title = `${s.store_name} · Till`;
       })
       .catch((err) => alive && setError(err));
     return () => { alive = false; };
@@ -136,7 +116,7 @@ const TillProvider = () => {
     cashEnabled: String(settings.payment_cash_enabled ?? '1') === '1', cardEnabled: String(settings.payment_card_enabled ?? '1') === '1',
     requireShift: String(settings.require_shift ?? '1') === '1',
   };
-  return <TillContext.Provider value={value}><Outlet /></TillContext.Provider>;
+  return <TillContext.Provider value={value}>{children}</TillContext.Provider>;
 };
 
 export { TillProvider };

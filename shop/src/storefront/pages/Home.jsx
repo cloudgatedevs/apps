@@ -23,9 +23,9 @@ const SectionHead = ({ eyebrow, title, to, cta = 'View all' }) => (
   <div className="flex items-end justify-between gap-6">
     <div>
       {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
-      <h2 className="font-display mt-2 text-3xl tracking-tight text-zinc-900">{title}</h2>
+      <h2 className="font-display mt-2 text-3xl tracking-tight text-mist">{title}</h2>
     </div>
-    {to ? <Link to={to} className="hidden items-center gap-1.5 text-sm text-zinc-600 transition hover:text-zinc-900 sm:inline-flex">{cta} <IconArrow className="h-4 w-4" /></Link> : null}
+    {to ? <Link to={to} className="hidden items-center gap-1.5 text-sm text-mist-muted transition hover:text-mist sm:inline-flex">{cta} <IconArrow className="h-4 w-4" /></Link> : null}
   </div>
 );
 
@@ -57,11 +57,11 @@ const Newsletter = () => {
             <p className="mt-3 text-sm leading-6 text-primary-fg/70">One email a fortnight at most. Unsubscribe any time.</p>
           </div>
           {done ? (
-            <p className="rounded-2xl bg-white/10 px-5 py-4 text-sm">Thanks, you are subscribed.</p>
+            <p className="rounded-2xl bg-ink-850/10 px-5 py-4 text-sm">Thanks, you are subscribed.</p>
           ) : (
             <form onSubmit={submit} className="flex w-full flex-col gap-2 sm:flex-row">
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" aria-label="Email address" className="input h-12 grow rounded-full border-white/20 bg-white/10 px-5 text-white placeholder:text-zinc-400 focus:border-white/40 focus:ring-white/10" />
-              <button type="submit" disabled={busy} className="inline-flex h-12 items-center justify-center rounded-full bg-white px-7 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200 disabled:opacity-50">{busy ? 'Joining…' : 'Subscribe'}</button>
+              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" aria-label="Email address" className="input h-12 grow rounded-full border-primary-fg/20 bg-primary-fg/10 px-5 text-primary-fg placeholder:text-primary-fg/70 focus:border-primary-fg/40 focus:ring-primary-fg/10" />
+              <button type="submit" disabled={busy} className="inline-flex h-12 items-center justify-center rounded-full bg-ink-850 px-7 text-sm font-medium text-mist transition hover:bg-ink-700 disabled:opacity-50">{busy ? 'Joining…' : 'Subscribe'}</button>
             </form>
           )}
         </div>
@@ -94,13 +94,13 @@ const Home = () => {
     <div className="flex flex-col gap-20 pb-14 sm:gap-28">
       {/* Hero */}
       <section className="container-x pt-8 sm:pt-12">
-        <div className="relative grid items-center gap-10 overflow-hidden rounded-2xl bg-zinc-50 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16 lg:px-14">
+        <div className="relative grid items-center gap-10 overflow-hidden rounded-2xl bg-ink-900 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16 lg:px-14">
           <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-secondary/15 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-32 right-1/3 h-80 w-80 rounded-full bg-fuchsia-200/40 blur-3xl" />
           <div className="relative flex flex-col gap-7">
             <p className="eyebrow">{storeName}</p>
-            <h1 className="font-display max-w-2xl text-5xl leading-[1.02] tracking-tight text-zinc-900 sm:text-6xl lg:text-7xl">{settings.store_tagline || 'Considered essentials for everyday life.'}</h1>
-            <p className="max-w-lg text-lg leading-8 text-zinc-500">{settings.store_description || 'Thoughtfully made pieces, priced honestly, delivered with care.'}{freeShippingThresholdCents ? ` Free shipping on orders over ${fmtCents(freeShippingThresholdCents, currency)}.` : ''}</p>
+            <h1 className="font-display max-w-2xl text-5xl leading-[1.02] tracking-tight text-mist sm:text-6xl lg:text-7xl">{settings.store_tagline || 'Considered essentials for everyday life.'}</h1>
+            <p className="max-w-lg text-lg leading-8 text-mist-dim">{settings.store_description || 'Thoughtfully made pieces, priced honestly, delivered with care.'}{freeShippingThresholdCents ? ` Free shipping on orders over ${fmtCents(freeShippingThresholdCents, currency)}.` : ''}</p>
             <div className="flex flex-wrap gap-3">
               <Link to="/shop" className="btn-primary">Shop the collection</Link>
               {about ? <Link to={`/pages/${about.Slug}`} className="btn-ghost">Our story</Link> : top[0] ? <Link to={`/shop/${top[0].Slug}`} className="btn-ghost">{top[0].Name}</Link> : null}
@@ -111,9 +111,9 @@ const Home = () => {
               <><Skeleton className="aspect-[4/5] rounded-2xl" /><Skeleton className="mt-10 aspect-[4/5] rounded-2xl" /></>
             ) : heroProducts.length ? (
               heroProducts.map((p, i) => (
-                <Link key={p.Id} to={`/p/${p.Slug}`} className={`group relative block aspect-[4/5] overflow-hidden rounded-2xl bg-zinc-100 ${i === 1 ? 'mt-10' : ''}`}>
+                <Link key={p.Id} to={`/p/${p.Slug}`} className={`group relative block aspect-[4/5] overflow-hidden rounded-2xl bg-ink-800 ${i === 1 ? 'mt-10' : ''}`}>
                   <img src={p.ImageUrl} alt={p.Name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-                  <span className="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-2xl bg-white/95 px-4 py-2.5 text-sm shadow-lg"><span className="truncate font-medium text-zinc-900">{p.Name}</span><span className="ml-3 shrink-0 tabular-nums text-zinc-600">{fmtCents(p.PriceFromCents ?? p.PriceCents, currency)}</span></span>
+                  <span className="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-2xl bg-ink-850/95 px-4 py-2.5 text-sm shadow-lg"><span className="truncate font-medium text-mist">{p.Name}</span><span className="ml-3 shrink-0 tabular-nums text-mist-muted">{fmtCents(p.PriceFromCents ?? p.PriceCents, currency)}</span></span>
                 </Link>
               ))
             ) : (
@@ -129,7 +129,7 @@ const Home = () => {
           <SectionHead eyebrow="Browse" title="Shop by category" to="/shop" cta="All products" />
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {top.map((c) => (
-              <Link key={c.Id} to={`/shop/${c.Slug}`} className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl bg-zinc-100 p-5 sm:aspect-[5/6]">
+              <Link key={c.Id} to={`/shop/${c.Slug}`} className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl bg-ink-800 p-5 sm:aspect-[5/6]">
                 {c.ImageUrl || c.SampleImageUrl ? <img src={c.ImageUrl || c.SampleImageUrl} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 to-zinc-100" />}
                 <span className="absolute inset-0 bg-gradient-to-t from-zinc-900/70 via-zinc-900/10 to-transparent" />
                 <span className="font-display relative text-2xl text-white">{c.Name}</span>
@@ -152,10 +152,10 @@ const Home = () => {
       <section className="container-x">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {VALUES.map((v) => (
-            <div key={v.title} className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-6">
+            <div key={v.title} className="flex flex-col gap-3 rounded-2xl border border-ink-700 bg-ink-850 p-6">
               <span className="grid h-11 w-11 place-items-center rounded-xl bg-secondary/10 text-secondary" aria-hidden="true"><v.icon className="h-5 w-5" strokeWidth={1.75} /></span>
-              <p className="font-display text-lg text-zinc-900">{v.title}</p>
-              <p className="text-sm leading-6 text-zinc-500">{v.text}</p>
+              <p className="font-display text-lg text-mist">{v.title}</p>
+              <p className="text-sm leading-6 text-mist-dim">{v.text}</p>
             </div>
           ))}
         </div>

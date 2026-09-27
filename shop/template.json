@@ -2,8 +2,8 @@
   "id": "shop",
   "name": "Cloudgate Shop",
   "category": "Commerce",
-  "version": "1.4.0",
-  "description": "A complete online store: catalogue with variants and stock, cart and hosted card checkout through Cloudgate Wallet, order tracking, and a full back office for products, inventory, orders, refunds, customers, content pages, email and theme colours.",
+  "version": "2.0.0",
+  "description": "Online storefront, variants, stock, hosted Wallet checkout, order tracking and commerce management with a shared Cloudgate React SDK back office.",
   "folder": "shop",
   "framework": "React",
   "devCommand": "npm install && npm run dev",
@@ -25,10 +25,8 @@
     "Card payments through Cloudgate Wallet, sandbox and production",
     "Products with variants, images, stock ledger and low-stock alerts",
     "Orders with shipping, tracking, refunds and customer emails",
-    "Editable pages, contact form, newsletter, theme colours and branding",
-    "Logs page in the back office: this shop\u2019s workflow calls, timings and errors, read from Cloudgate",
-    "Back office for IdP users with the Admin role",
-    "Website analytics in the back office: views, sessions, visitors, pages, countries, traffic sources and devices from Cloudgate Web App Insights"
+    "Editable store pages, contact messages, newsletter and storefront content",
+    "Cloudgate React SDK for authentication, profile, users, roles, media, appearance, themes, analytics, workflow logs and developer tools"
   ],
   "requirements": [
     "wallet",
@@ -92,5 +90,21 @@
       ".env"
     ],
     "example": ".env.example"
+  },
+  "appSettings": {
+    "app_tagline": "Considered essentials for everyday life.",
+    "app_description": "Thoughtfully made pieces, priced honestly, delivered with care.",
+    "theme_mode": "light",
+    "theme_density": "flex",
+    "theme_primary": "#18181b",
+    "theme_secondary": "#4f46e5",
+    "theme_neutral": "#71717a",
+    "theme_success": "#15803d",
+    "theme_warning": "#a16207",
+    "theme_danger": "#be123c",
+    "theme_info": "#0369a1",
+    "theme_custom_palette": "{\"name\":\"Shop Classic\",\"colors\":{\"theme_primary\":\"#18181b\",\"theme_secondary\":\"#4f46e5\",\"theme_neutral\":\"#71717a\",\"theme_success\":\"#15803d\",\"theme_warning\":\"#a16207\",\"theme_danger\":\"#be123c\",\"theme_info\":\"#0369a1\"}}",
+    "enable_public_website": "true",
+    "require_public_website_login": "false"
   }
 }
