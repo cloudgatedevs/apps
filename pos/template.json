@@ -2,7 +2,7 @@
   "id": "pos",
   "name": "Cloudgate POS",
   "category": "Commerce",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Barcode point of sale with cash and Wallet payments, shifts, inventory, returns and a Cloudgate React SDK back office.",
   "folder": "pos",
   "framework": "React",

@@ -1,6 +1,6 @@
 # Cloudgate Academy
 
-Academy 2.0 uses `@cloudgatedevs/cloudgate-client-react@^0.1.0`, following the Booking app. The SDK supplies shared Cloudgate features; this project owns the learning product.
+Academy 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`, following the Booking app. The SDK supplies shared Cloudgate features; this project owns the learning product.
 
 ## Ownership
 

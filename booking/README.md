@@ -1,6 +1,6 @@
 # Cloudgate Booking
 
-Booking 2.0 uses `@cloudgatedevs/cloudgate-client-react@^0.1.0`. This project contains the booking product; the package supplies shared Cloudgate functionality.
+Booking 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`. This project contains the booking product; the package supplies shared Cloudgate functionality.
 
 ## Ownership
 

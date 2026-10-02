@@ -2,7 +2,7 @@
   "id": "shop",
   "name": "Cloudgate Shop",
   "category": "Commerce",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Online storefront, variants, stock, hosted Wallet checkout, order tracking and commerce management with a shared Cloudgate React SDK back office.",
   "folder": "shop",
   "framework": "React",

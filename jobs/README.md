@@ -1,6 +1,6 @@
 # Cloudgate Jobs
 
-Jobs 2.0 uses `@cloudgatedevs/cloudgate-client-react@^0.1.0`, following Booking, Academy and Events. This project owns field-service workflows and customer pages. The SDK owns the shared back office.
+Jobs 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`, following Booking, Academy and Events. This project owns field-service workflows and customer pages. The SDK owns the shared back office.
 
 ## Ownership
 
@@ -57,7 +57,7 @@ Private request/job photos remain in the Jobs attachment table. Each upload/read
 
 ## Rollout
 
-`template.json` and the matching root `apps.json` entry declare version 2.0 and native `appSettings`: the full Jobs Evergreen light palette, flexible layout, public website enabled and guest access allowed. The installation supplies the selected app name and deployment URL. Owners can change theme, appearance and public-site policy in the SDK.
+`template.json` and the matching root `apps.json` entry declare version 2.0.1 and native `appSettings`: the full Jobs Evergreen light palette, flexible layout, public website enabled and guest access allowed. The installation supplies the selected app name and deployment URL. Owners can change theme, appearance and public-site policy in the SDK.
 
 Sandbox and production have separate native settings and app IDs. Updates preserve saved owner choices, including a disabled public website. See the [native defaults contract](../README.md#native-sdk-defaults).
 

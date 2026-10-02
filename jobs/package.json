@@ -1,7 +1,7 @@
 {
   "name": "cloudgate-jobs",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,6 +16,7 @@
     "dev:preview": "vite --mode preview"
   },
   "dependencies": {
+    "@cloudgatedevs/cloudgate-client-react": "0.1.6",
     "@fontsource/dm-sans": "^5.3.0",
     "@fontsource/manrope": "^5.3.0",
     "@radix-ui/react-dialog": "^1.1.23",
@@ -25,7 +26,6 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-easy-crop": "^6.2.3",
-    "@cloudgatedevs/cloudgate-client-react": "^0.1.0",
     "react-router-dom": "^6.30.6"
   },
   "devDependencies": {

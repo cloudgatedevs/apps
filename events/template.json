@@ -2,7 +2,7 @@
   "id": "events",
   "name": "Cloudgate Events",
   "category": "Events & Ticketing",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Event discovery, ticket sales, QR admission and an organiser workspace built on the shared Cloudgate React back office.",
   "folder": "events",
   "framework": "React",

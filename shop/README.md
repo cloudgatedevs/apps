@@ -1,6 +1,6 @@
 # Cloudgate Shop
 
-Version 2.0.0 uses `@cloudgatedevs/cloudgate-client-react` for the shared back office and Cloudgate connection. One React application serves the public shop and `/admin`.
+Version 2.0.1 uses `@cloudgatedevs/cloudgate-client-react` for the shared back office and Cloudgate connection. One React application serves the public shop and `/admin`.
 
 ## Responsibilities
 

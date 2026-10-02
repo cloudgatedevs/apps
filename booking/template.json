@@ -2,7 +2,7 @@
   "id": "booking",
   "name": "Cloudgate Booking",
   "category": "Appointments",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A booking site with service discovery, appointments, staff, resources, availability, payments and customer accounts, built on the shared Cloudgate React back office.",
   "folder": "booking",
   "framework": "React",

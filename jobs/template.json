@@ -2,7 +2,7 @@
   "id": "jobs",
   "name": "Cloudgate Jobs",
   "category": "Field Service",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Service requests, quotes, scheduled job visits, invoices and customer payments with a shared Cloudgate React back office.",
   "folder": "jobs",
   "framework": "React",

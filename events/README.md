@@ -1,6 +1,6 @@
 # Cloudgate Events
 
-Events 2.0 uses `@cloudgatedevs/cloudgate-client-react@^0.1.0`, following Booking and Academy. The SDK owns shared platform features; this project owns events and ticketing.
+Events 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`, following Booking and Academy. The SDK owns shared platform features; this project owns events and ticketing.
 
 ## Ownership
 
@@ -55,7 +55,7 @@ Image editors use SDK storage in `events/media` and `events/branding`. The SDK M
 
 ## Rollout
 
-`template.json` and the matching `apps.json` entry declare version 2.0 and native `appSettings`: the complete Events Nocturne dark palette, flexible layout, public website enabled and guest access allowed. The installation supplies the chosen app name and deployment URL. Owners can change appearance, theme and website access in the SDK back office.
+`template.json` and the matching `apps.json` entry declare version 2.0.1 and native `appSettings`: the complete Events Nocturne dark palette, flexible layout, public website enabled and guest access allowed. The installation supplies the chosen app name and deployment URL. Owners can change appearance, theme and website access in the SDK back office.
 
 Sandbox and production have separate native settings and app IDs. App Store updates preserve saved owner choices, including a disabled public site or required visitor login. See the [native defaults contract](../README.md#native-sdk-defaults).
 
