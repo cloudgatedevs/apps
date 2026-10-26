@@ -11,4 +11,4 @@ def seed_sql(include_staff=False):
         if price:e.dispatch(dict(op='tier-save',event=r['ref'],name='Supporter',description='Admission plus a little extra support for the organisers.',price=price+2000,capacity=30,sale_end=r['starts'],max_per_order=4))
         e.dispatch(dict(op='event-publish',ref=r['ref'],version=r['version']))
     if include_staff:e.dispatch(dict(op='staff-save',name='Alex at the door',user_id='3',events=[r['ref'] for r in e.all('event')],active=True))
-    return '\n'.join('INSERT OR IGNORE INTO entities(kind,ref,owner,version,data) VALUES('+','.join([q(r['kind']),q(r['ref']),q(r['owner']),str(r['version']),q(encoded(r))])+');' for r in e.rows)
+    return '\n'.join('INSERT INTO entities(kind,ref,owner,version,data) VALUES('+','.join([q(r['kind']),q(r['ref']),q(r['owner']),str(r['version']),q(encoded(r))])+');' for r in e.rows)

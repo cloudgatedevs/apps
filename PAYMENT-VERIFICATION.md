@@ -80,7 +80,7 @@ python -B -m unittest discover -s tests -p test_payment_return.py -v
 node --test tests/api-errors.test.mjs
 ```
 
-The SQLite and SDK tests make no provider requests and send no email. They do
+The SQL Server and SDK tests make no provider requests and send no email. They do
 not replace a hosted sandbox card payment and refund after rollout.
 
 ## Hosted verification / rollout remaining

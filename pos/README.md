@@ -1,6 +1,9 @@
 # Cloudgate POS 2.0
 
-POS uses `@cloudgatedevs/cloudgate-client-react` for authentication and the shared back office. The app owns the retail workflows and the cashier till. One Vite SPA serves both from `index.html`.
+Version 3.0 uses managed Microsoft SQL Server and standard Python workflows. Fresh installation is required; see [runtime, email and development setup](../SQL-SERVER-REWRITE.md).
+
+
+POS uses `@cloudgatedevs/cloudgate-client-react@0.1.20` for authentication and the shared back office. The app owns the retail workflows and the cashier till. One Vite SPA serves both from `index.html`.
 
 | Area | Routes | Responsibility |
 | --- | --- | --- |
@@ -39,9 +42,9 @@ Product photos upload through the SDK to `pos/media`; shared branding uses `pos/
 ## Validation
 
 ```bash
-npm test             # real SQLite refund regressions, client recovery, media guard and rollout checks
+npm test             # real SQL Server refund regressions, client recovery, media guard and rollout checks
 npx playwright install chromium  # once, if Chromium is not installed
-npm run test:ui      # isolated SQLite workflows + browser SDK integration
+npm run test:ui      # isolated SQL Server workflows + browser SDK integration
 ```
 
 The browser test starts temporary loopback servers on 3594/3595, uses a new temporary database, and shuts them down afterwards. It simulates native SDK services, identity and Wallet responses. It does not call a live tenant, charge a card or send email. Real camera hardware, receipt printers and hosted payment settlement still require testing in the configured environment.
@@ -58,7 +61,7 @@ token; till actions accept any signed-in user, admin actions only the admin role
 | `pos-shift` | any user | `registers`, `current`, `open` (register + float), `movement` (payin/payout/drop), `close` (counted cash → expected, difference), `summary` |
 | `pos-sale` | any user | `complete` (lines + cash payments, server-priced, stock checked and written), `create` (open sale for a card payment), `hold`/`held`/`recall`/`discard`, `get` (id or reference), `recent`; refunds use `refunds` |
 | `pos-payment` | any user | `start` (Wallet Payment `create` → hosted URL for the QR code), `status` (re-reads the wallet payment; completes the sale and sells the stock on success), `cancel`, `wallet-status`; refunds use `refunds` |
-| `pos-receipt` | any user | `email` (receipt e-mail through Cloudgate tenant delivery, on a thread branch) |
+| `pos-receipt` | any user | `email` (receipt e-mail through Python SMTP, on a thread branch) |
 | `admin-products` | admin | `list`, `get`, `create`, `update`, `set-status`, `delete` (deactivates sold products), `add-barcode`, `remove-barcode`, `barcode-owner`, `labels`, `import` (CSV rows, upsert by barcode/SKU/name), `image-refs` |
 | `admin-categories`, `admin-suppliers`, `admin-registers`, `admin-customers` | admin | `list`, `create`, `update`, `delete` (+ `reorder` for categories, `get` for customers) |
 | `admin-inventory` | admin | `levels`, `movements`, `adjust` (delta or new quantity, with reason), `receive` (goods received note), `receipts`, `receipt`, `count` (stock take) |
@@ -94,4 +97,4 @@ tests/                            SDK integration, rollout and media guard check
 
 Barcode scanning uses ZXing for cameras and a keyboard-wedge hook for USB/Bluetooth scanners. Camera access requires HTTPS or localhost. Product forms, goods received and stock take retain barcode capture, CSV import and label printing.
 
-Cloudgate delivers receipt email through tenant delivery; configure optional SMTP in the SDK. App-local legacy SMTP values are not used for delivery. Refunds use the existing durable `refunds` action with stable request keys and confirmed-status accounting; see `cloudgate/REFUNDS.md` for the contract. The SDK migration does not modify the workflow package or database schema.
+Receipt email uses standard Python SMTP and encrypted controller selectors. Refunds use the existing durable `refunds` action with stable request keys and confirmed-status accounting; see `cloudgate/REFUNDS.md` for the contract. Version 3.0 includes rewritten workflow packages and SQL Server schemas.

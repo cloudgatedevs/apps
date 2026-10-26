@@ -1,9 +1,9 @@
-// Real Booking workflows run against an isolated SQLite simulator. Native SDK calls are mocked.
+// Real Booking workflows run against an isolated SQL Server simulator. Native SDK calls are mocked.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createServer } from 'vite';
@@ -15,7 +15,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'booking-sdk-'));
 const apiOrigin = 'http://127.0.0.1:3293', origin = 'http://127.0.0.1:3292';
 const appId = '12345678-1234-4234-8234-123456789abc';
-const python = spawn('python', ['-B', '-X', 'utf8', 'cloudgate/local_server.py', '--db', path.join(directory, 'booking.sqlite'), '--port', '3293'], { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+const python = spawn('python', ['-B', '-X', 'utf8', '../test_support/ui_server.py', 'booking', '--record', path.join(directory, 'sql-server.json'), '--data-dir', directory, '--port', '3293'], { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
 let pythonOutput = '';
 python.stdout.on('data', chunk => { pythonOutput += chunk; });
 python.stderr.on('data', chunk => { pythonOutput += chunk; });
@@ -185,6 +185,8 @@ try {
     if (pathname.endsWith('/profile')) return reply({ id: 1, name: 'Alex', surname: 'Builder', email: 'alex@example.invalid', role, isEmailConfirmed: true, rolePermissions: grants ? BACKOFFICE_PERMISSION_KEYS.map(key => ({ key, value: 'true' })) : [] });
     if (pathname.includes('/notifications/')) return reply(pathname.endsWith('/unread-count') ? { unreadCount: 0 } : { items: [], totalCount: 0 });
     if (pathname.endsWith('/profile/cloudgate-link')) return reply({ linked: false, available: true });
+    if (pathname.endsWith('/agents/overview')) return route.fulfill({ status: 403, json: { code: 'agents-link-required', message: 'Link a Cloudgate account to use agents.' } });
+    if (pathname.endsWith('/wallet/status')) return reply({ linked: false, production: false });
     if (pathname.endsWith('/files')) return reply({ items: [], total: 0 });
     if (pathname.endsWith('/admin/appearance/details')) return reply({ values: { ...DEFAULT_SETTINGS, app_name: 'SDK Booking Studio' }, revision: appId });
     if (pathname.includes('/admin/workflow-logs/')) return reply({ items: [], totalCount: 0, endpoints: [], stats: {} });
@@ -194,7 +196,7 @@ try {
   admin.on('pageerror', error => errors.push(error.message));
   await admin.goto(origin + '/admin/overview');
   await admin.getByRole('heading', { name: 'Your day, at a glance.' }).waitFor();
-  for (const [route, heading] of [['profile', 'Profile'], ['media', 'Media server'], ['appearance', 'Appearance'], ['logs', 'Logs']]) {
+  for (const [route, heading] of [['profile', 'My profile'], ['media', 'Media server'], ['appearance', 'Appearance'], ['logs', 'Logs']]) {
     const count = calls.filter(call => call === 'admin-data').length;
     await admin.goto(origin + '/admin/' + route);
     await admin.getByRole('heading', { name: heading, exact: true }).waitFor();
@@ -202,7 +204,7 @@ try {
     assert.equal(calls.filter(call => call === 'admin-data').length, count, 'SDK pages must not load the Booking admin snapshot');
   }
   await admin.goto(origin + '/account/profile');
-  await admin.getByRole('heading', { name: 'Profile', exact: true }).waitFor();
+  await admin.getByRole('heading', { name: 'My profile', exact: true }).waitFor();
   await admin.goto(origin + '/account');
   await admin.getByRole('button', { name: 'Log out', exact: true }).click();
   await admin.locator('.customer-app').waitFor();
@@ -228,5 +230,7 @@ try {
   await browser.close(); await server?.close();
   python.kill();
   await new Promise(resolve => python.exitCode == null ? python.once('exit', resolve) : resolve());
+  const cleanup = spawnSync('python', ['-X','utf8','../test_support/ui_server.py','booking','--record',path.join(directory,'sql-server.json'),'--cleanup'], {cwd:root,windowsHide:true,encoding:'utf8'});
+  if (cleanup.status !== 0) throw new Error('SQL Server fixture cleanup failed: '+cleanup.stderr);
   if (path.dirname(directory) === os.tmpdir() && path.basename(directory).startsWith('booking-sdk-')) await fs.rm(directory, { recursive: true, force: true });
 }

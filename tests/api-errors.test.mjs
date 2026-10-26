@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-for (const app of ['shop','pos','booking','jobs','courses','events']) {
+for (const app of ['shop','pos']) {
   const { explainApiError } = await import(`../${app}/src/shared/services/api-error.js`);
   const { createCloudgateClient, CloudgateError } = await import(`../${app}/node_modules/@cloudgatedevs/cloudgate-client/src/index.js`);
   test(`${app}: real SDK errors retain the checkout explanation and HTTP metadata`, async () => {

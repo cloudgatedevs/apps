@@ -1,3 +1,4 @@
+from workflow_inputs import bind_inputs
 """Generate installable native graphs from an MCP-read export and live node catalog.
 No network, SQL execution or publishing. Apply only using reviewed MCP dry runs.
 """
@@ -6,16 +7,13 @@ from pathlib import Path
 from engine import snapshot_sql
 from seed import seed_sql
 ROOT=Path(__file__).resolve().parent;APP=ROOT.parent
-R=json.loads((ROOT/'resources.json').read_text());prototype=json.loads((ROOT/'live-node-prototype.json').read_text());ENGINE=(ROOT/'engine.py').read_text(encoding='utf8')
+R=json.loads((ROOT/'resources.json').read_text(encoding='utf8'));prototype=json.loads((ROOT/'live-node-prototype.json').read_text(encoding='utf8'));ENGINE=(ROOT/'engine.py').read_text(encoding='utf8')
 MARKETS={'function':(1,'c81329ef-5713-49ef-a634-80bf728472ad'),'condition':(4,'85782a05-66c7-40b9-b0db-854638827318'),'database':(5,'072f563b-7186-4b0b-a463-b905d944e957'),'idp':(9,'9cc226c5-c784-4138-950e-dd85bb4d97be'),'wallet':(11,'7a2c4f1e-9b3d-4c8a-9e21-5d6f0b8a3c11')}
-BRIDGE='''import json
-import clr
-clr.AddReference('Web.Core.Shared')
-from Web.Core.Shared.Services.Endpoints.Engine import WorkflowSessionKeyExecutionContext
-session_keys=list(WorkflowSessionKeyExecutionContext.GetKeys(int('${sessionid}')))
+INPUT_HELPERS='''import json
 def value(name):
-    found=[str(k.Value) for k in session_keys if str(k.Key).lower()==name.lower()]
-    return found[-1] if found else ''
+    return _inputs.get(name, '')
+
+
 def obj(name,default=None):
     raw=value(name)
     return json.loads(raw) if raw and raw!='No records found' else default
@@ -30,7 +28,7 @@ def request():
     if not isinstance(data,dict):raise Exception('Expected a JSON request.')
     return data
 '''
-def fn(code,engine=False):return BRIDGE+'\n'+(ENGINE+'\n' if engine else '')+code
+def fn(code,engine=False):return bind_inputs(INPUT_HELPERS+'\n'+(ENGINE+'\n' if engine else '')+code)
 PAYMENT_RETURN=(ROOT/'payment_return.py').read_text(encoding='utf8')
 def payment_function(code,engine=False):return fn(PAYMENT_RETURN+'\n'+code,engine)
 
@@ -73,12 +71,12 @@ graph('maintenance',[('IdpAuth','idp',None),('Snapshot','database',snap),('Plan'
 # ExecutionJob supplies exactly 'Scheduled Job'; a browser URL cannot have that value.
 guard=('ScheduledOnly','function',fn("if value('route')!='Scheduled Job':raise Exception('This action runs only from the Cloudgate scheduler.')\nreturn 'ok'"))
 graph('automation',[guard,('Snapshot','database',snap),('Plan','function',fn("sql,result=plan(snapshot(),dict(op='_maintenance'),internal=True)\nreturn sql",True)),('Run','database','${Plan}'),('Shape','function',shape)],schedule=True)
-mail=(ROOT/'notifications.py').read_text(encoding='utf8')
+mail=(ROOT/'smtp_email.py').read_text(encoding='utf8')+'\n'+(ROOT/'notifications.py').read_text(encoding='utf8')
 graph('notifications',[guard,('Snapshot','database',snap),('Claim','function',fn("sql,result=plan(snapshot(),dict(op='_mail-claim'),internal=True)\nreturn sql",True)),('ClaimRun','database','${Claim}'),('Send','function',fn(mail+"\nrows=obj('ClaimRun',[])\nif isinstance(rows,dict):rows=[rows]\nclaim=json.loads(rows[0]['result'])\ne=Engine(snapshot())\nreturn encoded(send_claimed(claim,e.settings))",True)),('AfterSend','database',snap),('Plan','function',fn("sql,result=plan(snapshot('AfterSend'),dict(obj('Send'),op='_mail-result'),internal=True)\nreturn sql",True)),('Run','database','${Plan}'),('Shape','function',shape)],schedule=True)
 graph('reconcile',[guard,('Snapshot','database',snap),('Prepare','function',fn("e=Engine(snapshot());rows=[r for r in e.all('obligation') if r.get('payment_id') and r['status'] in ('due','superseded')]\nrows.sort(key=lambda r:r.get('last_checked',0))\nreturn encoded(rows[0] if rows else {})",True)),('HasPayment','condition',fn("return bool(obj('Prepare'))"),{'positive':'PaymentId','negative':'Done'}),('PaymentId','function',extract('payment_id')),('WalletGet','wallet',None,{'params':dict(Param1='get',Param10='${PaymentId}')}),('AfterWallet','database',snap),('Plan','function',apply),('Run','database','${Plan}'),('Done','function',fn("return json.dumps({'ok':True})"))],schedule=True)
 graph('refund-reconcile',[guard,('Snapshot','database',snap),('Prepare','function',fn("e=Engine(snapshot());rows=[r for r in e.all('refund') if r['status'] not in ('succeeded','failed')]\nrows.sort(key=lambda r:r.get('updated',0))\nreturn encoded(rows[0] if rows else {})",True)),('HasRefund','condition',fn("return bool(obj('Prepare'))"),{'positive':'PaymentId','negative':'Done'}),('PaymentId','function',extract('payment_id')),('RefundKey','function',extract('request_key')),('WalletRefund','wallet',None,{'params':dict(Param1='refund-status',Param9='jobs-refund-${RefundKey}',Param10='${PaymentId}')}),('AfterWallet','database',snap),('Plan','function',refund_apply),('Run','database','${Plan}'),('Done','function',fn("return json.dumps({'ok':True})"))],schedule=True)
 schema=(ROOT/'schema.sql').read_text(encoding='utf8');sample=seed_sql();(ROOT/'seed.sql').write_text(sample,encoding='utf8');out=APP/'.template';out.mkdir(exist_ok=True)
 (out/'schema.sql').write_text(schema,encoding='utf8');(out/'sample-data.sql').write_text(sample,encoding='utf8')
-databases=[dict(Id=R['databaseId'],Name='jobs_sandbox',Type=0,FileId=R['fileId'],FileProdIdGuid=None,ProjectId=R['projectId'],SQLScript=schema,SQLScriptProd=schema),dict(Id=R['databaseProdId'],Name='jobs_production',Type=0,FileId=R['fileProdId'],FileProdIdGuid=R['fileProdId'],ProjectId=R['projectId'],SQLScript=schema,SQLScriptProd=schema)]
-bundle=dict(Projects=[dict(Name='Cloudgate Jobs',Path='jobs',IsPrivate=False,Template=dict(Endpoints=[g['Endpoint'] for g in graphs],Nodes=[n for g in graphs for n in g['Nodes']],Keys=[],Databases=databases,WebSockets=[],TestRequests=[],Snippets=[]))])
+databases=[dict(Id=R['databaseId'],Name='jobs_sandbox',Type=3,SelfHosted=False,Server='',Port=1433,FileId=R['fileId'],FileProdIdGuid=None,ProjectId=R['projectId'],SQLScript=schema,SQLScriptProd=schema),dict(Id=R['databaseProdId'],Name='jobs_production',Type=3,SelfHosted=False,Server='',Port=1433,FileId=R['fileProdId'],FileProdIdGuid=R['fileProdId'],ProjectId=R['projectId'],SQLScript=schema,SQLScriptProd=schema)]
+bundle=dict(Projects=[dict(Name='Cloudgate Jobs',Path='jobs',IsPrivate=False,Template=dict(Endpoints=[g['Endpoint'] for g in graphs],Nodes=[n for g in graphs for n in g['Nodes']],Keys=json.loads((ROOT/'email-selectors.json').read_text(encoding='utf8')),Databases=databases,WebSockets=[],TestRequests=[],Snippets=[]))])
 (out/'workflow-template.json').write_text(json.dumps(bundle,indent=2),encoding='utf8');print(f'Generated {len(graphs)} workflows with {sum(len(g["Nodes"]) for g in graphs)} nodes.')

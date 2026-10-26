@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Link, Route } from 'react-router-dom';
-import { CloudgateBackoffice, Profile, RequireAuth } from '@cloudgatedevs/cloudgate-client-react/react';
+import { BrowserRouter, Route } from 'react-router-dom';
+import { CloudgateBackoffice } from '@cloudgatedevs/cloudgate-client-react/react';
 import { cloudgate, preview } from './jobs/platform';
 import { JOB_PAGES, jobNavigation } from './jobs/navigation';
 import metadata from '../template.json';
@@ -16,7 +16,6 @@ export function App() {
           <Route path="/account" element={<JobsPage section="account" />} />
           {['requests', 'quotes', 'jobs', 'invoices', 'addresses', 'calendar'].map(page =>
             <Route key={page} path={'/account/' + page} element={<JobsPage section="account" page={page} />} />)}
-          <Route path="/account/profile" element={<RequireAuth><main className="mx-auto max-w-3xl space-y-6 px-5 py-8"><Link className="text-accent" to="/account">← My account</Link><Profile /></main></RequireAuth>} />
         </>}>
         <Route index element={<JobsPage section="admin" />} />
         {JOB_PAGES.filter(([page]) => page !== 'overview').map(([page]) =>

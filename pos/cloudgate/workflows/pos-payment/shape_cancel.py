@@ -1,5 +1,4 @@
-# POS Payment / Shape — the sale with its payments (receipt-ready).
-rows = rows_of('''${RunCancel}''')
+rows = rows_of(value('RunCancel'))
 
 def shape_sale(r):
     """Row from SALE_DETAIL -> receipt-ready dict."""
@@ -12,7 +11,6 @@ def shape_sale(r):
     s['Settings'] = load_json(s.pop('SettingsJson', None), {}) or {}
     s['OutstandingCents'] = max(0, to_int(s.get('TotalCents'), 0) - to_int(s.get('PaidCents'), 0))
     return s
-
 s = shape_sale(rows[0] if rows else None)
 if not s:
     fail('Sale not found.')

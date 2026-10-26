@@ -1,25 +1,48 @@
-# Deliver composed app email through Cloudgate's tenant IdP pipeline.
-# SMTP credentials stay in Cloudgate settings; preserve HTML and Reply-To.
-import clr
-clr.AddReference('Web.Core.Shared')
-from Web.Core.Shared.Services.Endpoints.Engine import WorkflowSessionKeyExecutionContext
-keys=list(WorkflowSessionKeyExecutionContext.GetKeys(int('${sessionid}')))
-raw=[str(k.Value) for k in keys if str(k.Key).lower()=='orderemail']
-msg=load_json(raw[-1] if raw else '',None)
-if not isinstance(msg,dict) or not msg.get('to'):
-    return out({'sent':False,'reason':'nothing to send'})
+"""SMTP delivery using only the Python standard library.
+Credentials arrive as encrypted workflow selectors, separate from app data.
+"""
+import smtplib
+import ssl
+from email.message import EmailMessage
+from email.utils import formataddr
+
+def send_email(to, subject, text='', html='', reply_to=''):
+    host = value('SMTP_HOST').strip()
+    username = value('SMTP_USERNAME').strip()
+    password = value('SMTP_PASSWORD')
+    sender = value('SMTP_FROM_EMAIL').strip()
+    sender_name = value('SMTP_FROM_NAME').strip()
+    security = (value('SMTP_SECURITY') or 'starttls').strip().lower()
+    if not host or not sender:
+        raise ValueError('Configure SMTP_HOST and SMTP_FROM_EMAIL selectors.')
+    if security not in ('starttls', 'ssl'):
+        raise ValueError('SMTP_SECURITY must be starttls or ssl.')
+    port = int(value('SMTP_PORT') or (465 if security == 'ssl' else 587))
+    message = EmailMessage()
+    message['From'] = formataddr((sender_name, sender))
+    message['To'] = to
+    message['Subject'] = subject
+    if reply_to:
+        message['Reply-To'] = reply_to
+    message.set_content(text)
+    if html:
+        message.add_alternative(html, subtype='html')
+    context = ssl.create_default_context()
+    connection = smtplib.SMTP_SSL(host, port, timeout=20, context=context) if security == 'ssl' else smtplib.SMTP(host, port, timeout=20)
+    with connection as client:
+        if security == 'starttls':
+            client.starttls(context=context)
+        if username:
+            client.login(username, password)
+        rejected = client.send_message(message)
+        if rejected:
+            raise RuntimeError('SMTP recipient rejected.')
+    return True
+msg = load_json(value('OrderEmail'), None)
+if not isinstance(msg, dict) or not msg.get('to'):
+    return out({'sent': False, 'reason': 'nothing to send'})
 try:
-    clr.AddReference('Abp')
-    clr.AddReference('Zero.Core')
-    from Abp.Dependency import IocManager
-    from Zero.IdentityProvider.Emailing import WorkflowAppEmailSender
-    sender=IocManager.Instance.Resolve[WorkflowAppEmailSender]()
-    try:
-        if msg.get('html'):
-            sender.SendHtmlAsync(str(msg['to']),str(msg.get('subject') or '(no subject)'),str(msg['html']),str(msg.get('replyTo') or '')).GetAwaiter().GetResult()
-        else:
-            sender.SendAsync(str(msg['to']),str(msg.get('subject') or '(no subject)'),str(msg.get('text') or '')).GetAwaiter().GetResult()
-    finally:IocManager.Instance.Release(sender)
-    return out({'sent':True,'to':msg['to'],'reference':msg.get('reference'),'via':'Cloudgate email delivery'})
+    send_email(str(msg['to']), str(msg.get('subject') or '(no subject)'), text=str(msg.get('text') or ''), html=str(msg.get('html') or ''), reply_to=str(msg.get('replyTo') or ''))
+    return out({'sent': True, 'to': msg['to'], 'reference': msg.get('reference'), 'via': 'SMTP'})
 except Exception:
-    return out({'sent':False,'reason':'Cloudgate could not deliver this email. Check the tenant email configuration and retry.','to':msg['to'],'reference':msg.get('reference')})
+    return out({'sent': False, 'reason': 'Email delivery failed. Check the SMTP selectors and retry.', 'to': msg['to'], 'reference': msg.get('reference')})

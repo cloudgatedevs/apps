@@ -1,5 +1,7 @@
 > Historical implementation record. Jobs 2.0 uses the Cloudgate React SDK; see README.md for current routes and configuration.
 
+Historical implementation notes. Version 3.0 replaces the database/runtime described below; follow [the current runtime contract](../SQL-SERVER-REWRITE.md).
+
 # Jobs implementation progress
 
 2026-09-10: Source implementation and local verification complete. App lives in `D:/repos/GitHub/apps/jobs`. Root `apps.json` and `README.md` now include Jobs. Existing Booking, Shop and POS source was not changed.
@@ -22,7 +24,7 @@
 - `node tests/media-browser.mjs`: persisted theme/logo, in-use public-image deletion guard and cross-customer private-photo denial passed. Original branding restored.
 - `npm run build` and `npm run build:dev`: passed, emitting `dist`.
 - Invoice PDF rendered and visually reviewed; example subtotal 950, deposit applied 285, outstanding balance 665.
-- `npm run banner`: actual running public view captured as 1540×700 banner.
+- `npm run banner`: actual running public view captured as 1540Ã—700 banner.
 - `git diff --check`: no whitespace errors.
 
 ## Running preview
@@ -39,6 +41,6 @@ README documents V1 limits: bounded centralized snapshot (10,000 entities), onli
 
 Other processes/user work added unrelated backend and management UI changes during this build. None were edited, reverted or committed here; recheck their working trees before future platform work.
 
-## Authenticated sandbox verification � 2026-09-10
+## Authenticated sandbox verification — 2026-09-10
 
 Jobs IdP admin login succeeded. All office sections rendered; a R950 draft quotation (QUO-943C8902BAF1) persisted through the published workflow. Existing settings saved successfully. jobs-icon.png uploaded to the Cloudgate media server and appeared in the library, left unused for review. The portal rendered using the admin session; this does not certify a separate customer or technician role. No quote was sent, payment taken, or email triggered by these checks. Full hosted customer/payment/refund, scheduler/SMTP and App Store install/update checks remain. Local development now uses the published sandbox via Git-ignored .env.local; npm run dev:preview still explicitly selects the simulated preview.

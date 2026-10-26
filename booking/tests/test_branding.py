@@ -2,7 +2,7 @@ import base64
 import binascii
 import json
 from pathlib import Path
-import sqlite3
+import sqlserver
 import struct
 import sys
 import tempfile
@@ -20,7 +20,7 @@ def png():
 
 class BrandingTests(unittest.TestCase):
     def setUp(self):
-        self.db=sqlite3.connect(':memory:');self.db.row_factory=sqlite3.Row
+        self.db=sqlserver.connect();self.db.row_factory=sqlserver.Row
         self.db.executescript((ROOT/'schema.sql').read_text(encoding='utf-8')+(ROOT/'seed.sql').read_text(encoding='utf-8'))
     def tearDown(self): self.db.close()
     def call(self,op,identity=None,**data):
@@ -30,7 +30,7 @@ class BrandingTests(unittest.TestCase):
     def test_saved_branding_is_public_and_migration_does_not_reset_custom_values(self):
         values={'app_name':'Bloom','app_short_name':'BL','logo_url':'/logo.png','icon_url':'https://cdn.example/app.png','favicon_url':'/fav.ico','logo_show_name':'0','theme_primary':'#663399','theme_accent':'#BAAACC','theme_background':'#191020'}
         self.call('admin-settings',ADMIN,settings={**values,'smtp_password':'secret'})
-        self.db.executescript((ROOT/'migrations/1.2.0-branding.sql').read_text(encoding='utf-8'))
+        self.db.executescript((ROOT/'schema.sql').read_text(encoding='utf-8'))
         settings=self.call('catalog')['settings']
         self.assertEqual({key:settings[key] for key in values},values)
         self.assertNotIn('smtp_password',settings)
@@ -45,14 +45,14 @@ class BrandingTests(unittest.TestCase):
         self.assertEqual(self.call('catalog')['settings']['logo_url'],'')
     def test_settings_cannot_reset_the_concurrent_write_revision(self):
         self.call('admin-settings',ADMIN,settings={'app_name':'First update'})
-        before=int(self.db.execute("SELECT value FROM settings WHERE key='_revision'").fetchone()[0])
+        before=int(self.db.execute("SELECT [value] FROM settings WHERE [key]='_revision'").fetchone()[0])
         stale={t:[dict(r) for r in self.db.execute('SELECT * FROM '+t)] for t in TABLES}
         self.call('admin-settings',ADMIN,settings={'app_name':'Second update','_revision':str(before),'smtp_password_configured':False})
-        after=int(self.db.execute("SELECT value FROM settings WHERE key='_revision'").fetchone()[0])
+        after=int(self.db.execute("SELECT [value] FROM settings WHERE [key]='_revision'").fetchone()[0])
         self.assertEqual(after,before+1)
         self.assertNotIn('_revision',self.call('admin-data',ADMIN)['settings'])
         sql,_=plan(stale,{'op':'admin-settings','settings':{'app_name':'Stale update'}},ADMIN)
-        with self.assertRaises(sqlite3.IntegrityError):self.db.executescript(sql)
+        with self.assertRaises(sqlserver.IntegrityError):self.db.executescript(sql)
         self.db.rollback()
         self.assertEqual(self.call('catalog')['settings']['app_name'],'Second update')
 

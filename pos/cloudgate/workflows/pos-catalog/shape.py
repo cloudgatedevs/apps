@@ -1,7 +1,6 @@
-# POS Catalog / Shape.
 d = body()
 op = op_of(d, 'products')
-rows = rows_of('''${Run}''')
+rows = rows_of(value('Run'))
 if op == 'settings':
     return out({'values': {r.get('Key'): r.get('Value') for r in rows}})
 if op == 'lookup':

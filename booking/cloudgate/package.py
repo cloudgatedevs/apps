@@ -1,7 +1,8 @@
+from workflow_inputs import bind_inputs
 """Build the native Cloudgate bundle from a live-exported node prototype.
 No network calls and no publishing. Validate generated graphs using the live MCP before import.
 Request and node data are read through Cloudgate's request-local session context, never pasted
-into Python source. The only substituted Python literal is the platform-owned session id.
+into Python source. Inputs use ordinary workflow selectors bound as data by the Python runtime.
 """
 import copy
 import json
@@ -12,16 +13,13 @@ from engine import snapshot_sql
 ROOT=Path(__file__).parent; APP=ROOT.parent
 PROJECT='7bf672cf-2d01-474f-0df8-08df0d4ae348'
 FILE='f9b82725-4dd7-4eff-bfca-692e25bad98d'
-prototype=json.loads((ROOT/'live-node-prototype.json').read_text())
+prototype=json.loads((ROOT/'live-node-prototype.json').read_text(encoding='utf8'))
 MARKETS={'function':(1,'c81329ef-5713-49ef-a634-80bf728472ad'),'condition':(4,'85782a05-66c7-40b9-b0db-854638827318'),'database':(5,'072f563b-7186-4b0b-a463-b905d944e957'),'idp':(9,'9cc226c5-c784-4138-950e-dd85bb4d97be'),'wallet':(11,'7a2c4f1e-9b3d-4c8a-9e21-5d6f0b8a3c11')}
-BRIDGE='''import json
-import clr
-clr.AddReference('Web.Core.Shared')
-from Web.Core.Shared.Services.Endpoints.Engine import WorkflowSessionKeyExecutionContext
-session_keys = list(WorkflowSessionKeyExecutionContext.GetKeys(int('${sessionid}')))
+INPUT_HELPERS='''import json
 def value(name):
-    matches=[str(k.Value) for k in session_keys if str(k.Key).lower()==name.lower()]
-    return matches[-1] if matches else ''
+    return _inputs.get(name, '')
+
+
 def obj(name, default=None):
     raw=value(name)
     return json.loads(raw) if raw and raw != 'No records found' else default
@@ -36,8 +34,8 @@ def request():
     if not isinstance(data,dict): raise Exception('Expected a JSON request.')
     return data
 '''
-ENGINE=(ROOT/'engine.py').read_text()
-def function(code,engine=False): return BRIDGE+'\n'+(ENGINE+'\n' if engine else '')+code
+ENGINE=(ROOT/'engine.py').read_text(encoding='utf8')
+def function(code,engine=False): return bind_inputs(INPUT_HELPERS+'\n'+(ENGINE+'\n' if engine else '')+code)
 PAYMENT_RETURN=(ROOT/'payment_return.py').read_text(encoding='utf8')
 def payment_function(code,engine=False):return function(PAYMENT_RETURN+'\n'+code,engine)
 
@@ -65,7 +63,7 @@ def graph(route,steps,anonymous=True,schedule=False):
     return out
 PROD_FILE='f2d20cae-08b3-4a3a-ae93-da9f9d7d64c4'
 config_path=ROOT/'deploy.config.json'
-if config_path.exists():PROD_FILE=json.loads(config_path.read_text()).get('fileProdId',FILE)
+if config_path.exists():PROD_FILE=json.loads(config_path.read_text(encoding='utf8')).get('fileProdId',FILE)
 snap=snapshot_sql()
 shape=function("rows=obj('Run',[])\nif isinstance(rows,dict): rows=[rows]\nreturn rows[0]['payload'] if rows else '{}'\n")
 graph('booking',[
@@ -127,20 +125,20 @@ graph('reconcile',[
  ('AfterRefund','database',snap),('RefundPlan','function',refund_plan('RefundPrepare','AfterRefund')),('RefundRun','database','${RefundPlan}'),
  ('Done','function',"return '{\"ok\":true}'")],False,True)
 
-mail_script=(ROOT/'notifications.py').read_text()
+mail_script=(ROOT/'smtp_email.py').read_text(encoding='utf8')+'\n'+(ROOT/'notifications.py').read_text(encoding='utf8')
 graph('notifications',[
  ('Snapshot','database',snap),('Send','function',function(mail_script+"\ne=Engine(snapshot())\nreturn deliver(e.s,e.now)",True)),('Run','database','${Send}'),('Shape','function',shape)],False,True)
 
-schema=(ROOT/'schema.sql').read_text();seed=(ROOT/'seed.sql').read_text();split=seed.index('INSERT OR IGNORE INTO services')
+schema=(ROOT/'schema.sql').read_text(encoding='utf8');sample=(ROOT/'sample-data.sql').read_text(encoding='utf8')
 out=APP/'.template';out.mkdir(exist_ok=True)
-(out/'schema.sql').write_text(schema+'\n'+seed[:split])
-(out/'sample-data.sql').write_text(seed[split:])
+(out/'schema.sql').write_text(schema)
+(out/'sample-data.sql').write_text(sample)
 databases=[]
 for db_id,name,file_id,prod_id in [
     ('b6183ee9-2549-490f-8a7f-08df0d50fde0','booking_db',FILE,None),
     ('02de9e3b-ceb0-42fb-8a80-08df0d50fde0','booking_production_db',PROD_FILE,PROD_FILE),
 ]:
-    databases.append({'Id':db_id,'Name':name,'Type':0,'FileId':file_id,'FileProdIdGuid':prod_id,'ProjectId':PROJECT,'SQLScript':schema+'\n'+seed[:split],'SQLScriptProd':schema+'\n'+seed[:split]})
-bundle={'Projects':[{'Name':'Booking','Path':'booking','IsPrivate':False,'Template':{'Endpoints':[g['Endpoint'] for g in graphs],'Nodes':[n for g in graphs for n in g['Nodes']],'Keys':[],'Databases':databases,'WebSockets':[],'TestRequests':[],'Snippets':[]}}]}
+    databases.append({'Id':db_id,'Name':name,'Type':3,'SelfHosted':False,'Server':'','Port':1433,'FileId':file_id,'FileProdIdGuid':prod_id,'ProjectId':PROJECT,'SQLScript':schema,'SQLScriptProd':schema})
+bundle={'Projects':[{'Name':'Booking','Path':'booking','IsPrivate':False,'Template':{'Endpoints':[g['Endpoint'] for g in graphs],'Nodes':[n for g in graphs for n in g['Nodes']],'Keys':json.loads((ROOT/'email-selectors.json').read_text(encoding='utf8')),'Databases':databases,'WebSockets':[],'TestRequests':[],'Snippets':[]}}]}
 (out/'workflow-template.json').write_text(json.dumps(bundle,indent=2))
 print(f'Packaged {len(graphs)} native workflows, {sum(len(g["Nodes"]) for g in graphs)} nodes, schema and sandbox sample data.')

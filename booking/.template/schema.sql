@@ -1,49 +1,445 @@
-PRAGMA foreign_keys=ON;
-CREATE TABLE IF NOT EXISTS customer_accounts (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, user_id TEXT UNIQUE NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL, updated INTEGER NOT NULL);
-CREATE TABLE IF NOT EXISTS booking_accounts (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, booking_ref TEXT UNIQUE NOT NULL REFERENCES bookings(reference), user_id TEXT NOT NULL, created INTEGER NOT NULL);
-CREATE INDEX IF NOT EXISTS booking_account_user ON booking_accounts(user_id);
-CREATE TABLE IF NOT EXISTS settings (Id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT UNIQUE NOT NULL, value TEXT NOT NULL);
-INSERT OR IGNORE INTO settings(key,value) VALUES('_revision','0');
-CREATE TABLE IF NOT EXISTS write_guard (Id INTEGER PRIMARY KEY AUTOINCREMENT, expected TEXT NOT NULL);
-CREATE TRIGGER IF NOT EXISTS guard_revision BEFORE INSERT ON write_guard BEGIN
- SELECT RAISE(ABORT,'The calendar changed. Please retry your request.') WHERE NEW.expected<>(SELECT value FROM settings WHERE key='_revision');
-END;
-CREATE TABLE IF NOT EXISTS services (Id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL DEFAULT 'Wellness', description TEXT NOT NULL DEFAULT '', duration INTEGER NOT NULL CHECK(duration BETWEEN 5 AND 480), buffer INTEGER NOT NULL DEFAULT 10 CHECK(buffer BETWEEN 0 AND 120), price INTEGER NOT NULL CHECK(price>=0), deposit_percent INTEGER NOT NULL DEFAULT 100 CHECK(deposit_percent BETWEEN 1 AND 100), resource_type TEXT NOT NULL DEFAULT '', active INTEGER NOT NULL DEFAULT 1, color TEXT NOT NULL DEFAULT '#b5c8b5', intake TEXT NOT NULL DEFAULT '');
-CREATE TABLE IF NOT EXISTS staff (Id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, title TEXT NOT NULL DEFAULT '', bio TEXT NOT NULL DEFAULT '', color TEXT NOT NULL DEFAULT '#b5c8b5', service_ids TEXT NOT NULL DEFAULT '[]', hours TEXT NOT NULL DEFAULT '{}', active INTEGER NOT NULL DEFAULT 1);
-CREATE TABLE IF NOT EXISTS resources (Id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, type TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);
-CREATE TABLE IF NOT EXISTS blocks (Id INTEGER PRIMARY KEY AUTOINCREMENT, staff_id INTEGER REFERENCES staff(Id), resource_id INTEGER REFERENCES resources(Id), starts INTEGER NOT NULL, ends INTEGER NOT NULL CHECK(ends>starts), reason TEXT NOT NULL DEFAULT 'Unavailable');
-CREATE TABLE IF NOT EXISTS customers (Id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', notes TEXT NOT NULL DEFAULT '', marketing INTEGER NOT NULL DEFAULT 0, created INTEGER NOT NULL);
-CREATE TABLE IF NOT EXISTS bookings (Id INTEGER PRIMARY KEY AUTOINCREMENT, reference TEXT UNIQUE NOT NULL, token_hash TEXT NOT NULL, request_key TEXT UNIQUE NOT NULL, customer_id INTEGER NOT NULL REFERENCES customers(Id), starts INTEGER NOT NULL, ends INTEGER NOT NULL, status TEXT NOT NULL CHECK(status IN ('held','confirmed','arrived','completed','cancelled','no_show','expired','payment_review')), expires INTEGER NOT NULL, total INTEGER NOT NULL, due INTEGER NOT NULL, paid INTEGER NOT NULL DEFAULT 0, refunded INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL, notes TEXT NOT NULL DEFAULT '', intake TEXT NOT NULL DEFAULT '{}', payment_id TEXT, payment_url TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL, version INTEGER NOT NULL DEFAULT 1);
-CREATE TABLE IF NOT EXISTS allocations (Id INTEGER PRIMARY KEY AUTOINCREMENT, booking_ref TEXT NOT NULL REFERENCES bookings(reference), service_id INTEGER NOT NULL REFERENCES services(Id), staff_id INTEGER NOT NULL REFERENCES staff(Id), resource_id INTEGER REFERENCES resources(Id), starts INTEGER NOT NULL, ends INTEGER NOT NULL CHECK(ends>starts), service_name TEXT NOT NULL, price INTEGER NOT NULL, duration INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1);
-CREATE INDEX IF NOT EXISTS allocations_staff_time ON allocations(staff_id,starts,ends,active);
-CREATE INDEX IF NOT EXISTS allocations_resource_time ON allocations(resource_id,starts,ends,active);
-CREATE TABLE IF NOT EXISTS payments (Id INTEGER PRIMARY KEY AUTOINCREMENT, booking_ref TEXT NOT NULL REFERENCES bookings(reference), external_id TEXT UNIQUE NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('payment','refund','cash')), amount INTEGER NOT NULL CHECK(amount>0), status TEXT NOT NULL, created INTEGER NOT NULL);
-CREATE TABLE IF NOT EXISTS refund_requests (Id INTEGER PRIMARY KEY AUTOINCREMENT, request_key TEXT UNIQUE NOT NULL, booking_ref TEXT NOT NULL REFERENCES bookings(reference), amount INTEGER NOT NULL CHECK(amount>0), status TEXT NOT NULL DEFAULT 'pending', provider_id TEXT, created INTEGER NOT NULL);
-DROP INDEX IF EXISTS one_pending_refund;
-CREATE UNIQUE INDEX one_pending_refund ON refund_requests(booking_ref) WHERE status NOT IN ('succeeded','failed');
-CREATE TABLE IF NOT EXISTS waitlist (Id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', service_id INTEGER NOT NULL REFERENCES services(Id), staff_id INTEGER REFERENCES staff(Id), preferred_date TEXT NOT NULL, notes TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'waiting', created INTEGER NOT NULL);
-CREATE TABLE IF NOT EXISTS promos (Id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT UNIQUE NOT NULL, percent INTEGER NOT NULL CHECK(percent BETWEEN 1 AND 100), ends TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);
-CREATE TABLE IF NOT EXISTS messages (Id INTEGER PRIMARY KEY AUTOINCREMENT, booking_ref TEXT, recipient TEXT NOT NULL, subject TEXT NOT NULL, body TEXT NOT NULL, due INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'queued', attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT NOT NULL DEFAULT '', dedupe TEXT UNIQUE NOT NULL);
-CREATE TABLE IF NOT EXISTS audit (Id INTEGER PRIMARY KEY AUTOINCREMENT, booking_ref TEXT, action TEXT NOT NULL, actor TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL);
-CREATE TRIGGER IF NOT EXISTS allocation_no_overlap BEFORE INSERT ON allocations WHEN NEW.active=1 BEGIN
- SELECT RAISE(ABORT,'That time was just booked. Please choose another slot.') WHERE EXISTS(SELECT 1 FROM allocations a JOIN bookings b ON b.reference=a.booking_ref WHERE a.active=1 AND (b.status<>'held' OR b.expires>CAST(strftime('%s','now') AS INTEGER)) AND a.starts<NEW.ends AND a.ends>NEW.starts AND (a.staff_id=NEW.staff_id OR (NEW.resource_id IS NOT NULL AND a.resource_id=NEW.resource_id)));
- SELECT RAISE(ABORT,'This time is blocked.') WHERE EXISTS(SELECT 1 FROM blocks b WHERE b.starts<NEW.ends AND b.ends>NEW.starts AND ((b.staff_id IS NULL AND b.resource_id IS NULL) OR b.staff_id=NEW.staff_id OR (NEW.resource_id IS NOT NULL AND b.resource_id=NEW.resource_id)));
-END;
-CREATE TRIGGER IF NOT EXISTS blocks_no_booking BEFORE INSERT ON blocks BEGIN
- SELECT RAISE(ABORT,'Move or cancel the affected appointments before blocking this time.') WHERE EXISTS(SELECT 1 FROM allocations a JOIN bookings b ON b.reference=a.booking_ref WHERE a.active=1 AND (b.status<>'held' OR b.expires>CAST(strftime('%s','now') AS INTEGER)) AND a.starts<NEW.ends AND a.ends>NEW.starts AND ((NEW.staff_id IS NULL AND NEW.resource_id IS NULL) OR a.staff_id=NEW.staff_id OR (NEW.resource_id IS NOT NULL AND a.resource_id=NEW.resource_id)));
-END;
+-- Microsoft SQL Server 2022 / Cloudgate managed schema. Fresh installations only.
 
-CREATE TABLE IF NOT EXISTS abandoned_booking_requests (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, request_key TEXT NOT NULL UNIQUE, created INTEGER NOT NULL);
-CREATE TRIGGER IF NOT EXISTS prevent_abandoned_booking BEFORE INSERT ON bookings WHEN EXISTS(SELECT 1 FROM abandoned_booking_requests WHERE request_key=NEW.request_key) BEGIN SELECT RAISE(ABORT,'This reservation request was released. Start a new booking.'); END;
+SET NOCOUNT ON; SET XACT_ABORT ON;
 
-INSERT OR IGNORE INTO settings(key,value) VALUES ('app_name',''),('app_short_name',''),('logo_url',''),('icon_url',''),('favicon_url',''),('logo_show_name','1'),('theme_primary','#000000'),('theme_accent','#737373'),('theme_background','#ffffff');
-CREATE TABLE IF NOT EXISTS service_metadata (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, service_id INTEGER NOT NULL UNIQUE REFERENCES services(Id), image_url TEXT NOT NULL DEFAULT '', deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)));
-CREATE TABLE IF NOT EXISTS staff_metadata (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, staff_id INTEGER NOT NULL UNIQUE REFERENCES staff(Id), image_url TEXT NOT NULL DEFAULT '');
-INSERT OR IGNORE INTO settings(key,value) VALUES
-('hero_image_url','/images/studio.png'),('about_image_url','/images/studio.png'),
-('hero_kicker','BOOK ONLINE'),('hero_title','Book your next appointment.'),
-('hero_subtitle','Choose a service. Find a time that works for you.'),
-('services_title','Explore our services.'),('services_intro','Browse services, compare options and book your preferred time.');
+IF OBJECT_ID(N'customer_accounts',N'U') IS NULL
+CREATE TABLE [customer_accounts] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [user_id] NVARCHAR(254) NOT NULL,
+    [name] NVARCHAR(MAX) NOT NULL,
+    [phone] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [created] BIGINT NOT NULL,
+    [updated] BIGINT NOT NULL
+);
 
-INSERT OR IGNORE INTO settings(key,value) VALUES
-('name','Still Studio'),('tagline','A little time. Entirely yours.'),('description','Thoughtful treatments, talented people, and a moment to slow down. Book your next massage, manicure, or reset.'),('currency','ZAR'),('timezone','Africa/Johannesburg'),('address','12 Kloof Street, Cape Town'),('phone','+27 21 555 0120'),('email','hello@example.com'),('lead_minutes','60'),('horizon_days','90'),('cancel_hours','24'),('hold_minutes','10'),('slot_minutes','15'),('website_url',''),('cancellation_policy','You can reschedule or cancel online up to 24 hours before your appointment. Eligible paid cancellations are reviewed for a refund by our team. Late cancellations: please contact the studio.'),('smtp_host',''),('smtp_port','587'),('smtp_user',''),('smtp_password',''),('smtp_from',''),('smtp_mode','starttls'),('reminder_hours','24');
+IF OBJECT_ID(N'booking_accounts',N'U') IS NULL
+CREATE TABLE [booking_accounts] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [booking_ref] NVARCHAR(254) NOT NULL,
+    [user_id] NVARCHAR(254) NOT NULL,
+    [created] BIGINT NOT NULL
+);
+
+IF OBJECT_ID(N'settings',N'U') IS NULL
+CREATE TABLE [settings] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [key] NVARCHAR(254) NOT NULL,
+    [value] NVARCHAR(MAX) NOT NULL
+);
+
+IF OBJECT_ID(N'services',N'U') IS NULL
+CREATE TABLE [services] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [name] NVARCHAR(MAX) NOT NULL,
+    [category] NVARCHAR(MAX) NOT NULL DEFAULT ('Wellness'),
+    [description] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [duration] BIGINT NOT NULL,
+    [buffer] BIGINT NOT NULL DEFAULT (10),
+    [price] BIGINT NOT NULL,
+    [deposit_percent] BIGINT NOT NULL DEFAULT (100),
+    [resource_type] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [active] BIGINT NOT NULL DEFAULT (1),
+    [color] NVARCHAR(MAX) NOT NULL DEFAULT ('#b5c8b5'),
+    [intake] NVARCHAR(MAX) NOT NULL DEFAULT ('')
+);
+
+IF OBJECT_ID(N'staff',N'U') IS NULL
+CREATE TABLE [staff] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [name] NVARCHAR(MAX) NOT NULL,
+    [title] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [bio] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [color] NVARCHAR(MAX) NOT NULL DEFAULT ('#b5c8b5'),
+    [service_ids] NVARCHAR(MAX) NOT NULL DEFAULT ('[]'),
+    [hours] NVARCHAR(MAX) NOT NULL DEFAULT ('{}'),
+    [active] BIGINT NOT NULL DEFAULT (1)
+);
+
+IF OBJECT_ID(N'resources',N'U') IS NULL
+CREATE TABLE [resources] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [name] NVARCHAR(MAX) NOT NULL,
+    [type] NVARCHAR(MAX) NOT NULL,
+    [active] BIGINT NOT NULL DEFAULT (1)
+);
+
+IF OBJECT_ID(N'blocks',N'U') IS NULL
+CREATE TABLE [blocks] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [staff_id] INT NULL,
+    [resource_id] INT NULL,
+    [starts] BIGINT NOT NULL,
+    [ends] BIGINT NOT NULL,
+    [reason] NVARCHAR(MAX) NOT NULL DEFAULT ('Unavailable')
+);
+
+IF OBJECT_ID(N'customers',N'U') IS NULL
+CREATE TABLE [customers] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [email] NVARCHAR(254) NOT NULL,
+    [name] NVARCHAR(MAX) NOT NULL,
+    [phone] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [notes] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [marketing] BIGINT NOT NULL DEFAULT (0),
+    [created] BIGINT NOT NULL
+);
+
+IF OBJECT_ID(N'bookings',N'U') IS NULL
+CREATE TABLE [bookings] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [reference] NVARCHAR(254) NOT NULL,
+    [token_hash] NVARCHAR(MAX) NOT NULL,
+    [request_key] NVARCHAR(254) NOT NULL,
+    [customer_id] INT NOT NULL,
+    [starts] BIGINT NOT NULL,
+    [ends] BIGINT NOT NULL,
+    [status] NVARCHAR(MAX) NOT NULL,
+    [expires] BIGINT NOT NULL,
+    [total] BIGINT NOT NULL,
+    [due] BIGINT NOT NULL,
+    [paid] BIGINT NOT NULL DEFAULT (0),
+    [refunded] BIGINT NOT NULL DEFAULT (0),
+    [currency] NVARCHAR(MAX) NOT NULL,
+    [notes] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [intake] NVARCHAR(MAX) NOT NULL DEFAULT ('{}'),
+    [payment_id] NVARCHAR(MAX) NULL,
+    [payment_url] NVARCHAR(MAX) NULL,
+    [created] BIGINT NOT NULL,
+    [updated] BIGINT NOT NULL,
+    [version] BIGINT NOT NULL DEFAULT (1)
+);
+
+IF OBJECT_ID(N'allocations',N'U') IS NULL
+CREATE TABLE [allocations] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [booking_ref] NVARCHAR(254) NOT NULL,
+    [service_id] INT NOT NULL,
+    [staff_id] INT NOT NULL,
+    [resource_id] INT NULL,
+    [starts] BIGINT NOT NULL,
+    [ends] BIGINT NOT NULL,
+    [service_name] NVARCHAR(MAX) NOT NULL,
+    [price] BIGINT NOT NULL,
+    [duration] BIGINT NOT NULL,
+    [active] BIGINT NOT NULL DEFAULT (1)
+);
+
+IF OBJECT_ID(N'payments',N'U') IS NULL
+CREATE TABLE [payments] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [booking_ref] NVARCHAR(254) NOT NULL,
+    [external_id] NVARCHAR(254) NOT NULL,
+    [kind] NVARCHAR(254) NOT NULL,
+    [amount] BIGINT NOT NULL,
+    [status] NVARCHAR(MAX) NOT NULL,
+    [created] BIGINT NOT NULL
+);
+
+IF OBJECT_ID(N'refund_requests',N'U') IS NULL
+CREATE TABLE [refund_requests] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [request_key] NVARCHAR(254) NOT NULL,
+    [booking_ref] NVARCHAR(254) NOT NULL,
+    [amount] BIGINT NOT NULL,
+    [status] NVARCHAR(MAX) NOT NULL DEFAULT ('pending'),
+    [provider_id] NVARCHAR(MAX) NULL,
+    [created] BIGINT NOT NULL
+);
+
+IF OBJECT_ID(N'waitlist',N'U') IS NULL
+CREATE TABLE [waitlist] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [name] NVARCHAR(MAX) NOT NULL,
+    [email] NVARCHAR(MAX) NOT NULL,
+    [phone] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [service_id] INT NOT NULL,
+    [staff_id] INT NULL,
+    [preferred_date] NVARCHAR(MAX) NOT NULL,
+    [notes] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [status] NVARCHAR(MAX) NOT NULL DEFAULT ('waiting'),
+    [created] BIGINT NOT NULL
+);
+
+IF OBJECT_ID(N'promos',N'U') IS NULL
+CREATE TABLE [promos] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [code] NVARCHAR(254) NOT NULL,
+    [percent] BIGINT NOT NULL,
+    [ends] NVARCHAR(MAX) NOT NULL,
+    [active] BIGINT NOT NULL DEFAULT (1)
+);
+
+IF OBJECT_ID(N'messages',N'U') IS NULL
+CREATE TABLE [messages] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [booking_ref] NVARCHAR(254) NULL,
+    [recipient] NVARCHAR(MAX) NOT NULL,
+    [subject] NVARCHAR(MAX) NOT NULL,
+    [body] NVARCHAR(MAX) NOT NULL,
+    [due] BIGINT NOT NULL,
+    [status] NVARCHAR(MAX) NOT NULL DEFAULT ('queued'),
+    [attempts] BIGINT NOT NULL DEFAULT (0),
+    [last_error] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [dedupe] NVARCHAR(254) NOT NULL
+);
+
+IF OBJECT_ID(N'audit',N'U') IS NULL
+CREATE TABLE [audit] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [booking_ref] NVARCHAR(254) NULL,
+    [action] NVARCHAR(MAX) NOT NULL,
+    [actor] NVARCHAR(MAX) NOT NULL,
+    [detail] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [created] BIGINT NOT NULL
+);
+
+IF OBJECT_ID(N'abandoned_booking_requests',N'U') IS NULL
+CREATE TABLE [abandoned_booking_requests] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [request_key] NVARCHAR(254) NOT NULL,
+    [created] BIGINT NOT NULL
+);
+
+IF OBJECT_ID(N'service_metadata',N'U') IS NULL
+CREATE TABLE [service_metadata] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [service_id] INT NOT NULL,
+    [image_url] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [deleted] BIGINT NOT NULL DEFAULT (0)
+);
+
+IF OBJECT_ID(N'staff_metadata',N'U') IS NULL
+CREATE TABLE [staff_metadata] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [staff_id] INT NOT NULL,
+    [image_url] NVARCHAR(MAX) NOT NULL DEFAULT ('')
+);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'customer_accounts') AND name=N'ux_customer_accounts_0')
+CREATE UNIQUE INDEX [ux_customer_accounts_0] ON [customer_accounts] ([user_id]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'booking_accounts') AND name=N'booking_account_user')
+CREATE INDEX [booking_account_user] ON [booking_accounts] ([user_id]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'booking_accounts') AND name=N'ux_booking_accounts_1')
+CREATE UNIQUE INDEX [ux_booking_accounts_1] ON [booking_accounts] ([booking_ref]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'settings') AND name=N'ux_settings_0')
+CREATE UNIQUE INDEX [ux_settings_0] ON [settings] ([key]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'customers') AND name=N'ux_customers_0')
+CREATE UNIQUE INDEX [ux_customers_0] ON [customers] ([email]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'bookings') AND name=N'ux_bookings_0')
+CREATE UNIQUE INDEX [ux_bookings_0] ON [bookings] ([request_key]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'bookings') AND name=N'ux_bookings_1')
+CREATE UNIQUE INDEX [ux_bookings_1] ON [bookings] ([reference]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'allocations') AND name=N'allocations_resource_time')
+CREATE INDEX [allocations_resource_time] ON [allocations] ([resource_id], [starts], [ends], [active]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'allocations') AND name=N'allocations_staff_time')
+CREATE INDEX [allocations_staff_time] ON [allocations] ([staff_id], [starts], [ends], [active]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'payments') AND name=N'ux_payments_0')
+CREATE UNIQUE INDEX [ux_payments_0] ON [payments] ([external_id]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'refund_requests') AND name=N'one_pending_refund')
+CREATE UNIQUE INDEX [one_pending_refund] ON [refund_requests] ([booking_ref]) WHERE status <> 'succeeded' AND status <> 'failed';
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'refund_requests') AND name=N'ux_refund_requests_1')
+CREATE UNIQUE INDEX [ux_refund_requests_1] ON [refund_requests] ([request_key]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'promos') AND name=N'ux_promos_0')
+CREATE UNIQUE INDEX [ux_promos_0] ON [promos] ([code]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'messages') AND name=N'ux_messages_0')
+CREATE UNIQUE INDEX [ux_messages_0] ON [messages] ([dedupe]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'abandoned_booking_requests') AND name=N'ux_abandoned_booking_requests_0')
+CREATE UNIQUE INDEX [ux_abandoned_booking_requests_0] ON [abandoned_booking_requests] ([request_key]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'service_metadata') AND name=N'ux_service_metadata_0')
+CREATE UNIQUE INDEX [ux_service_metadata_0] ON [service_metadata] ([service_id]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'staff_metadata') AND name=N'ux_staff_metadata_0')
+CREATE UNIQUE INDEX [ux_staff_metadata_0] ON [staff_metadata] ([staff_id]);
+
+IF OBJECT_ID(N'fk_booking_accounts_booking_ref',N'F') IS NULL
+ALTER TABLE [booking_accounts] ADD CONSTRAINT [fk_booking_accounts_booking_ref] FOREIGN KEY ([booking_ref]) REFERENCES [bookings] ([reference]);
+
+IF OBJECT_ID(N'fk_blocks_resource_id',N'F') IS NULL
+ALTER TABLE [blocks] ADD CONSTRAINT [fk_blocks_resource_id] FOREIGN KEY ([resource_id]) REFERENCES [resources] ([Id]);
+
+IF OBJECT_ID(N'fk_blocks_staff_id',N'F') IS NULL
+ALTER TABLE [blocks] ADD CONSTRAINT [fk_blocks_staff_id] FOREIGN KEY ([staff_id]) REFERENCES [staff] ([Id]);
+
+IF OBJECT_ID(N'fk_bookings_customer_id',N'F') IS NULL
+ALTER TABLE [bookings] ADD CONSTRAINT [fk_bookings_customer_id] FOREIGN KEY ([customer_id]) REFERENCES [customers] ([Id]);
+
+IF OBJECT_ID(N'fk_allocations_resource_id',N'F') IS NULL
+ALTER TABLE [allocations] ADD CONSTRAINT [fk_allocations_resource_id] FOREIGN KEY ([resource_id]) REFERENCES [resources] ([Id]);
+
+IF OBJECT_ID(N'fk_allocations_staff_id',N'F') IS NULL
+ALTER TABLE [allocations] ADD CONSTRAINT [fk_allocations_staff_id] FOREIGN KEY ([staff_id]) REFERENCES [staff] ([Id]);
+
+IF OBJECT_ID(N'fk_allocations_service_id',N'F') IS NULL
+ALTER TABLE [allocations] ADD CONSTRAINT [fk_allocations_service_id] FOREIGN KEY ([service_id]) REFERENCES [services] ([Id]);
+
+IF OBJECT_ID(N'fk_allocations_booking_ref',N'F') IS NULL
+ALTER TABLE [allocations] ADD CONSTRAINT [fk_allocations_booking_ref] FOREIGN KEY ([booking_ref]) REFERENCES [bookings] ([reference]);
+
+IF OBJECT_ID(N'fk_payments_booking_ref',N'F') IS NULL
+ALTER TABLE [payments] ADD CONSTRAINT [fk_payments_booking_ref] FOREIGN KEY ([booking_ref]) REFERENCES [bookings] ([reference]);
+
+IF OBJECT_ID(N'fk_refund_requests_booking_ref',N'F') IS NULL
+ALTER TABLE [refund_requests] ADD CONSTRAINT [fk_refund_requests_booking_ref] FOREIGN KEY ([booking_ref]) REFERENCES [bookings] ([reference]);
+
+IF OBJECT_ID(N'fk_waitlist_staff_id',N'F') IS NULL
+ALTER TABLE [waitlist] ADD CONSTRAINT [fk_waitlist_staff_id] FOREIGN KEY ([staff_id]) REFERENCES [staff] ([Id]);
+
+IF OBJECT_ID(N'fk_waitlist_service_id',N'F') IS NULL
+ALTER TABLE [waitlist] ADD CONSTRAINT [fk_waitlist_service_id] FOREIGN KEY ([service_id]) REFERENCES [services] ([Id]);
+
+IF OBJECT_ID(N'fk_service_metadata_service_id',N'F') IS NULL
+ALTER TABLE [service_metadata] ADD CONSTRAINT [fk_service_metadata_service_id] FOREIGN KEY ([service_id]) REFERENCES [services] ([Id]);
+
+IF OBJECT_ID(N'fk_staff_metadata_staff_id',N'F') IS NULL
+ALTER TABLE [staff_metadata] ADD CONSTRAINT [fk_staff_metadata_staff_id] FOREIGN KEY ([staff_id]) REFERENCES [staff] ([Id]);
+SET IDENTITY_INSERT [settings] ON;
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=1)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (1, N'_revision', N'0');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=2)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (2, N'app_name', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=3)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (3, N'app_short_name', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=4)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (4, N'logo_url', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=5)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (5, N'icon_url', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=6)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (6, N'favicon_url', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=7)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (7, N'logo_show_name', N'1');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=8)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (8, N'theme_primary', N'#000000');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=9)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (9, N'theme_accent', N'#737373');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=10)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (10, N'theme_background', N'#ffffff');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=11)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (11, N'hero_image_url', N'/images/studio.png');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=12)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (12, N'about_image_url', N'/images/studio.png');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=13)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (13, N'hero_kicker', N'BOOK ONLINE');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=14)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (14, N'hero_title', N'Book your next appointment.');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=15)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (15, N'hero_subtitle', N'Choose a service. Find a time that works for you.');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=16)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (16, N'services_title', N'Explore our services.');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=17)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (17, N'services_intro', N'Browse services, compare options and book your preferred time.');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=18)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (18, N'name', N'Still Studio');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=19)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (19, N'tagline', N'A little time. Entirely yours.');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=20)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (20, N'description', N'Thoughtful treatments, talented people, and a moment to slow down. Book your next massage, manicure, or reset.');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=21)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (21, N'currency', N'ZAR');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=22)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (22, N'timezone', N'Africa/Johannesburg');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=23)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (23, N'address', N'12 Kloof Street, Cape Town');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=24)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (24, N'phone', N'+27 21 555 0120');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=25)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (25, N'email', N'hello@example.com');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=26)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (26, N'lead_minutes', N'60');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=27)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (27, N'horizon_days', N'90');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=28)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (28, N'cancel_hours', N'24');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=29)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (29, N'hold_minutes', N'10');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=30)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (30, N'slot_minutes', N'15');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=31)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (31, N'website_url', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=32)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (32, N'cancellation_policy', N'You can reschedule or cancel online up to 24 hours before your appointment. Eligible paid cancellations are reviewed for a refund by our team. Late cancellations: please contact the studio.');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=33)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (33, N'smtp_host', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=34)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (34, N'smtp_port', N'587');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=35)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (35, N'smtp_user', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=36)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (36, N'smtp_password', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=37)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (37, N'smtp_from', N'');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=38)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (38, N'smtp_mode', N'starttls');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=39)
+INSERT INTO [settings] ([Id], [key], [value]) VALUES (39, N'reminder_hours', N'24');
+SET IDENTITY_INSERT [settings] OFF;
+
+IF OBJECT_ID(N'ck_services_0',N'C') IS NULL ALTER TABLE [services] ADD CONSTRAINT [ck_services_0] CHECK ([duration] BETWEEN 5 AND 480);
+
+IF OBJECT_ID(N'ck_services_1',N'C') IS NULL ALTER TABLE [services] ADD CONSTRAINT [ck_services_1] CHECK ([buffer] BETWEEN 0 AND 120);
+
+IF OBJECT_ID(N'ck_services_2',N'C') IS NULL ALTER TABLE [services] ADD CONSTRAINT [ck_services_2] CHECK ([price] >= 0);
+
+IF OBJECT_ID(N'ck_services_3',N'C') IS NULL ALTER TABLE [services] ADD CONSTRAINT [ck_services_3] CHECK ([deposit_percent] BETWEEN 1 AND 100);
+
+IF OBJECT_ID(N'ck_blocks_0',N'C') IS NULL ALTER TABLE [blocks] ADD CONSTRAINT [ck_blocks_0] CHECK ([ends] > [starts]);
+
+IF OBJECT_ID(N'ck_bookings_0',N'C') IS NULL ALTER TABLE [bookings] ADD CONSTRAINT [ck_bookings_0] CHECK ([status] IN ('held', 'confirmed', 'arrived', 'completed', 'cancelled', 'no_show', 'expired', 'payment_review'));
+
+IF OBJECT_ID(N'ck_allocations_0',N'C') IS NULL ALTER TABLE [allocations] ADD CONSTRAINT [ck_allocations_0] CHECK ([ends] > [starts]);
+
+IF OBJECT_ID(N'ck_payments_0',N'C') IS NULL ALTER TABLE [payments] ADD CONSTRAINT [ck_payments_0] CHECK ([kind] IN ('payment', 'refund', 'cash'));
+
+IF OBJECT_ID(N'ck_payments_1',N'C') IS NULL ALTER TABLE [payments] ADD CONSTRAINT [ck_payments_1] CHECK ([amount] > 0);
+
+IF OBJECT_ID(N'ck_refund_requests_0',N'C') IS NULL ALTER TABLE [refund_requests] ADD CONSTRAINT [ck_refund_requests_0] CHECK ([amount] > 0);
+
+IF OBJECT_ID(N'ck_promos_0',N'C') IS NULL ALTER TABLE [promos] ADD CONSTRAINT [ck_promos_0] CHECK ([percent] BETWEEN 1 AND 100);
+
+IF OBJECT_ID(N'ck_service_metadata_0',N'C') IS NULL ALTER TABLE [service_metadata] ADD CONSTRAINT [ck_service_metadata_0] CHECK ([deleted] IN (0, 1));
+
+EXEC(N'CREATE OR ALTER TRIGGER [allocation_no_overlap] ON [allocations] AFTER INSERT,UPDATE AS
+BEGIN SET NOCOUNT ON;
+IF EXISTS(SELECT 1 FROM inserted i JOIN [allocations] a WITH (UPDLOCK,HOLDLOCK)
+ON i.[active]=1 AND a.[active]=1 AND a.[Id]<>i.[Id] AND a.[starts]<i.[ends] AND a.[ends]>i.[starts]
+AND (a.[staff_id]=i.[staff_id] OR (i.[resource_id] IS NOT NULL AND a.[resource_id]=i.[resource_id]))
+JOIN [bookings] b ON b.[reference]=a.[booking_ref]
+WHERE b.[status]<>''held'' OR b.[expires]>DATEDIFF_BIG(SECOND,''1970-01-01'',SYSUTCDATETIME()))
+THROW 50003, ''That time was just booked. Please choose another slot.'', 1;
+IF EXISTS(SELECT 1 FROM inserted i JOIN [blocks] b WITH (UPDLOCK,HOLDLOCK)
+ON i.[active]=1 AND b.[starts]<i.[ends] AND b.[ends]>i.[starts]
+AND ((b.[staff_id] IS NULL AND b.[resource_id] IS NULL) OR b.[staff_id]=i.[staff_id]
+OR (i.[resource_id] IS NOT NULL AND b.[resource_id]=i.[resource_id])))
+THROW 50003, ''This time is blocked.'', 1;
+END;');
+
+EXEC(N'CREATE OR ALTER TRIGGER [blocks_no_booking] ON [blocks] AFTER INSERT,UPDATE AS
+BEGIN SET NOCOUNT ON;
+IF EXISTS(SELECT 1 FROM inserted i JOIN [allocations] a WITH (UPDLOCK,HOLDLOCK)
+ON a.[active]=1 AND a.[starts]<i.[ends] AND a.[ends]>i.[starts]
+AND ((i.[staff_id] IS NULL AND i.[resource_id] IS NULL) OR a.[staff_id]=i.[staff_id]
+OR (i.[resource_id] IS NOT NULL AND a.[resource_id]=i.[resource_id]))
+JOIN [bookings] b ON b.[reference]=a.[booking_ref]
+WHERE b.[status]<>''held'' OR b.[expires]>DATEDIFF_BIG(SECOND,''1970-01-01'',SYSUTCDATETIME()))
+THROW 50003, ''Move or cancel the affected appointments before blocking this time.'', 1;
+END;');
+
+EXEC(N'CREATE OR ALTER TRIGGER [prevent_abandoned_booking] ON [bookings] AFTER INSERT AS
+BEGIN SET NOCOUNT ON;
+IF EXISTS(SELECT 1 FROM inserted i JOIN [abandoned_booking_requests] a WITH (UPDLOCK,HOLDLOCK) ON a.[request_key]=i.[request_key])
+THROW 50003, ''This reservation request was released. Start a new booking.'', 1;
+END;');

@@ -1,28 +1,20 @@
-# Admin Products — shape rows into the response.
 d = body()
 op = op_of(d, 'list')
-rows = rows_of('''${Run}''')
-
+rows = rows_of(value('Run'))
 if op == 'list':
     total = to_int(rows[0].get('TotalCount'), 0) if rows else 0
     for r in rows:
         r.pop('TotalCount', None)
     return out({'items': rows, 'total': total})
-
 if op == 'image-refs':
-    # Page bodies are markdown; the back office matches image URLs inside them by substring.
     texts = [str(r.get('Url')) for r in rows if r.get('Kind') == 'page' and r.get('Url')]
     rows = [r for r in rows if r.get('Kind') != 'page']
     file_ids = sorted({str(r.get('FileId')) for r in rows if r.get('FileId')})
     urls = sorted({str(u) for r in rows for u in (r.get('Url'), r.get('ThumbUrl')) if u})
     return out({'fileIds': file_ids, 'urls': urls, 'texts': texts, 'items': rows})
-
 if op == 'delete':
     r = rows[0] if rows else {}
-    return out({'id': to_int(r.get('Id'), 0), 'deleted': to_int(r.get('StillExists'), 0) == 0,
-                'archived': to_int(r.get('StillExists'), 0) == 1})
-
-# get / create / update / set-status / image ops -> full product
+    return out({'id': to_int(r.get('Id'), 0), 'deleted': to_int(r.get('StillExists'), 0) == 0, 'archived': to_int(r.get('StillExists'), 0) == 1})
 if not rows:
     fail('Product not found.')
 p = rows[0]

@@ -1,5 +1,7 @@
 > Historical implementation record. Jobs 2.0 now uses the Cloudgate React SDK; see README.md for current ownership, routes and configuration.
 
+Historical implementation notes. Version 3.0 replaces the database/runtime described below; follow [the current runtime contract](../SQL-SERVER-REWRITE.md).
+
 # Cloudgate Jobs — repository analysis and implementation plan
 
 Date: 2026-09-10. Status: planning complete; implementation not started.

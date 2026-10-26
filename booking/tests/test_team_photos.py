@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-import sqlite3
+import sqlserver
 import sys
 import unittest
 
@@ -12,7 +12,7 @@ ADMIN = {'Id': 12, 'IsActive': True, 'Role': 'Admin', 'Email': 'admin@example.co
 
 class TeamPhotoTests(unittest.TestCase):
     def setUp(self):
-        self.db = sqlite3.connect(':memory:'); self.db.row_factory = sqlite3.Row
+        self.db = sqlserver.connect(); self.db.row_factory = sqlserver.Row
         self.db.executescript((ROOT / 'schema.sql').read_text(encoding='utf-8') + (ROOT / 'seed.sql').read_text(encoding='utf-8'))
     def tearDown(self): self.db.close()
     def call(self, data, identity=ADMIN):
@@ -52,7 +52,7 @@ class TeamPhotoTests(unittest.TestCase):
 
     def test_inactive_staff_keeps_photo_and_migration_is_idempotent(self):
         self.save({'Id': 1, 'active': 0, 'image_url': '/photo.png'})
-        migration = (ROOT / 'migrations/1.6.0-team-photos.sql').read_text()
+        migration = (ROOT/'schema.sql').read_text()
         self.db.executescript(migration + migration)
         self.assertEqual(self.call({'op': 'admin-data'})['staff'][0]['image_url'], '/photo.png')
         self.assertFalse(any(p['Id'] == 1 for p in self.call({'op': 'catalog'}, None)['staff']))

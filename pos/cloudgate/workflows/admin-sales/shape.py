@@ -1,6 +1,6 @@
 d = body()
 op = op_of(d, 'list')
-rows = rows_of('''${Run}''')
+rows = rows_of(value('Run'))
 
 def shape_sale(r):
     """Row from SALE_DETAIL -> receipt-ready dict."""
@@ -13,7 +13,6 @@ def shape_sale(r):
     s['Settings'] = load_json(s.pop('SettingsJson', None), {}) or {}
     s['OutstandingCents'] = max(0, to_int(s.get('TotalCents'), 0) - to_int(s.get('PaidCents'), 0))
     return s
-
 if op == 'list':
     total = to_int(rows[0].get('TotalCount'), 0) if rows else 0
     for r in rows:

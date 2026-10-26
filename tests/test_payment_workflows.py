@@ -1,4 +1,4 @@
-"""Execute packaged payment graphs using SQLite and the native Wallet DTO contract.
+"""Execute packaged payment graphs using SQL Server and the native Wallet DTO contract.
 
 No HTTP calls, charges, refunds or emails leave this test. Run from the repo root:
 python -B -m unittest discover -s tests -p test_payment_workflows.py -v
@@ -6,7 +6,8 @@ python -B -m unittest discover -s tests -p test_payment_workflows.py -v
 import json
 from pathlib import Path
 import re
-import sqlite3
+import sqlserver
+import workflow
 import sys
 import time
 import types
@@ -21,8 +22,8 @@ CUSTOMER = dict(Id='2', Role='User', IsActive=True, Name='Guest', Email='guest@e
 class NativeGraph:
     def __init__(self, app):
         self.app = app
-        self.db = sqlite3.connect(':memory:', isolation_level=None)
-        self.db.row_factory = sqlite3.Row
+        self.db = sqlserver.connect()
+        self.db.row_factory = sqlserver.Row
         self.db.executescript((ROOT/app/'.template/schema.sql').read_text(encoding='utf8'))
         self.db.executescript((ROOT/app/'.template/sample-data.sql').read_text(encoding='utf8'))
         self.bundle = json.loads((ROOT/app/'.template/workflow-template.json').read_text(encoding='utf8'))['Projects'][0]['Template']
@@ -32,31 +33,14 @@ class NativeGraph:
         return [json.loads(r[0]) for r in self.db.execute('SELECT data FROM entities WHERE kind=?', (kind,))]
 
     def sql(self, script):
-        statement, result = '', []
-        try:
-            for c in script:
-                statement += c
-                if c == ';' and sqlite3.complete_statement(statement):
-                    cursor = self.db.execute(statement)
-                    if cursor.description: result = [dict(r) for r in cursor.fetchall()]
-                    statement = ''
-            if statement.strip():
-                cursor = self.db.execute(statement)
-                if cursor.description: result = [dict(r) for r in cursor.fetchall()]
-            return json.dumps(result)
-        except Exception:
-            self.db.rollback()
-            raise
+        return json.dumps([dict(r) for r in self.db.execute(script).fetchall()])
 
     def run(self, route, body=None, identity=ADMIN, wallet=None, scheduled=False, origin='https://merchant.example'):
         endpoint = next(e for e in self.bundle['Endpoints'] if e['Route'] == route)
         nodes = {n['Id']:n for n in self.bundle['Nodes'] if n['EndpointId'] == endpoint['Id']}
         values = {'body':json.dumps(body or {}), 'sessionid':'123', 'newguid':str(uuid.uuid4()), 'route':'Scheduled Job' if scheduled else '/sbx/'+self.app+'/'+route}
         if origin and not scheduled: values['Header_Origin'] = origin
-        context = types.SimpleNamespace(GetKeys=lambda sid:[types.SimpleNamespace(Key=k, Value=v) for k,v in values.items()])
-        modules = {'clr':types.SimpleNamespace(AddReference=lambda name:None), 'Web.Core.Shared.Services.Endpoints.Engine':types.SimpleNamespace(WorkflowSessionKeyExecutionContext=context)}
-        original = {k:sys.modules.get(k) for k in modules}
-        sys.modules.update(modules)
+        original={}
         def substitute(s):
             return re.sub(r'\$\{([^}]+)\}', lambda m:str(values.get(m[1], m[0])), s or '')
         current = endpoint['NodeId']
@@ -73,13 +57,7 @@ class NativeGraph:
                     if wallet is None: raise AssertionError('Unexpected Wallet call')
                     result = json.dumps(wallet(params))
                 elif kind in (1,4):
-                    # The modern bridge reads session keys. Older graphs substitute placeholders.
-                    script = script.replace('${sessionid}','123') if 'WorkflowSessionKeyExecutionContext' in script else substitute(script)
-                    # Match PythonProvider.PrepLambda for JSON interpolated into legacy scripts.
-                    script = script.replace(chr(92)+chr(34), chr(92)*2+chr(34))
-                    namespace = {}
-                    exec('def invoke():\n'+''.join('    '+line+'\n' for line in script.splitlines()), namespace)
-                    result = namespace['invoke']()
+                    result=workflow.run(script,values)
                 elif node.get('WebSocketId'): result = '{}' # Notification transport stub; no messages sent.
                 else: raise AssertionError('Unexpected node type '+str(kind))
                 values[node['Name']] = str(result)
@@ -96,22 +74,22 @@ class NativeGraph:
 class PaymentGraphTests(unittest.TestCase):
     def commerce(self, app, provider_patch=None, origin='https://merchant.example', configured='https://merchant.example'):
         g=NativeGraph(app)
-        g.db.execute("INSERT INTO settings(Key,Value) VALUES('store_url',?) ON CONFLICT(Key) DO UPDATE SET Value=excluded.Value",(configured,))
+        g.db.execute("UPDATE settings SET [Value]=? WHERE [Key]='store_url'",(configured,))
         if app=='shop':
             g.db.executescript("""
-                INSERT INTO products(Id,Name,Slug,TrackInventory,Status,PriceCents) VALUES(9001,'Test','payment-test',1,'active',500);
-                INSERT INTO product_variants(Id,ProductId,StockQty,IsActive) VALUES(9001,9001,10,1);
-                INSERT INTO carts(Id,Token,Status) VALUES(9001,'payment-test-cart','open');
+                SET IDENTITY_INSERT products ON; INSERT INTO products(Id,Name,Slug,TrackInventory,Status,PriceCents) VALUES(9001,'Test','payment-test',1,'active',500); SET IDENTITY_INSERT products OFF;
+                SET IDENTITY_INSERT product_variants ON; INSERT INTO product_variants(Id,ProductId,StockQty,IsActive) VALUES(9001,9001,10,1); SET IDENTITY_INSERT product_variants OFF;
+                SET IDENTITY_INSERT carts ON; INSERT INTO carts(Id,Token,Status) VALUES(9001,'payment-test-cart','open'); SET IDENTITY_INSERT carts OFF;
                 INSERT INTO cart_items(CartId,ProductId,VariantId,Qty,UnitPriceCents) VALUES(9001,9001,9001,2,500);
             """)
             request=dict(op='start',token='payment-test-cart',email=CUSTOMER['Email'],name='Guest',shippingAddress=dict(line1='Test',city='Test',postalCode='1000',country='ZA'))
             route='checkout'
         else:
             g.db.executescript("""
-                INSERT INTO products(Id,Name,StockQty,TrackInventory) VALUES(9001,'Test',10,1);
-                INSERT INTO shifts(Id,RegisterId,TellerUserId,Status) VALUES(9001,1,1,'open');
-                INSERT INTO sales(Id,Reference,ShiftId,RegisterId,TellerUserId,TotalCents,Status) VALUES(9001,'PAYMENT-TEST',9001,1,1,1000,'open');
-                INSERT INTO sale_items(Id,SaleId,ProductId,Name,Qty,LineTotalCents) VALUES(9001,9001,9001,'Test',2,1000);
+                SET IDENTITY_INSERT products ON; INSERT INTO products(Id,Name,StockQty,TrackInventory) VALUES(9001,'Test',10,1); SET IDENTITY_INSERT products OFF;
+                SET IDENTITY_INSERT shifts ON; INSERT INTO shifts(Id,RegisterId,TellerUserId,Status) VALUES(9001,1,1,'open'); SET IDENTITY_INSERT shifts OFF;
+                SET IDENTITY_INSERT sales ON; INSERT INTO sales(Id,Reference,ShiftId,RegisterId,TellerUserId,TotalCents,Status) VALUES(9001,'PAYMENT-TEST',9001,1,1,1000,'open'); SET IDENTITY_INSERT sales OFF;
+                SET IDENTITY_INSERT sale_items ON; INSERT INTO sale_items(Id,SaleId,ProductId,Name,Qty,LineTotalCents) VALUES(9001,9001,9001,'Test',2,1000); SET IDENTITY_INSERT sale_items OFF;
             """)
             request=dict(op='start',saleId=9001)
             route='pos-payment'
@@ -145,7 +123,7 @@ class PaymentGraphTests(unittest.TestCase):
                     g=NativeGraph(app)
                     try:
                         order=self.make_order(g)
-                        g.db.execute("UPDATE settings SET value=? WHERE key='website_url'",(configured,))
+                        g.db.execute("UPDATE settings SET [value]=? WHERE [key]='website_url'",(configured,))
                         def wallet(p):
                             path='/learn?payment=' if app=='courses' else '/account?payment='
                             self.assertEqual(p['Param7'],(configured or origin)+path+order['ref'])

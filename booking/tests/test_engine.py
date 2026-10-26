@@ -2,7 +2,7 @@ import datetime as dt
 import json
 from pathlib import Path
 import secrets
-import sqlite3
+import sqlserver
 import sys
 import time
 import unittest
@@ -13,7 +13,7 @@ ADMIN={'Role':'Admin','Email':'admin@example.com','IsActive':True}
 
 class BookingTests(unittest.TestCase):
  def setUp(self):
-  self.db=sqlite3.connect(':memory:');self.db.row_factory=sqlite3.Row
+  self.db=sqlserver.connect();self.db.row_factory=sqlserver.Row
   self.db.executescript((ROOT/'schema.sql').read_text()+(ROOT/'seed.sql').read_text())
   self.now=int(time.time());self.token=secrets.token_hex(32)
  def tearDown(self):self.db.close()
@@ -87,7 +87,7 @@ class BookingTests(unittest.TestCase):
   self.assertEqual(self.snapshot()['booking_accounts'][0]['booking_ref'],first['reference'])
  def test_quote_is_read_only_and_matches_discounted_deposit(self):
   self.db.execute('UPDATE services SET deposit_percent=30 WHERE Id=1')
-  self.db.execute("INSERT INTO promos(code,percent,ends,active) VALUES('RESET',15,'2099-12-31',1)")
+  self.db.execute("INSERT INTO promos(code,[percent],ends,active) VALUES('RESET',15,'2099-12-31',1)")
   before=self.snapshot();quote=self.run_op('quote',service_ids=[1],promo=' reset ',total=1,due=1)
   self.assertEqual(self.snapshot(),before)
   self.assertEqual((quote['total'],quote['due'],quote['balance'],quote['discount']),(63750,19125,44625,11250))
@@ -110,7 +110,7 @@ class BookingTests(unittest.TestCase):
   key=secrets.token_hex(16)
   with self.assertRaisesRegex(ValueError,'Admin access'):self.run_op('admin-abandon-hold',request_key=key)
   self.run_op('admin-abandon-hold',request_key=key,_identity=ADMIN)
-  with self.assertRaisesRegex(sqlite3.IntegrityError,'released'):self.hold(request_key=key)
+  with self.assertRaisesRegex(sqlserver.IntegrityError,'released'):self.hold(request_key=key)
   self.assertEqual(self.snapshot()['bookings'],[]);self.assertEqual(self.snapshot()['customers'],[])
  def test_release_existing_frontdesk_hold_and_protect_paid_booking(self):
   key=secrets.token_hex(16);b=self.hold(request_key=key)
@@ -124,7 +124,7 @@ class BookingTests(unittest.TestCase):
   d=dict(op='hold',service_ids=[1],staff_id=slot['staff_id'],starts=slot['starts'],name='Late Request',email='late-request@example.com',consent=True,token=self.token,request_key=key)
   sql,_=plan(self.snapshot(),d,now=self.now)
   self.run_op('admin-abandon-hold',request_key=key,_identity=ADMIN)
-  with self.assertRaisesRegex(sqlite3.IntegrityError,'calendar changed'):self.db.executescript(sql)
+  with self.assertRaisesRegex(sqlserver.IntegrityError,'calendar changed'):self.db.executescript(sql)
   self.db.rollback();self.assertFalse(self.snapshot()['bookings'])
  def test_same_staff_overlap_rejected(self):
   slot=self.slot();self.hold(slot)
@@ -136,11 +136,11 @@ class BookingTests(unittest.TestCase):
  def test_stale_snapshot_is_rejected_atomically(self):
   before=self.snapshot();slot=self.slot();d=dict(op='hold',service_ids=[1],staff_id=1,starts=slot['starts'],name='Concurrent Customer',email='race@example.com',consent=True,token=self.token,request_key=secrets.token_hex(16))
   sql,_=plan(before,d,now=self.now);self.hold(slot)
-  with self.assertRaisesRegex(sqlite3.IntegrityError,'calendar changed'):self.db.executescript(sql)
+  with self.assertRaisesRegex(sqlserver.IntegrityError,'calendar changed'):self.db.executescript(sql)
   self.db.rollback();self.assertEqual(len(self.snapshot()['bookings']),1)
  def test_sql_trigger_rejects_direct_overlap(self):
   b=self.hold();a=self.snapshot()['allocations'][0]
-  with self.assertRaisesRegex(sqlite3.IntegrityError,'just booked'):
+  with self.assertRaisesRegex(sqlserver.IntegrityError,'just booked'):
    self.db.execute('INSERT INTO allocations(booking_ref,service_id,staff_id,resource_id,starts,ends,service_name,price,duration) VALUES(?,?,?,?,?,?,?,?,?)',(b['reference'],1,1,1,a['starts'],a['ends'],'Collision',1,60))
  def test_payment_is_idempotent(self):
   b=self.hold();self.pay(b)
@@ -195,7 +195,7 @@ class BookingTests(unittest.TestCase):
   with self.assertRaises(ValueError):self.run_op('refund-claim',reference=b['reference'],amount=100000,request_key=secrets.token_hex(16),_identity=ADMIN,_internal=True)
  def test_block_rejects_existing_booking(self):
   b=self.hold()
-  with self.assertRaisesRegex(sqlite3.IntegrityError,'affected appointments'):self.run_op('admin-block',starts=b['starts'],ends=b['ends'],staff_id=1,reason='Leave',_identity=ADMIN)
+  with self.assertRaisesRegex(sqlserver.IntegrityError,'affected appointments'):self.run_op('admin-block',starts=b['starts'],ends=b['ends'],staff_id=1,reason='Leave',_identity=ADMIN)
  def test_promo_and_validation(self):
   self.run_op('admin-save',entity='promos',record=dict(code='CALM10',percent=10,ends='2099-12-31',active=1),_identity=ADMIN)
   b=self.hold(promo='calm10');self.assertEqual(b['total'],67500)

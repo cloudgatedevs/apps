@@ -1,6 +1,9 @@
 # Cloudgate Booking
 
-Booking 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`. This project contains the booking product; the package supplies shared Cloudgate functionality.
+Version 3.0 uses managed Microsoft SQL Server and standard Python workflows. Fresh installation is required; see [runtime, email and development setup](../SQL-SERVER-REWRITE.md).
+
+
+Booking 3.0.0 uses `@cloudgatedevs/cloudgate-client-react@0.1.20`. This project contains the booking product; the package supplies shared Cloudgate functionality.
 
 ## Ownership
 
@@ -11,7 +14,7 @@ Booking 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`. This project c
 | Overview, calendar, appointments, clients, services, team, rooms, waitlist and promotions | Back-office layout, navigation, responsive menu and developer/widget tools |
 | Booking reports, appointment email outbox, business details and booking rules | Analytics, workflow logs, users, roles, registration and notifications |
 | Service/team/homepage photo editors and image-reference checks | Media storage/library, appearance, theme, website settings, SMTP and payment administration |
-| Python booking workflows, SQLite and Wallet orchestration | Native platform API clients |
+| Python booking workflows, SQL Server and Wallet orchestration | Native platform API clients |
 
 There is no copied `src/shared` platform implementation. Extend Booking modules in `src/booking`; change shared functionality in the React SDK project and update the npm dependency here.
 
@@ -31,7 +34,7 @@ Configure the values documented in `.env.example`:
 - `VITE_IDP_RETURN_URL`: optional configured origin for the customer callback; back-office sign-in returns to the requested admin page.
 - `VITE_API_KEY`, `VITE_API_SECRET`: existing App Store workflow gateway signing configuration, when required. These are browser-visible and do not replace IdP authorization. Never put payment-provider or SMTP secrets in Vite variables.
 
-App name, logo, icon, theme and browser metadata come from the SDK appearance settings. The business name, contact details, About text, homepage content and booking policy remain in Booking settings. Existing app-local branding values are not migrated to Cloudgate appearance; configure appearance through the SDK. No Booking database migration or workflow changes are required for this frontend release.
+App name, logo, icon, theme and browser metadata come from the SDK appearance settings. The business name, contact details, About text, homepage content and booking policy remain in Booking settings. Existing app-local branding values are not migrated to Cloudgate appearance; configure appearance through the SDK. The version 3.0 workflow and database rewrite requires a fresh installation.
 
 Image editors use the SDK file client and store files in `booking/media` or `booking/branding`. The shared Media page lists these folders. Before deletion, Booking checks a fresh snapshot of service, team and homepage references, plus SDK appearance references, and blocks removal of an image still in use. Personal profile photos use the SDK profile API. Local preview image URLs are only usable in the local simulator.
 
@@ -58,7 +61,7 @@ npm run dev:api
 npm run dev:preview
 ```
 
-Open `http://127.0.0.1:3002/` or `/admin`. The Python API runs on port 3003 with `.local/booking.sqlite`. Preview has a development-only administrator adapter, simulated payments and local PNG media storage. Its appearance changes are temporary. Customer login, analytics, email, real Wallet payments and other native platform features require a connected Cloudgate environment. The preview adapter is excluded from production builds.
+Open `http://127.0.0.1:3002/` or `/admin`. The Python API runs on port 3003 with `a dedicated SQL Server development database`. Preview has a development-only administrator adapter, simulated payments and local PNG media storage. Its appearance changes are temporary. Customer login, analytics, email, real Wallet payments and other native platform features require a connected Cloudgate environment. The preview adapter is excluded from production builds.
 
 For connected development, set `.env` and run `npm run dev`. Do not use the preview simulator for hosted payment verification. The Vite configuration accepts Cloudgate's generated `*.api.cloudgate.dev` preview hosts.
 
@@ -71,13 +74,13 @@ npm run test:ui
 npm run build
 ```
 
-`npm test` checks the Python engine, generated workflows and frontend domain helpers. `test:ui` starts its own Vite server and isolated temporary SQLite API on ports 3292/3293, then cleans them up. It exercises checkout, payment confirmation, rescheduling, administrative actions, refunds, custom settings, media protection, responsive navigation and SDK integration. Native Cloudgate APIs are mocked for these tests; they do not mutate hosted data. Optional `BOOKING_TEST_OUTPUT_DIR` saves screenshots.
+`npm test` checks the Python engine, generated workflows and frontend domain helpers. `test:ui` starts its own Vite server and isolated temporary SQL Server API on ports 3292/3293, then cleans them up. It exercises checkout, payment confirmation, rescheduling, administrative actions, refunds, custom settings, media protection, responsive navigation and SDK integration. Native Cloudgate APIs are mocked for these tests; they do not mutate hosted data. Optional `BOOKING_TEST_OUTPUT_DIR` saves screenshots.
 
 Production output is `dist/`. `npm run build:dev` produces a build with source maps. The App Store entry is in `../apps.json` and `template.json`; keep them in sync. Only run `npm run cloudgate:package` when regenerating the workflow bundle from the Python sources. Publishing or updating an installed app is a separate deployment step.
 
 ## Booking backend
 
-The backend remains a snapshot-to-transaction Python engine with SQLite collision/revision guards. Prices use integer minor units, holds expire, and payments are confirmed only after checking the provider result's payment ID, amount and currency. A redirect alone is not payment confirmation. Late payments enter review instead of reclaiming an occupied slot. Refund intents reserve their amount and retain a stable request key; pending or uncertain results never become a successful ledger entry until verified.
+The backend remains a snapshot-to-transaction Python engine with SQL Server collision/revision guards. Prices use integer minor units, holds expire, and payments are confirmed only after checking the provider result's payment ID, amount and currency. A redirect alone is not payment confirmation. Late payments enter review instead of reclaiming an occupied slot. Refund intents reserve their amount and retain a stable request key; pending or uncertain results never become a successful ledger entry until verified.
 
 All workflow actions are POST under `/{sbx|prod}/{projectPath}/`:
 
@@ -90,8 +93,8 @@ All workflow actions are POST under `/{sbx|prod}/{projectPath}/`:
 | `reconcile` | Scheduled payment/refund recovery and hold expiry |
 | `notifications` | Scheduled appointment email delivery with bounded retries |
 
-Sandbox and production use separate SQLite files; sandbox receives sample services, staff and rooms. Cloudgate handles outgoing email by default; optional SMTP configuration belongs to the SDK. Booking's email outbox shows appointment messages and delivery state.
+Sandbox and production use separate managed SQL Server databases; sandbox receives sample services, staff and rooms. Outgoing email uses standard Python SMTP and encrypted controller selectors. Booking's email outbox shows appointment messages and delivery state.
 
-Native scripts read request data through `WorkflowSessionKeyExecutionContext.GetKeys(sessionId)` and encode SQL values as UTF-8 hex literals. They require the Cloudgate Python bridge, SQLite JSON support and the existing Wallet durable-refund APIs. Preserve these boundaries and the generated-workflow tests when changing business logic.
+Native scripts use ordinary data-bound workflow selectors and the Python standard library. Database nodes execute T-SQL; Wallet nodes handle payments. No CLR or bridge is required.
 
 This is a single-location booking app. Staff self-service permissions, recurring memberships, multi-location operations, calendar synchronization, payroll and SMS/WhatsApp delivery are not implemented. Waitlist follow-up is manual. The engine reads a full studio snapshot per action; larger deployments should add bounded queries. Email delivery is at least once, and uncertain provider refunds require reconciliation in Cloudgate Wallet.

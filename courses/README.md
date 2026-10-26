@@ -1,6 +1,9 @@
 # Cloudgate Academy
 
-Academy 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`, following the Booking app. The SDK supplies shared Cloudgate features; this project owns the learning product.
+Version 3.0 uses managed Microsoft SQL Server and standard Python workflows. Fresh installation is required; see [runtime, email and development setup](../SQL-SERVER-REWRITE.md).
+
+
+Academy 3.0.0 uses `@cloudgatedevs/cloudgate-client-react@0.1.20`, following the Booking app. The SDK supplies shared Cloudgate features; this project owns the learning product.
 
 ## Ownership
 
@@ -11,7 +14,7 @@ Academy 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`, following the 
 | Instructors, sessions, attendance, discussions and learning reports | Users, roles, registration, notifications, analytics and workflow logs |
 | Certificates, course payments/refunds, Academy email outbox and business settings | Appearance, themes, website access, media storage/library, SMTP and payment administration |
 | Course/homepage image editors and image-reference checks | Native Cloudgate platform API clients |
-| Python workflows, SQLite schema and Wallet orchestration | Framework-independent gateway helpers, re-exported by the React SDK |
+| Python workflows, SQL Server schema and Wallet orchestration | Framework-independent gateway helpers, re-exported by the React SDK |
 
 There is no copied `src/shared` platform implementation. Extend the learning features in `src/academy`; maintain shared features in the React SDK project and update its npm dependency here. Course payments remain separate because a course refund must end enrolment access and revoke the certificate.
 
@@ -62,13 +65,13 @@ The App Store initializes these native settings separately for sandbox and produ
 
 Sandbox uses **`npm run build:dev`** and `.env.development`; production uses **`npm run build`** and `.env.production`. The App Store writes the file for the selected environment, including its own web app ID and gateway keys. Both commands generate a deployable `dist` directory. Development builds include source maps. The role-switching simulator is excluded from both release builds.
 
-This frontend migration does not change the 13 Academy workflows or the database schema. Existing curricula and enrolments remain intact. New installations use `.template/workflow-template.json`, `.template/schema.sql` and sandbox-only sample data. Run `npm run cloudgate:package` after changing workflows or schema, not for a frontend-only update. See [deployment notes](cloudgate/DEPLOYMENT-NOTES.md).
+Version 3.0 rewrites all 13 Academy workflows for a fresh SQL Server installation. New installations use `.template/workflow-template.json`, `.template/schema.sql` and sandbox-only sample data. Run `npm run cloudgate:package` after changing workflows or schema, not for a frontend-only update. See [deployment notes](cloudgate/DEPLOYMENT-NOTES.md).
 
 Paid courses require Cloudgate Wallet configuration. Notification and reconciliation workers retain their server-only scheduling. Certificates record completion, not external accreditation.
 
 ## Local preview and checks
 
-Run `npm run dev:api` and `npm run dev:preview` in separate terminals, then open `http://localhost:3004`. The loopback simulator uses `.local/academy.sqlite`, test identities, simulated payments and no outbound email. It also provides development-only adapters for SDK profile, appearance and media. Other platform features require a connected tenant. Preview appearance changes are in memory and reset on reload.
+Run `npm run dev:api` and `npm run dev:preview` in separate terminals, then open `http://localhost:3004`. The loopback simulator uses `a dedicated SQL Server development database`, test identities, simulated payments and no outbound email. It also provides development-only adapters for SDK profile, appearance and media. Other platform features require a connected tenant. Preview appearance changes are in memory and reset on reload.
 
 | Command | Checks |
 |---|---|

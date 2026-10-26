@@ -1,4 +1,4 @@
-rows = rows_of('''${Run}''')
+rows = rows_of(value('Run'))
 if not rows:
     fail('Sale not found.')
 d = body()

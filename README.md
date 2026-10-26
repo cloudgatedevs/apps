@@ -8,6 +8,7 @@ accepted terms, imports the app's workflows and databases, builds the app and pu
 | App | Folder | What it is | Requirements |
 | --- | --- | --- | --- |
 | [Cloudgate Shop](./shop/) | [`shop/`](./shop/) | Online store with hosted card checkout through Cloudgate Wallet and a full back office. | Wallet, IdP, WebSockets |
+| [Cloudgate POS](./pos/) | pos/ | Registers, cash and card sales, shifts, stock and receipts. | Wallet, IdP, WebSockets |
 | [Cloudgate Booking](./booking/) | [`booking/`](./booking/) | Service appointments, staff and room scheduling, paid booking confirmation, customer management and a studio back office. | Wallet, IdP |
 | [Cloudgate Jobs](./jobs/) | [`jobs/`](./jobs/) | Service requests, quotes, job visits, invoices and a customer/staff workspace with custom branding and media. [Live app](https://jobs.app.cloudgate.dev/). | Wallet, IdP |
 | [Cloudgate Academy](./courses/) | [`courses/`](./courses/) | Courses, assessments, certificates and a premium learner portal with an instructor/admin back office. [Live app](https://academy.app.cloudgate.dev/). | Wallet, IdP |
@@ -105,15 +106,12 @@ npm run banner                 # captures banner.png from http://localhost:3000
 
 Production builds are served as static files from the `build.outputDir` folder.
 
-## Updating an installed app
+## Version 3.0 installation
 
-Bump `version` in `apps.json` (and the app's `template.json`) and push. Tenants that installed an
-older version see **Update to vX** on the card. The update replaces the app's source folder
-(keeping `.env*` and `node_modules`), refreshes the controller's endpoints in place (the importer
-matches by route and keeps the databases), applies `schema.sql` to the existing databases (write it
-idempotently: `IF NOT EXISTS`, guarded `ALTER TABLE`), reuses existing WebSocket channels by route,
-then rebuilds and republishes on the same web app. The wizard warns that any local changes to the
-source or the workflows are overwritten. Rollout refreshes `VITE_CLOUDGATE_WEB_APP_ID` and
-`VITE_CLOUDGATE_API_ENV` in the selected environment file while preserving the remaining values.
+Version 3.0 replaces the SQLite apps with managed Microsoft SQL Server and standard Python workflows. Install fresh databases; no data migration or backward compatibility is provided. See [SQL-SERVER-REWRITE.md](SQL-SERVER-REWRITE.md) for runtime requirements, email selectors, development and tests.
 
-App email uses Cloudgate delivery by default. Custom SMTP is an optional tenant override in the back office, not an App Store readiness requirement. App manifests must not list `smtp` as a rollout prerequisite.
+## Workflow email
+
+Workflow email uses standard Python SMTP with encrypted controller selectors. Configure SMTP_HOST, SMTP_PORT, SMTP_SECURITY, SMTP_USERNAME, SMTP_PASSWORD, SMTP_FROM_EMAIL and SMTP_FROM_NAME for each environment before sending email. These are separate from SDK SMTP administration.
+
+The previous in-place SQLite update procedure does not apply to this release. Fresh installation is the supported boundary.

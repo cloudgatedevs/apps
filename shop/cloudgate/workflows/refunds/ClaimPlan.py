@@ -1,1 +1,1 @@
-return claim_sql('shop',request(),obj('IdpAuth',{}),obj('Load',[]))
+return claim_sql('shop', request(), obj('IdpAuth', {}), obj('Load', []))

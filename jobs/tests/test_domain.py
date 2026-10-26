@@ -1,4 +1,4 @@
-import copy,json,sqlite3,sys,unittest,uuid
+import copy,json,sqlserver,sys,unittest,uuid
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'cloudgate'))
 from engine import Engine,plan,snapshot_sql,pricing
@@ -10,7 +10,7 @@ OTHER=dict(Id='9',Role='Customer',IsActive=True)
 NOW=1789034400
 class DomainTests(unittest.TestCase):
  def setUp(self):
-  self.c=sqlite3.connect(':memory:');self.c.row_factory=sqlite3.Row;self.c.executescript((Path(__file__).resolve().parents[1]/'cloudgate/schema.sql').read_text());self.c.executescript(seed_sql(local=True))
+  self.c=sqlserver.connect();self.c.row_factory=sqlserver.Row;self.c.executescript((Path(__file__).resolve().parents[1]/'cloudgate/schema.sql').read_text());self.c.executescript(seed_sql(local=True))
  def tearDown(self):self.c.close()
  def snapshot(self):return json.loads(self.c.execute(snapshot_sql()).fetchone()['snapshot'])
  def runop(self,op,identity=ADMIN,internal=False,**d):
@@ -43,11 +43,11 @@ class DomainTests(unittest.TestCase):
  def test_unassigned_technician_cannot_update(self):
   j=self.job();self.assertRaises(ValueError,self.runop,'note-add',TECH,job=j['ref'],body='Hidden')
  def test_overlap_rolls_back_all_workers(self):
-  j=self.job();self.runop('visit-save',job=j['ref'],starts=NOW+3600,ends=NOW+7200,staff=['TEAM-MAYA']);self.assertRaises(sqlite3.IntegrityError,self.runop,'visit-save',job=j['ref'],starts=NOW+4000,ends=NOW+5000,staff=['TEAM-LEO','TEAM-MAYA']);self.assertEqual(self.c.execute('SELECT COUNT(*) FROM allocations').fetchone()[0],1)
+  j=self.job();self.runop('visit-save',job=j['ref'],starts=NOW+3600,ends=NOW+7200,staff=['TEAM-MAYA']);self.assertRaises(sqlserver.IntegrityError,self.runop,'visit-save',job=j['ref'],starts=NOW+4000,ends=NOW+5000,staff=['TEAM-LEO','TEAM-MAYA']);self.assertEqual(self.c.execute('SELECT COUNT(*) FROM allocations').fetchone()[0],1)
  def test_block_prevents_visit(self):
-  j=self.job();self.runop('block-save',staff='TEAM-MAYA',starts=NOW,ends=NOW+7200,title='Leave');self.assertRaises(sqlite3.IntegrityError,self.runop,'visit-save',job=j['ref'],starts=NOW+3600,ends=NOW+5000,staff=['TEAM-MAYA'])
+  j=self.job();self.runop('block-save',staff='TEAM-MAYA',starts=NOW,ends=NOW+7200,title='Leave');self.assertRaises(sqlserver.IntegrityError,self.runop,'visit-save',job=j['ref'],starts=NOW+3600,ends=NOW+5000,staff=['TEAM-MAYA'])
  def test_stale_plan_rejected(self):
-  s=self.snapshot();sql,_=plan(s,dict(op='customer-save',name='A',email='a@example.invalid'),ADMIN,NOW);self.runop('customer-save',name='B',email='b@example.invalid');self.assertRaises(sqlite3.IntegrityError,self.c.executescript,sql);self.c.rollback()
+  s=self.snapshot();sql,_=plan(s,dict(op='customer-save',name='A',email='a@example.invalid'),ADMIN,NOW);self.runop('customer-save',name='B',email='b@example.invalid');self.assertRaises(sqlserver.IntegrityError,self.c.executescript,sql);self.c.rollback()
  def test_sql_text_roundtrip(self):
   body="O'Brien ${body} \" ; DROP TABLE entities; --";r=self.runop('request-create',CUSTOMER,title=body,address='Address',description=body,request_key=str(uuid.uuid4()));self.assertEqual(self.record(r['ref'])['description'],body)
  def test_no_internal_operations_via_customer(self):
@@ -78,7 +78,7 @@ class DomainTests(unittest.TestCase):
  def test_mail_claim_is_exclusive_and_result_token_bound(self):
   q=self.quote();self.runop('quote-send',ref=q['ref'],version=q['version']);self.runop('settings',values={'smtp_host':'smtp.example.invalid','smtp_from':'service@example.invalid'});a=self.runop('_mail-claim',internal=True);b=self.runop('_mail-claim',internal=True);self.assertEqual(len(a['messages']),1);self.assertEqual(b['messages'],[]);self.runop('_mail-result',internal=True,claim='wrong',results=[dict(ref=a['messages'][0]['ref'],sent=True)]);self.assertEqual(self.rows('message')[0]['status'],'sending')
  def test_sandbox_has_no_real_account_bindings(self):
-  c=sqlite3.connect(':memory:');c.executescript((Path(__file__).resolve().parents[1]/'cloudgate/schema.sql').read_text());c.executescript(seed_sql());rows=[json.loads(r[0]) for r in c.execute('SELECT data FROM entities')];self.assertFalse(any(r.get('user_id') for r in rows));self.assertFalse(any(r['owner'].isdigit() for r in rows));c.close()
+  c=sqlserver.connect();c.executescript((Path(__file__).resolve().parents[1]/'cloudgate/schema.sql').read_text());c.executescript(seed_sql());rows=[json.loads(r[0]) for r in c.execute('SELECT data FROM entities')];self.assertFalse(any(r.get('user_id') for r in rows));self.assertFalse(any(r['owner'].isdigit() for r in rows));c.close()
  def test_credit_preserves_invoice_and_is_idempotent(self):
   j=self.job();v=self.runop('visit-save',job=j['ref'],starts=NOW,ends=NOW+3600,staff=['TEAM-MAYA']);v=self.runop('visit-status',ref=v['ref'],version=v['version'],status='in_progress');self.runop('visit-status',ref=v['ref'],version=v['version'],status='completed');j=self.record(j['ref']);self.runop('job-status',ref=j['ref'],version=j['version'],status='completed');i=self.runop('invoice-issue',job=j['ref']);key=str(uuid.uuid4());credit=self.runop('invoice-credit',ref=i['ref'],amount=1000,reason='Adjustment',request_key=key);again=self.runop('invoice-credit',ref=i['ref'],amount=1000,reason='Adjustment',request_key=key);self.assertEqual(credit['ref'],again['ref']);current=self.runop('document',CUSTOMER,ref=i['ref'])['document'];self.assertEqual(current['total'],i['total']);self.assertEqual(current['balance'],i['total']-1000)
 if __name__=='__main__':unittest.main()

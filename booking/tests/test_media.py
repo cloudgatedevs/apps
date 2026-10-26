@@ -3,7 +3,7 @@ from contextlib import closing
 from http.server import ThreadingHTTPServer
 import json
 from pathlib import Path
-import sqlite3
+import sqlserver
 import sys
 import tempfile
 import threading
@@ -51,10 +51,12 @@ class MediaTests(unittest.TestCase):
 
     def test_preview_api_requires_admin_and_rechecks_saved_usage_on_delete(self):
         with tempfile.TemporaryDirectory() as directory:
-            old_db = local_server.DB
-            local_server.DB = str(Path(directory) / 'test.db')
-            with closing(sqlite3.connect(local_server.DB)) as db:
-                db.executescript((local_server.ROOT / 'schema.sql').read_text(encoding='utf-8'))
+            old_dir = local_server.DATA_DIR
+            old_connect = local_server.connect
+            db=sqlserver.connect()
+            local_server.connect=lambda:sqlserver.connect(db.schema)
+            local_server.DATA_DIR = Path(directory)
+            db.executescript((local_server.ROOT / 'schema.sql').read_text(encoding='utf-8'))
             server = ThreadingHTTPServer(('127.0.0.1', 0), local_server.Handler)
             thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
             def request(body, admin=True):
@@ -78,7 +80,9 @@ class MediaTests(unittest.TestCase):
                 self.assertEqual(request({'op': 'list'})[1]['total'], 0)
             finally:
                 server.shutdown(); server.server_close(); thread.join(timeout=5)
-                local_server.DB = old_db
+                local_server.DATA_DIR = old_dir
+                local_server.connect = old_connect
+                db.close()
 
 
 if __name__ == '__main__': unittest.main()

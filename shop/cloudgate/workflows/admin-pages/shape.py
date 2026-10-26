@@ -1,7 +1,6 @@
-# Admin Pages — shape.
 d = body()
 op = op_of(d, 'list')
-rows = rows_of('''${Run}''')
+rows = rows_of(value('Run'))
 if op in ('list', 'reorder'):
     return out({'items': rows})
 if op == 'delete':

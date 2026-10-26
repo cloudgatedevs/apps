@@ -1,5 +1,8 @@
 # Refund changes in template 1.1.1
 
+Version 3.0 is a fresh-install SQL Server release. See [the runtime contract](../../SQL-SERVER-REWRITE.md) for standard Python inputs, email configuration and verification.
+
+
 The template includes the updated frontend, native workflows and schema. Apply the complete
 App Store update so the refund callers and backend contract change together. This package
 requires the Cloudgate durable Wallet refund backend (`Param9` idempotency key and
@@ -16,7 +19,7 @@ The new action owns all refund execution. The old refund operations on `admin-or
 `admin-sales`, `pos-payment`, and `pos-sale` reject stale clients before taking action.
 Other operations on those actions retain their existing behavior.
 
-The workflow commits a SQLite claim before calling Wallet. One unresolved refund per
+The workflow commits a SQL Server claim before calling Wallet. One unresolved refund per
 order/sale reserves the return intent, amount and items. Wallet receives the persisted key
 with a `shop-refund-` or `pos-refund-` prefix. Pending, submitting and reconciliation-required
 responses leave totals and stock unchanged. A confirmed response validates payment, amount,
@@ -46,16 +49,16 @@ the payment provider. Status recovery is explicit through the refund panel.
 
 - `npm run cloudgate:package-refunds` rebuilds the affected graphs from exported node shapes
   and source scripts, plus the schema, without network calls or publication.
-- `npm run test:refunds` runs real SQLite tests, a native graph harness and client retry tests.
+- `npm run test:refunds` runs real SQL Server tests, a native graph harness and client retry tests.
 - `npm run build` checks the frontend production build.
 
 The schema upgrade is additive and retains existing business data. The standalone SQL is
-`cloudgate/migrations/1.1.1-refunds.sql`; App Store updates consume `.template/schema.sql`.
+`cloudgate/schema.sql`; App Store updates consume `.template/schema.sql`.
 Keep each trigger on one physical line in the packaged schema: Cloudgate's updater splits
 statements at semicolon/newline boundaries. `package_refunds.py` performs that formatting,
 and a regression test reproduces the updater's splitter on the previous schema.
 
-`refunds.py`, `refund_bridge.py`, the tests, and packaging helper have matching copies in
-Shop and POS. Workflow function nodes inline the bridge and engine using their `libraries`
+`refunds.py`, `workflow_data.py`, the tests, and packaging helper have matching copies in
+Shop and POS. Workflow function nodes inline the standard Python input helpers and engine using their `libraries`
 setting. Request and node values are read from the request-local session context rather
 than interpolated into Python source.
