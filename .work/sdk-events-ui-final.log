@@ -1,0 +1,6 @@
+
+> cloudgate-events@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+Passed: public discovery, event/tier creation, image upload, publishing, free/paid reservations, QR download, duplicate admission, admission reversal, refunds, staff restrictions, waitlist, SDK profile/media/theme and responsive shell.
+Passed: connected SDK composition with mocked native APIs, callback, session refresh/retry, shared pages without domain queries, permission denial, logout, sign-in destination and public website access policies.

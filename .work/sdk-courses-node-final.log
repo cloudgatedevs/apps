@@ -1,0 +1,12 @@
+✔ SDK media cannot remove a course image retained by a published curriculum (2.1113ms)
+✔ SDK media protects draft courses, homepage assets and native branding (1.02ms)
+✔ deletion needs a complete administrator reference check and a known file (0.3723ms)
+✔ Academy catalogue, SDK defaults and build modes stay consistent (4.1223ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 88.6357

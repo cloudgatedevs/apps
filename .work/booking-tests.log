@@ -1,0 +1,20 @@
+...............................................E................................
+======================================================================
+ERROR: test_preview_api_requires_admin_and_rechecks_saved_usage_on_delete (test_media.MediaTests.test_preview_api_requires_admin_and_rechecks_saved_usage_on_delete)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\repos\GitHub\apps\booking\tests\test_media.py", line 56, in test_preview_api_requires_admin_and_rechecks_saved_usage_on_delete
+    with closing(sqlserver.connect(local_server.DB)) as db:
+                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\repos\GitHub\apps\test_support\sqlserver.py", line 100, in connect
+    def connect(schema=None, **kwargs): return Connection(schema)
+                                               ~~~~~~~~~~^^^^^^^^
+  File "D:\repos\GitHub\apps\test_support\sqlserver.py", line 64, in __init__
+    if not re.fullmatch('cgtest_[0-9a-f]{32}',schema):raise ValueError('Invalid test schema')
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Invalid test schema
+
+----------------------------------------------------------------------
+Ran 80 tests in 24.426s
+
+FAILED (errors=1)

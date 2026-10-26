@@ -1,0 +1,90 @@
+{
+  "triggers": [
+    [
+      "refund_key_guard",
+      "CREATE TRIGGER refund_key_guard BEFORE INSERT ON refund_requests WHEN EXISTS(SELECT 1 FROM refund_requests WHERE RequestKey=NEW.RequestKey AND (BusinessId<>NEW.BusinessId OR IntentJson<>NEW.IntentJson)) BEGIN SELECT RAISE(ROLLBACK,'Refund request key is already bound to different details.'); END"
+    ],
+    [
+      "refund_claim_guard",
+      "CREATE TRIGGER refund_claim_guard BEFORE INSERT ON refund_requests WHEN NEW.Status<>'failed' AND NOT EXISTS(SELECT 1 FROM refund_requests WHERE RequestKey=NEW.RequestKey) BEGIN  SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM payments p JOIN orders o ON o.Id=p.OrderId WHERE p.Id=NEW.PaymentRowId  AND p.OrderId=NEW.BusinessId AND p.ConnectPaymentId=NEW.PaymentId AND NEW.Method='card'  AND p.Status IN ('succeeded','partially_refunded') AND COALESCE(p.RefundedCents,0)=NEW.SnapshotRefunded  AND NEW.AmountCents<=p.AmountCents-COALESCE(p.RefundedCents,0) AND upper(o.Currency)=NEW.Currency)  THEN RAISE(ROLLBACK,'Payment balance changed. Reload the order before refunding.') END; END"
+    ],
+    [
+      "refund_apply",
+      "CREATE TRIGGER refund_apply AFTER UPDATE OF Status ON refund_requests WHEN NEW.Status='succeeded' AND OLD.Applied=0 AND OLD.Status<>'succeeded' BEGIN  SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM payments WHERE Id=NEW.PaymentRowId AND COALESCE(RefundedCents,0)=NEW.SnapshotRefunded)  THEN RAISE(ROLLBACK,'Refund needs reconciliation: local payment balance changed.') END;  UPDATE payments SET RefundedCents=COALESCE(RefundedCents,0)+NEW.AmountCents,  Status=CASE WHEN COALESCE(RefundedCents,0)+NEW.AmountCents>=AmountCents THEN 'refunded' ELSE 'partially_refunded' END,  RawJson=NEW.RawJson,UpdatedAt=CURRENT_TIMESTAMP WHERE Id=NEW.PaymentRowId;  UPDATE orders SET PaymentStatus=(SELECT Status FROM payments WHERE Id=NEW.PaymentRowId),  Status=CASE WHEN (SELECT Status FROM payments WHERE Id=NEW.PaymentRowId)='refunded' THEN 'refunded' ELSE Status END,  UpdatedAt=CURRENT_TIMESTAMP WHERE Id=NEW.BusinessId;  UPDATE product_variants SET StockQty=StockQty+(SELECT COALESCE(SUM(Qty),0) FROM order_items WHERE OrderId=NEW.BusinessId AND VariantId=product_variants.Id),UpdatedAt=CURRENT_TIMESTAMP  WHERE Id IN (SELECT VariantId FROM order_items WHERE OrderId=NEW.BusinessId)  AND EXISTS(SELECT 1 FROM products p WHERE p.Id=product_variants.ProductId AND p.TrackInventory=1)  AND json_extract(NEW.IntentJson,'$.restock')=1  AND NOT EXISTS(SELECT 1 FROM inventory_movements WHERE Reference=(SELECT Reference FROM orders WHERE Id=NEW.BusinessId) AND Reason='refund');  INSERT INTO inventory_movements(VariantId,ProductId,Delta,Reason,Reference,Note,CreatedBy)  SELECT i.VariantId,i.ProductId,i.Qty,'refund',o.Reference,'Restocked on confirmed refund',NEW.CreatedBy  FROM order_items i JOIN products p ON p.Id=i.ProductId JOIN orders o ON o.Id=i.OrderId  WHERE i.OrderId=NEW.BusinessId AND p.TrackInventory=1 AND json_extract(NEW.IntentJson,'$.restock')=1  AND NOT EXISTS(SELECT 1 FROM inventory_movements WHERE Reference=o.Reference AND Reason='refund');  INSERT INTO order_events(OrderId,Type,Message,DataJson,CreatedBy)  VALUES(NEW.BusinessId,'refund','Confirmed refund: '||NEW.AmountCents||' cents',json_object('requestKey',NEW.RequestKey,'refundId',NEW.ProviderRefundId,'reason',json_extract(NEW.IntentJson,'$.reason')),NEW.CreatedBy);  UPDATE refund_requests SET Applied=1,UpdatedAt=CURRENT_TIMESTAMP WHERE Id=NEW.Id; END"
+    ]
+  ],
+  "tables": [
+    [
+      "settings",
+      "CREATE TABLE settings (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Key TEXT NOT NULL UNIQUE,\n  Value TEXT,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "categories",
+      "CREATE TABLE categories (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Name TEXT NOT NULL,\n  Slug TEXT NOT NULL UNIQUE,\n  Description TEXT,\n  ParentId INTEGER,\n  ImageUrl TEXT,\n  SortOrder INTEGER DEFAULT 0,\n  IsActive INTEGER DEFAULT 1,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "products",
+      "CREATE TABLE products (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Name TEXT NOT NULL,\n  Slug TEXT NOT NULL UNIQUE,\n  Sku TEXT,\n  Brand TEXT,\n  ShortDescription TEXT,\n  Description TEXT,\n  CategoryId INTEGER,\n  Status TEXT DEFAULT 'draft',              -- draft | active | archived\n  PriceCents INTEGER NOT NULL DEFAULT 0,    -- default price; variants may override\n  CompareAtCents INTEGER,\n  CostCents INTEGER,\n  Currency TEXT DEFAULT 'ZAR',\n  TrackInventory INTEGER DEFAULT 1,\n  HasVariants INTEGER DEFAULT 0,            -- 0 = single default variant, 1 = option-driven variants\n  WeightGrams INTEGER,\n  Tags TEXT,                                -- comma separated\n  IsFeatured INTEGER DEFAULT 0,\n  SortOrder INTEGER DEFAULT 0,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "product_options",
+      "CREATE TABLE product_options (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  ProductId INTEGER NOT NULL,\n  Name TEXT NOT NULL,\n  Position INTEGER DEFAULT 0\n)"
+    ],
+    [
+      "product_option_values",
+      "CREATE TABLE product_option_values (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  OptionId INTEGER NOT NULL,\n  Value TEXT NOT NULL,\n  Position INTEGER DEFAULT 0\n)"
+    ],
+    [
+      "product_variants",
+      "CREATE TABLE product_variants (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  ProductId INTEGER NOT NULL,\n  Sku TEXT,\n  Barcode TEXT,\n  Title TEXT,                               -- e.g. \"Red / L\"; NULL or 'Default' for single-variant products\n  OptionsJson TEXT,                         -- {\"Size\":\"L\",\"Colour\":\"Red\"}\n  PriceCents INTEGER,                       -- NULL = inherit products.PriceCents\n  CompareAtCents INTEGER,\n  CostCents INTEGER,\n  StockQty INTEGER DEFAULT 0,\n  ReservedQty INTEGER DEFAULT 0,\n  LowStockThreshold INTEGER DEFAULT 5,\n  ImageId INTEGER,\n  IsDefault INTEGER DEFAULT 0,\n  IsActive INTEGER DEFAULT 1,\n  Position INTEGER DEFAULT 0,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "product_images",
+      "CREATE TABLE product_images (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  ProductId INTEGER NOT NULL,\n  VariantId INTEGER,\n  FileId TEXT,                              -- Cloudgate DataFile id (once upload exists)\n  Url TEXT NOT NULL,\n  ThumbUrl TEXT,\n  Alt TEXT,\n  Position INTEGER DEFAULT 0,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "inventory_movements",
+      "CREATE TABLE inventory_movements (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  VariantId INTEGER NOT NULL,\n  ProductId INTEGER NOT NULL,\n  Delta INTEGER NOT NULL,\n  Reason TEXT NOT NULL,                     -- receive | adjust | sale | refund | cancel | correction\n  Reference TEXT,                           -- order reference, PO number, ...\n  Note TEXT,\n  CreatedBy TEXT,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "customers",
+      "CREATE TABLE customers (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  IdpUserId INTEGER UNIQUE,                 -- NULL for guest checkouts\n  Email TEXT NOT NULL,\n  Name TEXT,\n  Surname TEXT,\n  Phone TEXT,\n  DefaultAddressJson TEXT,\n  MarketingOptIn INTEGER DEFAULT 0,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "carts",
+      "CREATE TABLE carts (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Token TEXT NOT NULL UNIQUE,               -- opaque id held by the browser\n  IdpUserId INTEGER,\n  CustomerId INTEGER,\n  Status TEXT DEFAULT 'open',               -- open | converted | abandoned\n  Currency TEXT DEFAULT 'ZAR',\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "cart_items",
+      "CREATE TABLE cart_items (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  CartId INTEGER NOT NULL,\n  ProductId INTEGER NOT NULL,\n  VariantId INTEGER NOT NULL,\n  Qty INTEGER NOT NULL DEFAULT 1,\n  UnitPriceCents INTEGER NOT NULL,          -- price snapshot at add time; re-priced at checkout\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE (CartId, VariantId)\n)"
+    ],
+    [
+      "orders",
+      "CREATE TABLE orders (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Reference TEXT NOT NULL UNIQUE,           -- human order number, e.g. SO-100042\n  CartId INTEGER,\n  CustomerId INTEGER,\n  IdpUserId INTEGER,\n  Email TEXT NOT NULL,\n  Name TEXT,\n  Surname TEXT,\n  Phone TEXT,\n  ShippingAddressJson TEXT,\n  BillingAddressJson TEXT,\n  Currency TEXT DEFAULT 'ZAR',\n  SubtotalCents INTEGER NOT NULL DEFAULT 0,\n  DiscountCents INTEGER NOT NULL DEFAULT 0,\n  ShippingCents INTEGER NOT NULL DEFAULT 0,\n  TaxCents INTEGER NOT NULL DEFAULT 0,\n  TotalCents INTEGER NOT NULL DEFAULT 0,\n  Status TEXT DEFAULT 'pending',            -- pending | paid | processing | shipped | delivered | cancelled | refunded\n  PaymentStatus TEXT DEFAULT 'unpaid',      -- unpaid | pending | paid | failed | refunded | partially_refunded\n  FulfillmentStatus TEXT DEFAULT 'unfulfilled', -- unfulfilled | partial | fulfilled\n  CustomerNote TEXT,\n  InternalNote TEXT,\n  PaidAt DATETIME,\n  ShippedAt DATETIME,\n  CancelledAt DATETIME,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "order_items",
+      "CREATE TABLE order_items (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  OrderId INTEGER NOT NULL,\n  ProductId INTEGER NOT NULL,\n  VariantId INTEGER NOT NULL,\n  Sku TEXT,\n  Title TEXT NOT NULL,                      -- product name snapshot\n  VariantTitle TEXT,\n  ImageUrl TEXT,\n  Qty INTEGER NOT NULL,\n  UnitPriceCents INTEGER NOT NULL,\n  LineTotalCents INTEGER NOT NULL,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "order_events",
+      "CREATE TABLE order_events (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  OrderId INTEGER NOT NULL,\n  Type TEXT NOT NULL,                       -- created | payment_pending | paid | payment_failed | status | note | refund | shipped\n  Message TEXT,\n  DataJson TEXT,\n  CreatedBy TEXT,                           -- 'customer' | 'system' | admin user id/email\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "payments",
+      "CREATE TABLE payments (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  OrderId INTEGER NOT NULL,\n  Provider TEXT DEFAULT 'cloudgate_wallet',\n  ConnectPaymentId INTEGER,                 -- Cloudgate ConnectPaymentRecord.Id\n  IdempotencyKey TEXT UNIQUE,\n  PaymentUrl TEXT,\n  AmountCents INTEGER NOT NULL,\n  Currency TEXT,\n  Status TEXT DEFAULT 'pending',            -- pending | succeeded | failed | expired | refunded | partially_refunded\n  RefundedCents INTEGER DEFAULT 0,\n  IsProduction INTEGER DEFAULT 0,\n  RawJson TEXT,\n  PaidAt DATETIME,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "pages",
+      "CREATE TABLE pages (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Slug TEXT NOT NULL UNIQUE,                -- /pages/{slug}\n  Title TEXT NOT NULL,\n  Summary TEXT,                             -- one line under the title / for link previews\n  BodyMarkdown TEXT NOT NULL DEFAULT '',    -- rendered on the storefront (sanitised)\n  Status TEXT DEFAULT 'published',          -- draft | published\n  ShowInNav INTEGER DEFAULT 0,              -- top navigation\n  ShowInFooter INTEGER DEFAULT 1,           -- footer link list\n  Position INTEGER DEFAULT 0,\n  IsSystem INTEGER DEFAULT 0,               -- seeded legal pages cannot be deleted, only edited\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n, ShowContact INTEGER DEFAULT 0)"
+    ],
+    [
+      "contact_messages",
+      "CREATE TABLE contact_messages (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Name TEXT,\n  Email TEXT NOT NULL,\n  Subject TEXT,\n  Message TEXT NOT NULL,\n  OrderReference TEXT,\n  Status TEXT DEFAULT 'new',                -- new | read | replied | archived\n  IdpUserId INTEGER,\n  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "refund_requests",
+      "CREATE TABLE refund_requests (\n Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n RequestKey TEXT NOT NULL UNIQUE,\n BusinessId INTEGER NOT NULL,\n Method TEXT NOT NULL CHECK(Method IN ('card','cash')),\n AmountCents INTEGER NOT NULL CHECK(AmountCents > 0 OR (AmountCents=0 AND Status='failed')),\n Currency TEXT NOT NULL,\n PaymentRowId INTEGER,\n PaymentId INTEGER,\n IntentJson TEXT NOT NULL CHECK(json_valid(IntentJson)),\n LinesJson TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(LinesJson)),\n SnapshotRefunded INTEGER NOT NULL,\n Status TEXT NOT NULL DEFAULT 'submitting' CHECK(Status IN ('submitting','pending','succeeded','failed','reconciliation_required')),\n ProviderRefundId TEXT,\n Applied INTEGER NOT NULL DEFAULT 0,\n ShiftId INTEGER,\n CreatedBy TEXT,\n RawJson TEXT,\n CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n UpdatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ]
+  ]
+}

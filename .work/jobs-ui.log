@@ -1,0 +1,6 @@
+
+> cloudgate-jobs@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+Passed: all custom SDK routes, business settings, service image upload/deletion protection, customer addresses/profile, private photos and isolation, request/quote approval, simulated deposit and final payment, technician assignment/access, scheduling/completion, PDF, refund, theme and mobile shell.
+Passed: connected SDK composition with mocked native APIs, callback, session refresh/retry, shared pages without domain queries, permission denial, logout, sign-in destination and public website access policies.

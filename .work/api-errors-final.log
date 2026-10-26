@@ -1,0 +1,12 @@
+✔ shop: real SDK errors retain the checkout explanation and HTTP metadata (14.6129ms)
+✔ shop: unexpected responses do not expose payloads or stack traces (0.1409ms)
+✔ pos: real SDK errors retain the checkout explanation and HTTP metadata (0.5536ms)
+✔ pos: unexpected responses do not expose payloads or stack traces (0.0702ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 74.5608

@@ -1,0 +1,14 @@
+✔ POS rollout uses matching catalogue metadata, SDK settings and separate build modes (5.1851ms)
+✔ media deletion checks fresh references, including inactive product IDs (0.8234ms)
+✔ full and thumbnail file URLs protect the same product or appearance image (0.3405ms)
+✔ unused images can be deleted and preserve cancellation options (0.2149ms)
+✔ media deletion fails closed when references, file membership or pagination cannot be verified (0.3109ms)
+✔ media deletion follows pagination before checking the requested file (0.153ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86.5711

@@ -1,0 +1,12 @@
+✔ SDK media protects published and unlisted event artwork (1.5047ms)
+✔ SDK media protects homepage, editorial and native appearance images (1.3165ms)
+✔ partial staff snapshots cannot authorise deletion; unused known images can be removed (0.3269ms)
+✔ Events catalogue, SDK defaults and build modes stay consistent (5.5485ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93.1168

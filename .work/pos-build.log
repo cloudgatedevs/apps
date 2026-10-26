@@ -1,0 +1,205 @@
+
+> cloudgate-pos@3.0.0 build
+> vite build
+
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 4296 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                         3.83 kB │ gzip:   1.11 kB
+dist/assets/manrope-latin-ext-wght-normal-Ch3YOpNY.woff2               15.12 kB
+dist/assets/dm-sans-latin-ext-wght-normal-BOFOeGcA.woff2               18.22 kB
+dist/assets/rubik-latin-ext-wght-normal-OacczzuJ.woff2                 19.40 kB
+dist/assets/lora-latin-ext-wght-normal-C2Wlntb9.woff2                  20.08 kB
+dist/assets/dm-sans-latin-ext-wght-italic-DUE6_iCb.woff2               20.80 kB
+dist/assets/lora-latin-ext-wght-italic-BC6VAxdc.woff2                  21.12 kB
+dist/assets/rubik-latin-ext-wght-italic-CvT2ySUa.woff2                 21.15 kB
+dist/assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2     21.72 kB
+dist/assets/plus-jakarta-sans-latin-ext-wght-italic-DJWiFoht.woff2     23.22 kB
+dist/assets/manrope-latin-wght-normal-DHIcAJRg.woff2                   24.83 kB
+dist/assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2         27.34 kB
+dist/assets/nunito-sans-latin-ext-wght-normal-DMEAsnHD.woff2           27.90 kB
+dist/assets/source-sans-3-latin-wght-italic-Bg-PIjcQ.woff2             28.53 kB
+dist/assets/source-sans-3-latin-wght-normal-BqRLTx4X.woff2             28.74 kB
+dist/assets/roboto-latin-ext-wght-normal-DYIxWhlt.woff2                29.39 kB
+dist/assets/plus-jakarta-sans-latin-wght-italic-DnD1KgkH.woff2         29.60 kB
+dist/assets/nunito-sans-latin-ext-wght-italic-Cf7cROU4.woff2           30.34 kB
+dist/assets/ibm-plex-sans-latin-ext-wght-normal-CIII54If.woff2         30.96 kB
+dist/assets/nunito-sans-latin-wght-normal-BWQ3gi2K.woff2               31.07 kB
+dist/assets/roboto-latin-ext-wght-italic-BdF9m8sc.woff2                31.82 kB
+dist/assets/work-sans-latin-ext-wght-italic-wzbUBIXC.woff2             32.28 kB
+dist/assets/nunito-sans-latin-wght-italic-B3URO7Ca.woff2               33.08 kB
+dist/assets/ibm-plex-sans-latin-ext-wght-italic-QwKXLQRc.woff2         33.90 kB
+dist/assets/open-sans-latin-ext-wght-normal-DPNHYqvY.woff2             35.15 kB
+dist/assets/rubik-latin-wght-normal-CnQIisVs.woff2                     35.34 kB
+dist/assets/work-sans-latin-ext-wght-normal-B5dZ8C4S.woff2             35.71 kB
+dist/assets/rubik-latin-wght-italic-BSFEwDWV.woff2                     36.61 kB
+dist/assets/dm-sans-latin-wght-normal-Xz1IZZA0.woff2                   36.93 kB
+dist/assets/open-sans-latin-ext-wght-italic-CT8UZlj2.woff2             37.75 kB
+dist/assets/lora-latin-wght-normal-BiLcIKcI.woff2                      37.78 kB
+dist/assets/montserrat-latin-wght-normal-l_AIctKy.woff2                37.95 kB
+dist/assets/montserrat-latin-wght-italic-jzfX-GOl.woff2                39.63 kB
+dist/assets/dm-sans-latin-wght-italic-Cz4n9dED.woff2                   39.71 kB
+dist/assets/lora-latin-wght-italic-DBI-iqMr.woff2                      40.77 kB
+dist/assets/source-serif-4-latin-ext-wght-normal-CxNHBx-q.woff2        42.04 kB
+dist/assets/roboto-latin-wght-normal-ccAYIvAh.woff2                    43.13 kB
+dist/assets/source-serif-4-latin-ext-wght-italic-CpkvI5hy.woff2        44.26 kB
+dist/assets/ibm-plex-sans-latin-wght-normal-IvpUvPa2.woff2             45.71 kB
+dist/assets/roboto-latin-wght-italic-BZYj8CJm.woff2                    47.20 kB
+dist/assets/work-sans-latin-wght-italic-C1pcBsqQ.woff2                 48.18 kB
+dist/assets/inter-latin-wght-normal-Dx4kXJAl.woff2                     48.25 kB
+dist/assets/open-sans-latin-wght-normal-CWNzRldh.woff2                 48.32 kB
+dist/assets/ibm-plex-sans-latin-wght-italic-DKUSOBgV.woff2             50.18 kB
+dist/assets/open-sans-latin-wght-italic-Bf1Hxpwk.woff2                 50.21 kB
+dist/assets/work-sans-latin-wght-normal-Bl-S9Xys.woff2                 50.31 kB
+dist/assets/source-serif-4-latin-wght-normal-D9elroTD.woff2            50.82 kB
+dist/assets/source-serif-4-latin-wght-italic-D2yaqPoE.woff2            51.51 kB
+dist/assets/inter-latin-wght-italic-DpCbqKDY.woff2                     51.83 kB
+dist/assets/source-sans-3-latin-ext-wght-italic-B1mMy0tD.woff2         59.49 kB
+dist/assets/source-sans-3-latin-ext-wght-normal-C8iNium2.woff2         60.08 kB
+dist/assets/montserrat-latin-ext-wght-normal-BsZE-iaG.woff2            70.68 kB
+dist/assets/montserrat-latin-ext-wght-italic-C8utfXoj.woff2            74.89 kB
+dist/assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2                 85.06 kB
+dist/assets/inter-latin-ext-wght-italic-0pjOp8NU.woff2                 91.90 kB
+dist/assets/CalendarContent-4GQU5DA5-B0-abd7V.css                      17.18 kB │ gzip:   3.79 kB
+dist/assets/ProductEdit-B6nH5UT4.css                                   69.84 kB │ gzip:  11.37 kB
+dist/assets/ProfilePictureDialog-OASMHDDA-2bRfaVbz.css                 76.08 kB │ gzip:  11.92 kB
+dist/assets/RichTextEditorContent-HVMCW65I-Yfs6vvD5.css               212.22 kB │ gzip:  33.45 kB
+dist/assets/index-CZW8PMiZ.css                                        287.02 kB │ gzip:  48.86 kB
+dist/assets/chunk-SW7XECJH-CQBMcz2D.js                                  0.05 kB │ gzip:   0.07 kB
+dist/assets/Profile-4OHYE3BN-CFsjPlzo.js                                0.06 kB │ gzip:   0.07 kB
+dist/assets/table-model-BUIWRUMB-Cg7eMILq.js                            0.07 kB │ gzip:   0.08 kB
+dist/assets/minus-D4w9muEN.js                                           0.11 kB │ gzip:   0.13 kB
+dist/assets/check-OxcpJULZ.js                                           0.12 kB │ gzip:   0.14 kB
+dist/assets/loader-circle-BhqVbCXy.js                                   0.14 kB │ gzip:   0.15 kB
+dist/assets/plus-DU65L4BX.js                                            0.15 kB │ gzip:   0.15 kB
+dist/assets/arrow-up-right-BPxNl_af.js                                  0.16 kB │ gzip:   0.15 kB
+dist/assets/search-DZBvxRjR.js                                          0.17 kB │ gzip:   0.17 kB
+dist/assets/ban-CDDTOvdb.js                                             0.18 kB │ gzip:   0.17 kB
+dist/assets/circle-check-DbZEyjtD.js                                    0.18 kB │ gzip:   0.17 kB
+dist/assets/smartphone-tXPcsAtf.js                                      0.19 kB │ gzip:   0.18 kB
+dist/assets/rotate-ccw-BCRYHsZS.js                                      0.20 kB │ gzip:   0.18 kB
+dist/assets/lock-C8uT_nwW.js                                            0.20 kB │ gzip:   0.19 kB
+dist/assets/circle-x-BHSTP8Y2.js                                        0.20 kB │ gzip:   0.17 kB
+dist/assets/credit-card-Z2nZENok.js                                     0.20 kB │ gzip:   0.18 kB
+dist/assets/upload-CbKt3P32.js                                          0.23 kB │ gzip:   0.19 kB
+dist/assets/download-By-4V82V.js                                        0.23 kB │ gzip:   0.19 kB
+dist/assets/chunk-MKBO26DX-fHOUkhtM.js                                  0.23 kB │ gzip:   0.18 kB
+dist/assets/copy-BzMLEmHI.js                                            0.23 kB │ gzip:   0.21 kB
+dist/assets/globe-DTWC7ceS.js                                           0.24 kB │ gzip:   0.19 kB
+dist/assets/banknote-TrLL8n25.js                                        0.24 kB │ gzip:   0.20 kB
+dist/assets/circle-alert-CAHB1161.js                                    0.25 kB │ gzip:   0.18 kB
+dist/assets/eye-BHn_zciA.js                                             0.25 kB │ gzip:   0.20 kB
+dist/assets/triangle-alert-BmzZZ2gF.js                                  0.26 kB │ gzip:   0.21 kB
+dist/assets/workflow-DDIgitNM.js                                        0.26 kB │ gzip:   0.20 kB
+dist/assets/image-Cr4cJISi.js                                           0.26 kB │ gzip:   0.22 kB
+dist/assets/arrow-up-CpXd21BT.js                                        0.27 kB │ gzip:   0.20 kB
+dist/assets/pencil-B1VoJAAT.js                                          0.27 kB │ gzip:   0.22 kB
+dist/assets/flask-conical-T3URkOE5.js                                   0.30 kB │ gzip:   0.23 kB
+dist/assets/user-plus-BGRi4tz4.js                                       0.31 kB │ gzip:   0.23 kB
+dist/assets/printer-BsoXW8WR.js                                         0.31 kB │ gzip:   0.23 kB
+dist/assets/shield-check-B20fklzk.js                                    0.32 kB │ gzip:   0.25 kB
+dist/assets/code-xml-Bbz17EbW.js                                        0.32 kB │ gzip:   0.23 kB
+dist/assets/tag-Dbkk9tZ5.js                                             0.32 kB │ gzip:   0.25 kB
+dist/assets/trash-BjlCLeK8.js                                           0.32 kB │ gzip:   0.21 kB
+dist/assets/save-B7_5mzWD.js                                            0.32 kB │ gzip:   0.23 kB
+dist/assets/scan-line-DBGDibmv.js                                       0.33 kB │ gzip:   0.22 kB
+dist/assets/camera-Til9vb1C.js                                          0.33 kB │ gzip:   0.25 kB
+dist/assets/shopping-bag-CD_dhG9K.js                                    0.34 kB │ gzip:   0.24 kB
+dist/assets/file-up-Bk7Wsw3J.js                                         0.35 kB │ gzip:   0.24 kB
+dist/assets/camera-off-DRZREsaj.js                                      0.41 kB │ gzip:   0.28 kB
+dist/assets/file-spreadsheet-CJJesehE.js                                0.42 kB │ gzip:   0.26 kB
+dist/assets/calendar-days-ByW2sEBK.js                                   0.49 kB │ gzip:   0.26 kB
+dist/assets/chunk-POLPUOCO-Ch47my_e.js                                  0.52 kB │ gzip:   0.34 kB
+dist/assets/money-D3OAENF3.js                                           0.53 kB │ gzip:   0.35 kB
+dist/assets/rolldown-runtime-hePW80VL.js                                0.71 kB │ gzip:   0.42 kB
+dist/assets/store-CsbLZZHT.js                                           0.73 kB │ gzip:   0.39 kB
+dist/assets/errors-C3g7dTPh.js                                          0.73 kB │ gzip:   0.40 kB
+dist/assets/user-check-CbOls7zc.js                                      0.77 kB │ gzip:   0.44 kB
+dist/assets/chunk-ARQGIP4T-zvM5v9Pw.js                                  0.79 kB │ gzip:   0.47 kB
+dist/assets/package-plus-C1icKvqb.js                                    0.80 kB │ gzip:   0.43 kB
+dist/assets/About-F4DEAOPZ-D46-4IqB.js                                  0.83 kB │ gzip:   0.43 kB
+dist/assets/boxes-Jbc_3JKy.js                                           0.85 kB │ gzip:   0.39 kB
+dist/assets/send-Dz6pDWdL.js                                            0.87 kB │ gzip:   0.46 kB
+dist/assets/PayDone-BDHw9v3C.js                                         1.19 kB │ gzip:   0.61 kB
+dist/assets/preload-helper-BZ1Pz5am.js                                  1.21 kB │ gzip:   0.69 kB
+dist/assets/createLucideIcon-BQ_OOzgC.js                                1.42 kB │ gzip:   0.80 kB
+dist/assets/chunk-CXO75GVG-DwAtamWE.js                                  2.29 kB │ gzip:   1.02 kB
+dist/assets/chunk-LSHXUIWS-C8RRC977.js                                  2.56 kB │ gzip:   1.21 kB
+dist/assets/Tellers-01H2pzDc.js                                         2.68 kB │ gzip:   1.17 kB
+dist/assets/wifi-DRy7_ATI.js                                            2.68 kB │ gzip:   1.04 kB
+dist/assets/chunk-T3XZMX3E-C1VC8GZo.js                                  2.96 kB │ gzip:   1.39 kB
+dist/assets/WebsiteSettings-XTLGJIQE-CWXTpyhR.js                        2.97 kB │ gzip:   1.40 kB
+dist/assets/LabelSheet-CW_5vmgO.js                                      3.06 kB │ gzip:   1.46 kB
+dist/assets/PaymentList-5OFFV4BI-BF_0N71c.js                            3.19 kB │ gzip:   1.38 kB
+dist/assets/charts-CoB0DOr9.js                                          3.21 kB │ gzip:   1.40 kB
+dist/assets/Payments-P7FRRNP5-RE7TJaMK.js                               3.30 kB │ gzip:   1.38 kB
+dist/assets/refunds-CSD20wA-.js                                         3.31 kB │ gzip:   1.53 kB
+dist/assets/forms-DIik6VF9.js                                           3.43 kB │ gzip:   1.51 kB
+dist/assets/Registers-qZiuLhMB.js                                       3.78 kB │ gzip:   1.53 kB
+dist/assets/Notifications-T34I6NLP-C_9y2ZMv.js                          3.83 kB │ gzip:   1.71 kB
+dist/assets/skeleton-CVxeo8KT.js                                        3.96 kB │ gzip:   1.01 kB
+dist/assets/chunk-BV2YOTBD-Bfcid8yp.js                                  4.09 kB │ gzip:   1.66 kB
+dist/assets/Suppliers-CNbUfRi_.js                                       4.41 kB │ gzip:   1.69 kB
+dist/assets/Sales-C-X3Z0oY.js                                           4.51 kB │ gzip:   1.89 kB
+dist/assets/TestPayment-HO5R2SY3-C3J4u_cr.js                            4.57 kB │ gzip:   1.84 kB
+dist/assets/Categories-hU4f2CSp.js                                      4.89 kB │ gzip:   1.98 kB
+dist/assets/live-xK0UkJLy.js                                            5.00 kB │ gzip:   2.16 kB
+dist/assets/dist-CdbP5Ait.js                                            5.01 kB │ gzip:   2.23 kB
+dist/assets/adminApi-BjXwMdO1.js                                        5.03 kB │ gzip:   1.37 kB
+dist/assets/wand-sparkles-XEtSICWF.js                                   5.60 kB │ gzip:   2.12 kB
+dist/assets/Registration-IBVOUG3G-D3Q7rhjY.js                           5.69 kB │ gzip:   2.10 kB
+dist/assets/Smtp-H52GGXXE-DA21OBIT.js                                   5.71 kB │ gzip:   2.14 kB
+dist/assets/Media-C3QRGMBR-CncdYovL.js                                  5.92 kB │ gzip:   2.47 kB
+dist/assets/chunk-FNNDC3RU-Ds9ChvtR.js                                  6.06 kB │ gzip:   2.70 kB
+dist/assets/jsx-runtime-096o_Uk7.js                                     7.11 kB │ gzip:   2.72 kB
+dist/assets/Customers-C7hxOoAg.js                                       7.18 kB │ gzip:   2.56 kB
+dist/assets/chunk-5XW54TT7-h1Qtk2Ym.js                                  7.61 kB │ gzip:   3.19 kB
+dist/assets/AccountSettings-JKAXGOAR-DaEQyWum.js                        8.08 kB │ gzip:   2.47 kB
+dist/assets/Shifts-CdtCfirw.js                                          8.08 kB │ gzip:   2.85 kB
+dist/assets/chunk-WG7A64G2-CLSsdKl2.js                                  8.10 kB │ gzip:   2.89 kB
+dist/assets/router-GgtRmiej.js                                          8.89 kB │ gzip:   3.83 kB
+dist/assets/Inventory-BmmgXPRz.js                                       9.03 kB │ gzip:   3.20 kB
+dist/assets/Reports-kZjbyLyt.js                                         9.32 kB │ gzip:   3.05 kB
+dist/assets/Receipt-AgBJK85P.js                                         9.60 kB │ gzip:   3.48 kB
+dist/assets/SaleDetail-DNlJhmm-.js                                      9.95 kB │ gzip:   3.03 kB
+dist/assets/dist-DJBEXtsd.js                                           10.43 kB │ gzip:   3.83 kB
+dist/assets/RoleManagement-XYW4Z7SC-CsHe1KgO.js                        10.94 kB │ gzip:   3.78 kB
+dist/assets/Products-DvzlnktY.js                                       10.94 kB │ gzip:   4.05 kB
+dist/assets/chunk-L6HUGPCE-DfhTGbYq.js                                 12.26 kB │ gzip:   5.07 kB
+dist/assets/EmailTemplate-6YOE63LS-DNS9V9xh.js                         12.30 kB │ gzip:   4.77 kB
+dist/assets/ui-DBPxHQWk.js                                             12.53 kB │ gzip:   4.29 kB
+dist/assets/InventoryOps-HearNzPH.js                                   12.58 kB │ gzip:   3.67 kB
+dist/assets/Settings-BamNOl-K.js                                       13.00 kB │ gzip:   4.44 kB
+dist/assets/Analytics-VLPO33W4-BGROKEAe.js                             14.52 kB │ gzip:   4.56 kB
+dist/assets/Dashboard-CAl9qBKX.js                                      16.56 kB │ gzip:   5.36 kB
+dist/assets/AppNotifications-7BIOWZUF-DCTSVsMN.js                      17.28 kB │ gzip:   5.84 kB
+dist/assets/UserManagement-4RT34CWH-v6jCD2xQ.js                        18.02 kB │ gzip:   6.23 kB
+dist/assets/chunk-HN3ISWU5-BZnUgA5O.js                                 19.82 kB │ gzip:   6.08 kB
+dist/assets/chunk-3C5TBPOW-DcWjiB4B.js                                 19.84 kB │ gzip:   6.69 kB
+dist/assets/Logs-3OCOBCQN-B2R2MU_x.js                                  20.57 kB │ gzip:   6.40 kB
+dist/assets/x-BJ_4uW1I.js                                              38.46 kB │ gzip:  13.08 kB
+dist/assets/Appearance-QONJH6HI-DmmrktyC.js                            46.31 kB │ gzip:  14.68 kB
+dist/assets/JsBarcode-DY0UKqfc.js                                      64.13 kB │ gzip:  11.30 kB
+dist/assets/universal-BKIiHnVj.js                                      70.30 kB │ gzip:  19.48 kB
+dist/assets/App-DhKYH0q4.js                                            81.51 kB │ gzip:  25.19 kB
+dist/assets/ProfilePictureDialog-OASMHDDA-BDDhgQBt.js                 110.49 kB │ gzip:  31.61 kB
+dist/assets/react-dom-DnetuRAE.js                                     132.67 kB │ gzip:  43.05 kB
+dist/assets/ProductEdit-QWErMBO9.js                                   133.89 kB │ gzip:  38.62 kB
+dist/assets/normalize-wheel-DDOfCVXa.js                               161.51 kB │ gzip:  52.79 kB
+dist/assets/index-DIRMunrc.js                                         196.19 kB │ gzip:  62.92 kB
+dist/assets/CalendarContent-4GQU5DA5-KTmaiSfG.js                      335.58 kB │ gzip:  93.37 kB
+dist/assets/WidgetLibrary-MWKUKSRN-DLbbmLJs.js                        417.17 kB │ gzip: 133.36 kB
+dist/assets/useScannerInput-BKCS9_7K.js                               440.07 kB │ gzip: 116.88 kB
+dist/assets/IconLibraryContent-XA4WCHCW-CfGJWAex.js                   505.37 kB │ gzip: 133.62 kB
+dist/assets/CodeEditorContent-5QR6IHD3-BUKssK3k.js                    634.97 kB │ gzip: 223.72 kB
+dist/assets/chart-engine-VJIMKYOM-MNU7kdCP.js                         792.62 kB │ gzip: 265.99 kB
+dist/assets/RichTextEditorContent-HVMCW65I-DoDEFI37.js              1,100.09 kB │ gzip: 287.09 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.72s

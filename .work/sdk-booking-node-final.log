@@ -1,0 +1,27 @@
+✔ identity preserves the business name and falls back after assets are removed (0.896ms)
+✔ image URLs reject unsafe schemes (0.175ms)
+✔ week navigation crosses year boundaries and always starts on Monday (1.4148ms)
+✔ business timezone determines the day, including overnight and inactive-staff appointments (11.2983ms)
+✔ multi-day leave appears on every affected day but not on its midnight ending day (1.2941ms)
+✔ customer auth callback has no fragment or previous credentials (0.5226ms)
+✔ only safe customer destinations survive the login round trip (0.2146ms)
+✔ signup uses hosted tenant route and preserves validated callback request (0.2015ms)
+✔ SDK media deletion preserves photos referenced by Booking and SDK appearance (1.3752ms)
+✔ unused Booking files can be deleted, but out-of-scope identifiers cannot (1.1948ms)
+✔ the library only manages genuine Booking folders (1.1628ms)
+✔ full image and thumbnail URLs match DataFile identity across host changes (1.0893ms)
+✔ hidden services protect images; retired services release them for cleanup (0.2443ms)
+✔ team photos remain protected even when the team member is inactive (0.4649ms)
+✔ local URLs and canonical remote URLs detect use without substring collisions (0.185ms)
+✔ deletion revalidates all requested IDs, scope and fresh usage before deleting anything (0.2366ms)
+✔ pagination includes Booking files after multiple host-capped pages (0.4473ms)
+✔ pagination rejects incomplete, repeated or invalid file lists (0.2614ms)
+✔ Booking catalogue and folder agree on SDK rollout settings and application scope (3.8698ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 87.731

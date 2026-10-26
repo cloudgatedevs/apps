@@ -1,0 +1,19 @@
+{
+  "settings": [
+    "Id",
+    "key",
+    "value"
+  ],
+  "entities": [
+    "Id",
+    "kind",
+    "ref",
+    "owner",
+    "version",
+    "data"
+  ],
+  "write_guard": [
+    "Id",
+    "expected"
+  ]
+}

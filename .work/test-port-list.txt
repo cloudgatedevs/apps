@@ -1,0 +1,4 @@
+jobs/tests\test_native.py:9:  self.c=sqlserver.connect();self.c.row_factory=sqlserver.Row;self.c.executescript((ROOT/'cloudgate/schema.sql').read_text());self.c.executescript(seed_sql(local=True));self.saved={k:sys.modules.get(k) for k in ['clr','Web.Core.Shared.Services.Endpoints.Engine']};sys.modules['clr']=types.SimpleNamespace(AddReference=lambda x:None)
+jobs/tests\test_native.py:17:  ctx=types.SimpleNamespace(GetKeys=lambda sid:[types.SimpleNamespace(Key=k,Value=v) for k,v in values.items()]);sys.modules['Web.Core.Shared.Services.Endpoints.Engine']=types.SimpleNamespace(WorkflowSessionKeyExecutionContext=ctx)
+jobs/tests\test_native.py:30:       if ch==';' and sqlserver.complete_statement(statement):
+booking/tests\test_native_workflows.py:30:  modules={'clr':types.SimpleNamespace(AddReference=lambda name:None),'Web.Core.Shared.Services.Endpoints.Engine':types.SimpleNamespace(WorkflowSessionKeyExecutionContext=scope)}

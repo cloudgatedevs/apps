@@ -1,0 +1,59 @@
+
+> cloudgate-jobs@2.0.1 test
+> python ../test_support/run.py -m unittest discover -s tests -v && node --test tests/*.test.mjs
+
+test_block_prevents_visit (test_domain.DomainTests.test_block_prevents_visit) ... ok
+test_complete_journey_and_deposit_applied_once (test_domain.DomainTests.test_complete_journey_and_deposit_applied_once) ... ok
+test_credit_preserves_invoice_and_is_idempotent (test_domain.DomainTests.test_credit_preserves_invoice_and_is_idempotent) ... ok
+test_cross_customer_access (test_domain.DomainTests.test_cross_customer_access) ... ok
+test_customer_approval_extras_exact_total (test_domain.DomainTests.test_customer_approval_extras_exact_total) ... ok
+test_draft_quote_private (test_domain.DomainTests.test_draft_quote_private) ... ok
+test_late_cancelled_payment_review (test_domain.DomainTests.test_late_cancelled_payment_review) ... ok
+test_mail_claim_is_exclusive_and_result_token_bound (test_domain.DomainTests.test_mail_claim_is_exclusive_and_result_token_bound) ... ok
+test_monthly_anchor_and_recurrence_dedup (test_domain.DomainTests.test_monthly_anchor_and_recurrence_dedup) ... ok
+test_no_internal_operations_via_customer (test_domain.DomainTests.test_no_internal_operations_via_customer) ... ok
+test_only_one_job_per_request (test_domain.DomainTests.test_only_one_job_per_request) ... ok
+test_overlap_rolls_back_all_workers (test_domain.DomainTests.test_overlap_rolls_back_all_workers) ... ok
+test_price_rounding_and_extras (test_domain.DomainTests.test_price_rounding_and_extras) ... ok
+test_private_notes_not_in_portal (test_domain.DomainTests.test_private_notes_not_in_portal) ... ok
+test_quote_revision_invalidates_previous (test_domain.DomainTests.test_quote_revision_invalidates_previous) ... ok
+test_quote_version_and_repeat_accept (test_domain.DomainTests.test_quote_version_and_repeat_accept) ... ok
+test_refund_reserves_and_verifies (test_domain.DomainTests.test_refund_reserves_and_verifies) ... ok
+test_required_checklist_blocks_completion (test_domain.DomainTests.test_required_checklist_blocks_completion) ... ok
+test_sandbox_has_no_real_account_bindings (test_domain.DomainTests.test_sandbox_has_no_real_account_bindings) ... ok
+test_schema_idempotent (test_domain.DomainTests.test_schema_idempotent) ... ok
+test_sql_text_roundtrip (test_domain.DomainTests.test_sql_text_roundtrip) ... ok
+test_staff_permissions_are_membership_based (test_domain.DomainTests.test_staff_permissions_are_membership_based) ... ok
+test_stale_plan_rejected (test_domain.DomainTests.test_stale_plan_rejected) ... ok
+test_unassigned_technician_cannot_update (test_domain.DomainTests.test_unassigned_technician_cannot_update) ... ok
+test_wallet_mismatch_rejected (test_domain.DomainTests.test_wallet_mismatch_rejected) ... ok
+test_wallet_status_one_only (test_domain.DomainTests.test_wallet_status_one_only) ... ok
+test_all_scripts_compile_and_wiring (test_native.NativeTests.test_all_scripts_compile_and_wiring) ... ok
+test_catalog_native (test_native.NativeTests.test_catalog_native) ... ok
+test_empty_recovery_branches (test_native.NativeTests.test_empty_recovery_branches) ... ok
+test_request_native_text (test_native.NativeTests.test_request_native_text) ... ok
+test_route_allowlist (test_native.NativeTests.test_route_allowlist) ... ok
+test_scheduled_guard_rejects_browser (test_native.NativeTests.test_scheduled_guard_rejects_browser) ... ok
+test_scheduled_worker_runs (test_native.NativeTests.test_scheduled_worker_runs) ... ok
+test_unconfigured_notifications_no_send (test_native.NativeTests.test_unconfigured_notifications_no_send) ... ok
+test_workspace_native (test_native.NativeTests.test_workspace_native) ... ok
+test_manifest_matches_catalogue (test_package.PackageTests.test_manifest_matches_catalogue) ... ok
+test_production_empty_sandbox_seeded (test_package.PackageTests.test_production_empty_sandbox_seeded) ... ok
+test_workers_scheduled_and_guarded (test_package.PackageTests.test_workers_scheduled_and_guarded) ... ok
+
+----------------------------------------------------------------------
+Ran 38 tests in 3.309s
+
+OK
+✔ SDK media checks hidden services and inactive staff in the full workspace (2.146ms)
+✔ SDK media protects homepage and native appearance images (0.3412ms)
+✔ partial staff snapshots cannot authorise deletion; unused known images can be removed (0.4979ms)
+✔ Jobs catalogue, SDK defaults and build modes stay consistent (3.6179ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 79.7271

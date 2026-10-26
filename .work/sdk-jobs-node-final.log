@@ -1,0 +1,12 @@
+✔ SDK media checks hidden services and inactive staff in the full workspace (2.169ms)
+✔ SDK media protects homepage and native appearance images (0.3569ms)
+✔ partial staff snapshots cannot authorise deletion; unused known images can be removed (0.4788ms)
+✔ Jobs catalogue, SDK defaults and build modes stay consistent (11.7973ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105.2398

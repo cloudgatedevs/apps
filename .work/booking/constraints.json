@@ -1,0 +1,102 @@
+{
+  "triggers": [
+    [
+      "guard_revision",
+      "CREATE TRIGGER guard_revision BEFORE INSERT ON write_guard BEGIN\n SELECT RAISE(ABORT,'The calendar changed. Please retry your request.') WHERE NEW.expected<>(SELECT value FROM settings WHERE key='_revision');\nEND"
+    ],
+    [
+      "allocation_no_overlap",
+      "CREATE TRIGGER allocation_no_overlap BEFORE INSERT ON allocations WHEN NEW.active=1 BEGIN\n SELECT RAISE(ABORT,'That time was just booked. Please choose another slot.') WHERE EXISTS(SELECT 1 FROM allocations a JOIN bookings b ON b.reference=a.booking_ref WHERE a.active=1 AND (b.status<>'held' OR b.expires>CAST(strftime('%s','now') AS INTEGER)) AND a.starts<NEW.ends AND a.ends>NEW.starts AND (a.staff_id=NEW.staff_id OR (NEW.resource_id IS NOT NULL AND a.resource_id=NEW.resource_id)));\n SELECT RAISE(ABORT,'This time is blocked.') WHERE EXISTS(SELECT 1 FROM blocks b WHERE b.starts<NEW.ends AND b.ends>NEW.starts AND ((b.staff_id IS NULL AND b.resource_id IS NULL) OR b.staff_id=NEW.staff_id OR (NEW.resource_id IS NOT NULL AND b.resource_id=NEW.resource_id)));\nEND"
+    ],
+    [
+      "blocks_no_booking",
+      "CREATE TRIGGER blocks_no_booking BEFORE INSERT ON blocks BEGIN\n SELECT RAISE(ABORT,'Move or cancel the affected appointments before blocking this time.') WHERE EXISTS(SELECT 1 FROM allocations a JOIN bookings b ON b.reference=a.booking_ref WHERE a.active=1 AND (b.status<>'held' OR b.expires>CAST(strftime('%s','now') AS INTEGER)) AND a.starts<NEW.ends AND a.ends>NEW.starts AND ((NEW.staff_id IS NULL AND NEW.resource_id IS NULL) OR a.staff_id=NEW.staff_id OR (NEW.resource_id IS NOT NULL AND a.resource_id=NEW.resource_id)));\nEND"
+    ],
+    [
+      "prevent_abandoned_booking",
+      "CREATE TRIGGER prevent_abandoned_booking BEFORE INSERT ON bookings WHEN EXISTS(SELECT 1 FROM abandoned_booking_requests WHERE request_key=NEW.request_key) BEGIN SELECT RAISE(ABORT,'This reservation request was released. Start a new booking.'); END"
+    ]
+  ],
+  "tables": [
+    [
+      "customer_accounts",
+      "CREATE TABLE customer_accounts (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, user_id TEXT UNIQUE NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL, updated INTEGER NOT NULL)"
+    ],
+    [
+      "booking_accounts",
+      "CREATE TABLE booking_accounts (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, booking_ref TEXT UNIQUE NOT NULL REFERENCES bookings(reference), user_id TEXT NOT NULL, created INTEGER NOT NULL)"
+    ],
+    [
+      "settings",
+      "CREATE TABLE settings (Id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT UNIQUE NOT NULL, value TEXT NOT NULL)"
+    ],
+    [
+      "write_guard",
+      "CREATE TABLE write_guard (Id INTEGER PRIMARY KEY AUTOINCREMENT, expected TEXT NOT NULL)"
+    ],
+    [
+      "services",
+      "CREATE TABLE services (Id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL DEFAULT 'Wellness', description TEXT NOT NULL DEFAULT '', duration INTEGER NOT NULL CHECK(duration BETWEEN 5 AND 480), buffer INTEGER NOT NULL DEFAULT 10 CHECK(buffer BETWEEN 0 AND 120), price INTEGER NOT NULL CHECK(price>=0), deposit_percent INTEGER NOT NULL DEFAULT 100 CHECK(deposit_percent BETWEEN 1 AND 100), resource_type TEXT NOT NULL DEFAULT '', active INTEGER NOT NULL DEFAULT 1, color TEXT NOT NULL DEFAULT '#b5c8b5', intake TEXT NOT NULL DEFAULT '')"
+    ],
+    [
+      "staff",
+      "CREATE TABLE staff (Id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, title TEXT NOT NULL DEFAULT '', bio TEXT NOT NULL DEFAULT '', color TEXT NOT NULL DEFAULT '#b5c8b5', service_ids TEXT NOT NULL DEFAULT '[]', hours TEXT NOT NULL DEFAULT '{}', active INTEGER NOT NULL DEFAULT 1)"
+    ],
+    [
+      "resources",
+      "CREATE TABLE resources (Id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, type TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1)"
+    ],
+    [
+      "blocks",
+      "CREATE TABLE blocks (Id INTEGER PRIMARY KEY AUTOINCREMENT, staff_id INTEGER REFERENCES staff(Id), resource_id INTEGER REFERENCES resources(Id), starts INTEGER NOT NULL, ends INTEGER NOT NULL CHECK(ends>starts), reason TEXT NOT NULL DEFAULT 'Unavailable')"
+    ],
+    [
+      "customers",
+      "CREATE TABLE customers (Id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', notes TEXT NOT NULL DEFAULT '', marketing INTEGER NOT NULL DEFAULT 0, created INTEGER NOT NULL)"
+    ],
+    [
+      "bookings",
+      "CREATE TABLE bookings (Id INTEGER PRIMARY KEY AUTOINCREMENT, reference TEXT UNIQUE NOT NULL, token_hash TEXT NOT NULL, request_key TEXT UNIQUE NOT NULL, customer_id INTEGER NOT NULL REFERENCES customers(Id), starts INTEGER NOT NULL, ends INTEGER NOT NULL, status TEXT NOT NULL CHECK(status IN ('held','confirmed','arrived','completed','cancelled','no_show','expired','payment_review')), expires INTEGER NOT NULL, total INTEGER NOT NULL, due INTEGER NOT NULL, paid INTEGER NOT NULL DEFAULT 0, refunded INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL, notes TEXT NOT NULL DEFAULT '', intake TEXT NOT NULL DEFAULT '{}', payment_id TEXT, payment_url TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL, version INTEGER NOT NULL DEFAULT 1)"
+    ],
+    [
+      "allocations",
+      "CREATE TABLE allocations (Id INTEGER PRIMARY KEY AUTOINCREMENT, booking_ref TEXT NOT NULL REFERENCES bookings(reference), service_id INTEGER NOT NULL REFERENCES services(Id), staff_id INTEGER NOT NULL REFERENCES staff(Id), resource_id INTEGER REFERENCES resources(Id), starts INTEGER NOT NULL, ends INTEGER NOT NULL CHECK(ends>starts), service_name TEXT NOT NULL, price INTEGER NOT NULL, duration INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1)"
+    ],
+    [
+      "payments",
+      "CREATE TABLE payments (Id INTEGER PRIMARY KEY AUTOINCREMENT, booking_ref TEXT NOT NULL REFERENCES bookings(reference), external_id TEXT UNIQUE NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('payment','refund','cash')), amount INTEGER NOT NULL CHECK(amount>0), status TEXT NOT NULL, created INTEGER NOT NULL)"
+    ],
+    [
+      "refund_requests",
+      "CREATE TABLE refund_requests (Id INTEGER PRIMARY KEY AUTOINCREMENT, request_key TEXT UNIQUE NOT NULL, booking_ref TEXT NOT NULL REFERENCES bookings(reference), amount INTEGER NOT NULL CHECK(amount>0), status TEXT NOT NULL DEFAULT 'pending', provider_id TEXT, created INTEGER NOT NULL)"
+    ],
+    [
+      "waitlist",
+      "CREATE TABLE waitlist (Id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', service_id INTEGER NOT NULL REFERENCES services(Id), staff_id INTEGER REFERENCES staff(Id), preferred_date TEXT NOT NULL, notes TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'waiting', created INTEGER NOT NULL)"
+    ],
+    [
+      "promos",
+      "CREATE TABLE promos (Id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT UNIQUE NOT NULL, percent INTEGER NOT NULL CHECK(percent BETWEEN 1 AND 100), ends TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1)"
+    ],
+    [
+      "messages",
+      "CREATE TABLE messages (Id INTEGER PRIMARY KEY AUTOINCREMENT, booking_ref TEXT, recipient TEXT NOT NULL, subject TEXT NOT NULL, body TEXT NOT NULL, due INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'queued', attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT NOT NULL DEFAULT '', dedupe TEXT UNIQUE NOT NULL)"
+    ],
+    [
+      "audit",
+      "CREATE TABLE audit (Id INTEGER PRIMARY KEY AUTOINCREMENT, booking_ref TEXT, action TEXT NOT NULL, actor TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL)"
+    ],
+    [
+      "abandoned_booking_requests",
+      "CREATE TABLE abandoned_booking_requests (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, request_key TEXT NOT NULL UNIQUE, created INTEGER NOT NULL)"
+    ],
+    [
+      "service_metadata",
+      "CREATE TABLE service_metadata (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, service_id INTEGER NOT NULL UNIQUE REFERENCES services(Id), image_url TEXT NOT NULL DEFAULT '', deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)))"
+    ],
+    [
+      "staff_metadata",
+      "CREATE TABLE staff_metadata (Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, staff_id INTEGER NOT NULL UNIQUE REFERENCES staff(Id), image_url TEXT NOT NULL DEFAULT '')"
+    ]
+  ]
+}

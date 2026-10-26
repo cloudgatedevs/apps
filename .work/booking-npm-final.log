@@ -1,0 +1,116 @@
+
+> cloudgate-booking@3.0.0 test
+> python ../test_support/run.py -m unittest discover -s tests -v && node --test tests/*.test.mjs
+
+test_branding_changes_require_admin_and_invalid_batch_is_atomic (test_branding.BrandingTests.test_branding_changes_require_admin_and_invalid_batch_is_atomic) ... ok
+test_remove_images_and_use_business_name (test_branding.BrandingTests.test_remove_images_and_use_business_name) ... ok
+test_saved_branding_is_public_and_migration_does_not_reset_custom_values (test_branding.BrandingTests.test_saved_branding_is_public_and_migration_does_not_reset_custom_values) ... ok
+test_settings_cannot_reset_the_concurrent_write_revision (test_branding.BrandingTests.test_settings_cannot_reset_the_concurrent_write_revision) ... ok
+test_rejects_non_images_truncated_images_and_appended_content (test_branding.LocalMediaTests.test_rejects_non_images_truncated_images_and_appended_content) ... ok
+test_upload_list_retrieve_and_reject_path_traversal (test_branding.LocalMediaTests.test_upload_list_retrieve_and_reject_path_traversal) ... ok
+test_abandon_rejects_inflight_stale_hold_transaction (test_engine.BookingTests.test_abandon_rejects_inflight_stale_hold_transaction) ... ok
+test_access_control (test_engine.BookingTests.test_access_control) ... ok
+test_account_does_not_claim_matching_email_or_admin_bookings (test_engine.BookingTests.test_account_does_not_claim_matching_email_or_admin_bookings) ... ok
+test_account_profile_is_separate_from_guest_customer_records (test_engine.BookingTests.test_account_profile_is_separate_from_guest_customer_records) ... ok
+test_account_requires_active_server_identity (test_engine.BookingTests.test_account_requires_active_server_identity) ... ok
+test_block_rejects_existing_booking (test_engine.BookingTests.test_block_rejects_existing_booking) ... ok
+test_cancel_cutoff (test_engine.BookingTests.test_cancel_cutoff) ... ok
+test_cancel_frees_slot_and_preserves_history (test_engine.BookingTests.test_cancel_frees_slot_and_preserves_history) ... ok
+test_changed_quote_must_be_reviewed_before_hold (test_engine.BookingTests.test_changed_quote_must_be_reviewed_before_hold) ... ok
+test_checkout_request_idempotency (test_engine.BookingTests.test_checkout_request_idempotency) ... ok
+test_deposit_balance_and_completion (test_engine.BookingTests.test_deposit_balance_and_completion) ... ok
+test_expiry_releases_hold (test_engine.BookingTests.test_expiry_releases_hold) ... ok
+test_failed_payment_releases_hold (test_engine.BookingTests.test_failed_payment_releases_hold) ... ok
+test_frontdesk_hold_does_not_belong_to_staff_account (test_engine.BookingTests.test_frontdesk_hold_does_not_belong_to_staff_account) ... ok
+test_frontdesk_requires_admin_and_retries_without_double_booking (test_engine.BookingTests.test_frontdesk_requires_admin_and_retries_without_double_booking) ... ok
+test_guest_claim_needs_key_and_cannot_transfer_between_accounts (test_engine.BookingTests.test_guest_claim_needs_key_and_cannot_transfer_between_accounts) ... ok
+test_hold_does_not_confirm_without_payment (test_engine.BookingTests.test_hold_does_not_confirm_without_payment) ... ok
+test_intake_and_apostrophes_roundtrip (test_engine.BookingTests.test_intake_and_apostrophes_roundtrip) ... ok
+test_late_payment_never_steals_slot (test_engine.BookingTests.test_late_payment_never_steals_slot) ... ok
+test_multi_service_and_breaks (test_engine.BookingTests.test_multi_service_and_breaks) ... ok
+test_no_show_cancels_reminder (test_engine.BookingTests.test_no_show_cancels_reminder) ... ok
+test_payment_is_idempotent (test_engine.BookingTests.test_payment_is_idempotent) ... ok
+test_payment_rejects_spoof_and_wrong_amount (test_engine.BookingTests.test_payment_rejects_spoof_and_wrong_amount) ... ok
+test_promo_and_validation (test_engine.BookingTests.test_promo_and_validation) ... ok
+test_qualification (test_engine.BookingTests.test_qualification) ... ok
+test_quote_is_read_only_and_matches_discounted_deposit (test_engine.BookingTests.test_quote_is_read_only_and_matches_discounted_deposit) ... ok
+test_quote_is_server_priced (test_engine.BookingTests.test_quote_is_server_priced) ... ok
+test_refund_claim_reuses_key_and_blocks_different_pending_request (test_engine.BookingTests.test_refund_claim_reuses_key_and_blocks_different_pending_request) ... ok
+test_refund_idempotency_and_bounds (test_engine.BookingTests.test_refund_idempotency_and_bounds) ... ok
+test_release_existing_frontdesk_hold_and_protect_paid_booking (test_engine.BookingTests.test_release_existing_frontdesk_hold_and_protect_paid_booking) ... ok
+test_released_frontdesk_request_cannot_arrive_late (test_engine.BookingTests.test_released_frontdesk_request_cannot_arrive_late) ... ok
+test_reschedule_retains_payment (test_engine.BookingTests.test_reschedule_retains_payment) ... ok
+test_resource_collision_across_staff (test_engine.BookingTests.test_resource_collision_across_staff) ... ok
+test_retry_after_guest_login_links_once (test_engine.BookingTests.test_retry_after_guest_login_links_once) ... ok
+test_same_staff_overlap_rejected (test_engine.BookingTests.test_same_staff_overlap_rejected) ... ok
+test_signed_in_booking_is_owned_and_other_account_cannot_access (test_engine.BookingTests.test_signed_in_booking_is_owned_and_other_account_cannot_access) ... ok
+test_snapshot_query_matches_python_snapshot (test_engine.BookingTests.test_snapshot_query_matches_python_snapshot) ... ok
+test_sql_trigger_rejects_direct_overlap (test_engine.BookingTests.test_sql_trigger_rejects_direct_overlap) ... ok
+test_stale_snapshot_is_rejected_atomically (test_engine.BookingTests.test_stale_snapshot_is_rejected_atomically) ... ok
+test_delete_guards_references_scope_and_path_traversal (test_media.MediaTests.test_delete_guards_references_scope_and_path_traversal) ... ok
+test_folder_pagination_preserves_independent_uploads_and_legacy_files (test_media.MediaTests.test_folder_pagination_preserves_independent_uploads_and_legacy_files) ... ok
+test_preview_api_requires_admin_and_rechecks_saved_usage_on_delete (test_media.MediaTests.test_preview_api_requires_admin_and_rechecks_saved_usage_on_delete) ... ok
+test_native_account_identity_reaches_checkout_and_status (test_native_workflows.NativeTests.test_native_account_identity_reaches_checkout_and_status) ... ok
+test_native_admin_allowed (test_native_workflows.NativeTests.test_native_admin_allowed) ... ok
+test_native_admin_rejected (test_native_workflows.NativeTests.test_native_admin_rejected) ... ok
+test_native_checkout_derives_browser_origin_with_no_website_setting (test_native_workflows.NativeTests.test_native_checkout_derives_browser_origin_with_no_website_setting) ... ok
+test_native_email_empty_queue_does_not_send (test_native_workflows.NativeTests.test_native_email_empty_queue_does_not_send) ... ok
+test_native_failed_refund_does_not_change_booking_ledger (test_native_workflows.NativeTests.test_native_failed_refund_does_not_change_booking_ledger) ... ok
+test_native_pending_refund_is_reconciled_without_resubmitting (test_native_workflows.NativeTests.test_native_pending_refund_is_reconciled_without_resubmitting) ... ok
+test_native_public_catalog (test_native_workflows.NativeTests.test_native_public_catalog) ... ok
+test_native_quote_and_frontdesk_reservation (test_native_workflows.NativeTests.test_native_quote_and_frontdesk_reservation) ... ok
+test_native_reconcile_no_candidate (test_native_workflows.NativeTests.test_native_reconcile_no_candidate) ... ok
+test_native_refund_status_is_read_only_at_provider (test_native_workflows.NativeTests.test_native_refund_status_is_read_only_at_provider) ... ok
+test_native_rejects_wrong_refund_contract (test_native_workflows.NativeTests.test_native_rejects_wrong_refund_contract) ... ok
+test_native_request_text_cannot_become_python (test_native_workflows.NativeTests.test_native_request_text_cannot_become_python) ... ok
+test_native_service_photo_create_edit_and_delete (test_native_workflows.NativeTests.test_native_service_photo_create_edit_and_delete) ... ok
+test_native_status_without_payment (test_native_workflows.NativeTests.test_native_status_without_payment) ... ok
+test_native_uncertain_refund_remains_reserved (test_native_workflows.NativeTests.test_native_uncertain_refund_remains_reserved) ... ok
+test_native_wallet_lifecycle_and_refund (test_native_workflows.NativeTests.test_native_wallet_lifecycle_and_refund) ... ok
+test_install_keeps_production_catalog_empty (test_package.PackageTests.test_install_keeps_production_catalog_empty) ... ok
+test_store_manifest_matches_and_assets_exist (test_package.PackageTests.test_store_manifest_matches_and_assets_exist) ... ok
+test_concurrent_deletion_invalidates_a_prepared_hold (test_services.ServiceTests.test_concurrent_deletion_invalidates_a_prepared_hold) ... ok
+test_create_custom_service_assigns_team_photo_and_bookable_time (test_services.ServiceTests.test_create_custom_service_assigns_team_photo_and_bookable_time) ... ok
+test_delete_preserves_paid_booking_and_snapshot_on_reschedule (test_services.ServiceTests.test_delete_preserves_paid_booking_and_snapshot_on_reschedule) ... ok
+test_deleted_service_rejects_new_booking_and_edit (test_services.ServiceTests.test_deleted_service_rejects_new_booking_and_edit) ... ok
+test_draft_can_be_created_without_staff_then_assigned (test_services.ServiceTests.test_draft_can_be_created_without_staff_then_assigned) ... ok
+test_edit_remove_photo_hide_and_republish (test_services.ServiceTests.test_edit_remove_photo_hide_and_republish) ... ok
+test_migration_is_idempotent_and_keeps_service_and_business_customizations (test_services.ServiceTests.test_migration_is_idempotent_and_keeps_service_and_business_customizations) ... ok
+test_reschedule_availability_requires_owner_or_admin (test_services.ServiceTests.test_reschedule_availability_requires_owner_or_admin) ... ok
+test_service_changes_require_admin_and_validate_atomically (test_services.ServiceTests.test_service_changes_require_admin_and_validate_atomically) ... ok
+test_inactive_staff_keeps_photo_and_migration_is_idempotent (test_team_photos.TeamPhotoTests.test_inactive_staff_keeps_photo_and_migration_is_idempotent) ... ok
+test_new_team_member_photo_is_in_public_and_admin_profiles (test_team_photos.TeamPhotoTests.test_new_team_member_photo_is_in_public_and_admin_profiles) ... ok
+test_replace_remove_and_omitted_photo_preserve_working_hours (test_team_photos.TeamPhotoTests.test_replace_remove_and_omitted_photo_preserve_working_hours) ... ok
+test_validation_and_authorization_reject_changes_atomically (test_team_photos.TeamPhotoTests.test_validation_and_authorization_reject_changes_atomically) ... ok
+
+----------------------------------------------------------------------
+Ran 80 tests in 15.376s
+
+OK
+✔ identity preserves the business name and falls back after assets are removed (0.8656ms)
+✔ image URLs reject unsafe schemes (0.1821ms)
+✔ week navigation crosses year boundaries and always starts on Monday (1.5966ms)
+✔ business timezone determines the day, including overnight and inactive-staff appointments (10.4032ms)
+✔ multi-day leave appears on every affected day but not on its midnight ending day (1.3002ms)
+✔ customer auth callback has no fragment or previous credentials (0.5669ms)
+✔ only safe customer destinations survive the login round trip (0.2032ms)
+✔ signup uses hosted tenant route and preserves validated callback request (0.1928ms)
+✔ SDK media deletion preserves photos referenced by Booking and SDK appearance (1.3785ms)
+✔ unused Booking files can be deleted, but out-of-scope identifiers cannot (1.0022ms)
+✔ the library only manages genuine Booking folders (1.1903ms)
+✔ full image and thumbnail URLs match DataFile identity across host changes (0.7765ms)
+✔ hidden services protect images; retired services release them for cleanup (0.2424ms)
+✔ team photos remain protected even when the team member is inactive (0.4136ms)
+✔ local URLs and canonical remote URLs detect use without substring collisions (0.2341ms)
+✔ deletion revalidates all requested IDs, scope and fresh usage before deleting anything (0.2007ms)
+✔ pagination includes Booking files after multiple host-capped pages (0.3049ms)
+✔ pagination rejects incomplete, repeated or invalid file lists (0.2179ms)
+✔ Booking catalogue and folder agree on SDK rollout settings and application scope (5.2335ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 82.699

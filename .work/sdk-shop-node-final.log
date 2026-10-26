@@ -1,0 +1,15 @@
+✔ Shop rollout uses matching catalogue metadata, SDK settings and separate build modes (5.1744ms)
+✔ media deletion checks fresh references, including inactive product IDs (0.7299ms)
+✔ full and thumbnail file URLs protect the same product or appearance image (0.2773ms)
+✔ unused images can be deleted and preserve cancellation options (0.1599ms)
+✔ media deletion fails closed when references, file membership or pagination cannot be verified (0.3722ms)
+✔ media deletion follows pagination before checking the requested file (0.1975ms)
+✔ category and Markdown images are protected across file URL variants (0.3733ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85.892

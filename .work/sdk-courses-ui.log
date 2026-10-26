@@ -1,0 +1,82 @@
+
+> cloudgate-courses@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+Browser errors: []
+Page: http://127.0.0.1:3392/certificate?code=ea9d6dcfb7184910b9d32d89e6535c30 Local preview · simulated payments · no emails sent
+Learner
+Back office
+Instructor
+Academy preview
+Explore courses
+My learning
+Sign in
+Start learning
+Valid
+Learning, recognised.
+Jordan Williams
+
+Design thinking, made practical
+
+Issued by Cloudgate Academy · 26 Oct 2026, 04:08
+
+Verification: ea9d6dcfb7184910b9d32d89e6535c30
+Academy preview
+
+Practical courses for curious people. Build useful skills, one lesson at a time.
+
+Back office
+POWERED BY
+Cloudgate SDK
+v0.1.20
+Page: http://127.0.0.1:3392/learn/profile ← My learning
+
+YOUR ACCOUNT
+
+My profile
+
+A little more you. Keep your details, photo and wallet together.
+
+JW
+Jordan Williams
+
+learner@example.invalid
+
+Email verified
+Make it yours.
+Click your photo to update it.
+Personal details
+
+How you appear in this app.
+
+First name
+Last name
+Email address
+
+Used for sign-in and account updates.
+
+Your details are up to date
+Save changes
+Cloudgate account
+
+Connect your Cloudgate account to this IdP profile. Your link is saved for future sign-ins. Linking is optional; back-office access uses your app role’s permissions.
+
+Cloudgate could not complete this request. Please try again.
+
+Try again
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+  - waiting for getByRole('heading', { name: 'Profile', exact: true }) to be visible
+
+    at D:\repos\GitHub\apps\courses\tests\sdk.browser.mjs:97:72 {
+  log: [
+    "  - waiting for getByRole('heading', { name: 'Profile', exact: true }) to be visible"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.16.0

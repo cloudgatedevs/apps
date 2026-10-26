@@ -1,0 +1,6 @@
+
+> cloudgate-booking@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+PASS Booking checkout, confirmation, reschedule, check-in, completion, refunds, custom modules, media protection, service creation, business settings and responsive SDK shell.
+PASS native SDK profile/media/appearance/logs, SDK customer profile, shared logout and permission gate without loading domain data.

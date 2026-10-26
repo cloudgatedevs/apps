@@ -1,0 +1,51 @@
+
+> cloudgate-events@3.0.0 test
+> python ../test_support/run.py -m unittest discover -s tests -v && node --test tests/*.test.mjs
+
+test_admin_guard (test_events.EventsTests.test_admin_guard) ... ok
+test_admitted_ticket_refund_rejected (test_events.EventsTests.test_admitted_ticket_refund_rejected) ... ok
+test_anonymous_and_inactive_denied (test_events.EventsTests.test_anonymous_and_inactive_denied) ... ok
+test_cancelled_event_cannot_be_unlisted_and_reopened (test_events.EventsTests.test_cancelled_event_cannot_be_unlisted_and_reopened) ... ok
+test_cancelled_event_voids_tickets (test_events.EventsTests.test_cancelled_event_voids_tickets) ... ok
+test_capacity_cannot_drop_below_bookings (test_events.EventsTests.test_capacity_cannot_drop_below_bookings) ... ok
+test_changed_event_updates_tickets (test_events.EventsTests.test_changed_event_updates_tickets) ... ok
+test_customer_isolation (test_events.EventsTests.test_customer_isolation) ... ok
+test_duplicate_checkin (test_events.EventsTests.test_duplicate_checkin) ... ok
+test_event_capacity_across_tiers (test_events.EventsTests.test_event_capacity_across_tiers) ... ok
+test_expired_hold_releases_capacity (test_events.EventsTests.test_expired_hold_releases_capacity) ... ok
+test_expired_wallet_payment_releases_capacity (test_events.EventsTests.test_expired_wallet_payment_releases_capacity) ... ok
+test_free_ticket_issued (test_events.EventsTests.test_free_ticket_issued) ... ok
+test_internal_guard (test_events.EventsTests.test_internal_guard) ... ok
+test_late_paid_cancelled_event_requires_review (test_events.EventsTests.test_late_paid_cancelled_event_requires_review) ... ok
+test_mail_claim_is_leased (test_events.EventsTests.test_mail_claim_is_leased) ... ok
+test_manual_reference_admission (test_events.EventsTests.test_manual_reference_admission) ... ok
+test_no_oversell (test_events.EventsTests.test_no_oversell) ... ok
+test_open_checkout_holds_capacity (test_events.EventsTests.test_open_checkout_holds_capacity) ... ok
+test_payment_exact_match (test_events.EventsTests.test_payment_exact_match) ... ok
+test_payment_idempotent_ticket_issuance (test_events.EventsTests.test_payment_idempotent_ticket_issuance) ... ok
+test_prices_server_owned (test_events.EventsTests.test_prices_server_owned) ... ok
+test_refund_blocks_and_revokes (test_events.EventsTests.test_refund_blocks_and_revokes) ... ok
+test_reservation_idempotent (test_events.EventsTests.test_reservation_idempotent) ... ok
+test_reuse_key_different_selection_rejected (test_events.EventsTests.test_reuse_key_different_selection_rejected) ... ok
+test_revision_guard_prevents_concurrent_oversell (test_events.EventsTests.test_revision_guard_prevents_concurrent_oversell) ... ok
+test_sql_and_interpolation_literals (test_events.EventsTests.test_sql_and_interpolation_literals) ... ok
+test_staff_assignment_enforced (test_events.EventsTests.test_staff_assignment_enforced) ... ok
+test_staff_no_ticket_codes_in_list (test_events.EventsTests.test_staff_no_ticket_codes_in_list) ... ok
+test_waitlist_dedup (test_events.EventsTests.test_waitlist_dedup) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 1.790s
+
+OK
+✔ SDK media protects published and unlisted event artwork (1.6631ms)
+✔ SDK media protects homepage, editorial and native appearance images (0.9487ms)
+✔ partial staff snapshots cannot authorise deletion; unused known images can be removed (0.3201ms)
+✔ Events catalogue, SDK defaults and build modes stay consistent (5.7871ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 90.8934

@@ -1,0 +1,76 @@
+
+> cloudgate-shop@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+06:06:46 [vite] (client) [Unhandled error] Error: Application route "/account/profile" conflicts with the built-in Cloudgate route "/account/profile". Choose a distinct application route; sidebar groups do not create URL namespaces.
+ > assertNoPlatformRouteConflicts node_modules/@cloudgatedevs/cloudgate-client-react/dist/react/chunk-ZGIRY7SO.js:669:24
+ > CloudgateBackoffice node_modules/@cloudgatedevs/cloudgate-client-react/dist/react/index.js:2655:18
+ > renderWithHooks node_modules/react-dom/cjs/react-dom.development.js:15486:17
+ > mountIndeterminateComponent node_modules/react-dom/cjs/react-dom.development.js:20103:12
+ > beginWork node_modules/react-dom/cjs/react-dom.development.js:21626:15
+ > HTMLUnknownElement.callCallback node_modules/react-dom/cjs/react-dom.development.js:4164:13
+ > Object.invokeGuardedCallbackDev node_modules/react-dom/cjs/react-dom.development.js:4213:15
+ > invokeGuardedCallback node_modules/react-dom/cjs/react-dom.development.js:4277:30
+ > beginWork$1 node_modules/react-dom/cjs/react-dom.development.js:27490:6
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom.development.js:26596:11
+
+06:06:46 [vite] (client) [Unhandled error] Error: Application route "/account/profile" conflicts with the built-in Cloudgate route "/account/profile". Choose a distinct application route; sidebar groups do not create URL namespaces.
+ > assertNoPlatformRouteConflicts node_modules/@cloudgatedevs/cloudgate-client-react/dist/react/chunk-ZGIRY7SO.js:669:24
+ > CloudgateBackoffice node_modules/@cloudgatedevs/cloudgate-client-react/dist/react/index.js:2655:18
+ > renderWithHooks node_modules/react-dom/cjs/react-dom.development.js:15486:17
+ > mountIndeterminateComponent node_modules/react-dom/cjs/react-dom.development.js:20103:12
+ > beginWork node_modules/react-dom/cjs/react-dom.development.js:21626:15
+ > HTMLUnknownElement.callCallback node_modules/react-dom/cjs/react-dom.development.js:4164:13
+ > Object.invokeGuardedCallbackDev node_modules/react-dom/cjs/react-dom.development.js:4213:15
+ > invokeGuardedCallback node_modules/react-dom/cjs/react-dom.development.js:4277:30
+ > beginWork$1 node_modules/react-dom/cjs/react-dom.development.js:27490:6
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom.development.js:26596:11
+
+06:06:46 [vite] (client) [console.error] The above error occurred in the <CloudgateBackoffice> component:
+
+    at CloudgateBackoffice (http://127.0.0.1:3596/node_modules/.vite/deps/@cloudgatedevs_cloudgate-client-react_react.js?v=c09389ee:3689:32)
+    at Suspense
+    at Provider (http://127.0.0.1:3596/node_modules/.vite/deps/dist-CVJFx3qn.js?v=c0b1b217:125:12)
+    at TooltipProvider (http://127.0.0.1:3596/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=e37eb7c6:23:10)
+    at TooltipProvider (http://127.0.0.1:3596/src/shared/ui/menus.jsx:94:35)
+    at Router (http://127.0.0.1:3596/node_modules/.vite/deps/dist-iJjnk8_y.js?v=c0b1b217:3721:18)
+    at BrowserRouter (http://127.0.0.1:3596/node_modules/.vite/deps/dist-iJjnk8_y.js?v=c0b1b217:4398:8)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+06:06:46 [vite] (client) [Unhandled error] Error: Application route "/account/profile" conflicts with the built-in Cloudgate route "/account/profile". Choose a distinct application route; sidebar groups do not create URL namespaces.
+ > assertNoPlatformRouteConflicts node_modules/@cloudgatedevs/cloudgate-client-react/dist/react/chunk-ZGIRY7SO.js:669:24
+ > CloudgateBackoffice node_modules/@cloudgatedevs/cloudgate-client-react/dist/react/index.js:2655:18
+ > renderWithHooks node_modules/react-dom/cjs/react-dom.development.js:15486:17
+ > mountIndeterminateComponent node_modules/react-dom/cjs/react-dom.development.js:20103:12
+ > beginWork node_modules/react-dom/cjs/react-dom.development.js:21626:15
+ > beginWork$1 node_modules/react-dom/cjs/react-dom.development.js:27465:13
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom.development.js:26596:11
+ > workLoopSync node_modules/react-dom/cjs/react-dom.development.js:26505:4
+ > renderRootSync node_modules/react-dom/cjs/react-dom.development.js:26473:6
+ > recoverFromConcurrentError node_modules/react-dom/cjs/react-dom.development.js:25889:19
+
+Fixture output: 
+Browser errors: [
+  'Application route "/account/profile" conflicts with the built-in Cloudgate route "/account/profile". Choose a distinct application route; sidebar groups do not create URL namespaces.',
+  'Application route "/account/profile" conflicts with the built-in Cloudgate route "/account/profile". Choose a distinct application route; sidebar groups do not create URL namespaces.',
+  'Application route "/account/profile" conflicts with the built-in Cloudgate route "/account/profile". Choose a distinct application route; sidebar groups do not create URL namespaces.'
+]
+Page: http://127.0.0.1:3596/admin/products?access_token=e30.eyJzdWIiOiIxIiwiZXhwIjoxNzkyOTkxMjAyLCJqdGkiOiJpbml0aWFsIn0.test&refresh_token=isolated-refresh&expires_in=3600 
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+  - waiting for getByRole('heading', { name: 'Products', exact: true }) to be visible
+
+    at D:\repos\GitHub\apps\shop\tests\sdk.browser.mjs:95:70 {
+  log: [
+    "  - waiting for getByRole('heading', { name: 'Products', exact: true }) to be visible"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.16.0

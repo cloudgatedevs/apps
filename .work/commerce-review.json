@@ -1,0 +1,320 @@
+[
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-categories\\plan.py",
+    "line": 43,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-categories\\plan.py",
+    "line": 48,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-categories\\plan.py",
+    "line": 67,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 10,
+    "sql": "(SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders, (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_1) AS SpentCents, (SELECT MAX(o.CreatedAt) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_2) AS LastOrderAt, (SELECT o.Currency FROM orders o WHERE o.CustomerId = c.Id ORDER BY o.Id DESC LIMIT 1) AS Currency ",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 84.\n  (SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders\u001b[4m,\u001b[0m (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_1) AS "
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 10,
+    "sql": "(SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders, (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_1) AS SpentCents, (SELECT MAX(o.CreatedAt) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_2",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 84.\n  (SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders\u001b[4m,\u001b[0m (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_1) AS "
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 10,
+    "sql": "(SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders, (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_1) AS SpentCents, (SELECT MAX(o.CreatedAt) FROM orders o WHERE o.CustomerId = c.Id AND ",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 84.\n  (SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders\u001b[4m,\u001b[0m (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_1) AS "
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 10,
+    "sql": "(SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders, (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_1",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 84.\n  (SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders\u001b[4m,\u001b[0m (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_1"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 10,
+    "sql": "(SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders, (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND ",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 84.\n  (SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0) AS Orders\u001b[4m,\u001b[0m (SELECT COALESCE(SUM(o.TotalCents), 0) FROM orders o WHERE o.CustomerId = c.Id AND "
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 10,
+    "sql": "(SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND cgdynamic_0",
+    "error": "Expecting ). Line 1, Col: 72.\n  (SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND \u001b[4mcgdynamic_0\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 10,
+    "sql": "(SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id AND ",
+    "error": "Required keyword: 'expression' missing for <class 'sqlglot.expressions.core.And'>. Line 1, Col: 60.\n  (SELECT COUNT(*) FROM orders o WHERE o.CustomerId = c.Id \u001b[4mAND\u001b[0m \n\nExpecting ). Line 1, Col: 60.\n  (SELECT COUNT(*) FROM orders o WHERE o.Custom"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-inventory\\plan.py",
+    "line": 61,
+    "sql": "BEGIN;\nINSERT INTO inventory_movements (VariantId, ProductId, Delta, Reason, Reference, Note, CreatedBy) SELECT v.Id, v.ProductId, cgdynamic_0, cgdynamic_1, cgdynamic_2, cgdynamic_3, cgdynamic_4 FROM product_variants v WHERE v.Id = cgdynamic_5 AND (cgdynamic_6) <> 0;\nUPDATE product_variants SET StockQty = MAX(0, StockQty + (cgdynamic_7)), UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_8;\nCOMMIT;\ncgdynamic_9 FROM product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = cgdynamic_10;",
+    "error": "Invalid expression / Unexpected token. Line 5, Col: 16.\n  tockQty + (cgdynamic_7)), UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_8;\nCOMMIT;\ncgdynamic_9 \u001b[4mFROM\u001b[0m product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = cgdynamic"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-inventory\\plan.py",
+    "line": 61,
+    "sql": "BEGIN;\nINSERT INTO inventory_movements (VariantId, ProductId, Delta, Reason, Reference, Note, CreatedBy) SELECT v.Id, v.ProductId, cgdynamic_0, cgdynamic_1, cgdynamic_2, cgdynamic_3, cgdynamic_4 FROM product_variants v WHERE v.Id = cgdynamic_5 AND (cgdynamic_6) <> 0;\nUPDATE product_variants SET StockQty = MAX(0, StockQty + (cgdynamic_7)), UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_8;\nCOMMIT;\ncgdynamic_9 FROM product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = cgdynamic_10",
+    "error": "Invalid expression / Unexpected token. Line 5, Col: 16.\n  tockQty + (cgdynamic_7)), UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_8;\nCOMMIT;\ncgdynamic_9 \u001b[4mFROM\u001b[0m product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = cgdynamic"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-inventory\\plan.py",
+    "line": 61,
+    "sql": "BEGIN;\nINSERT INTO inventory_movements (VariantId, ProductId, Delta, Reason, Reference, Note, CreatedBy) SELECT v.Id, v.ProductId, cgdynamic_0, cgdynamic_1, cgdynamic_2, cgdynamic_3, cgdynamic_4 FROM product_variants v WHERE v.Id = cgdynamic_5 AND (cgdynamic_6) <> 0;\nUPDATE product_variants SET StockQty = MAX(0, StockQty + (cgdynamic_7)), UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_8;\nCOMMIT;\ncgdynamic_9 FROM product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = ",
+    "error": "Invalid expression / Unexpected token. Line 5, Col: 16.\n  tockQty + (cgdynamic_7)), UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_8;\nCOMMIT;\ncgdynamic_9 \u001b[4mFROM\u001b[0m product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = "
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-inventory\\plan.py",
+    "line": 74,
+    "sql": "UPDATE product_variants SET LowStockThreshold = cgdynamic_0, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_1;\ncgdynamic_2 FROM product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = cgdynamic_3;",
+    "error": "Invalid expression / Unexpected token. Line 2, Col: 16.\n   LowStockThreshold = cgdynamic_0, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_1;\ncgdynamic_2 \u001b[4mFROM\u001b[0m product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = cgdynamic"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-inventory\\plan.py",
+    "line": 74,
+    "sql": "UPDATE product_variants SET LowStockThreshold = cgdynamic_0, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_1;\ncgdynamic_2 FROM product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = cgdynamic_3",
+    "error": "Invalid expression / Unexpected token. Line 2, Col: 16.\n   LowStockThreshold = cgdynamic_0, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_1;\ncgdynamic_2 \u001b[4mFROM\u001b[0m product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = cgdynamic"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-inventory\\plan.py",
+    "line": 74,
+    "sql": "UPDATE product_variants SET LowStockThreshold = cgdynamic_0, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_1;\ncgdynamic_2 FROM product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = ",
+    "error": "Invalid expression / Unexpected token. Line 2, Col: 16.\n   LowStockThreshold = cgdynamic_0, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = cgdynamic_1;\ncgdynamic_2 \u001b[4mFROM\u001b[0m product_variants v JOIN products p ON p.Id = v.ProductId WHERE v.Id = "
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-messages\\plan.py",
+    "line": 39,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-messages\\shape.py",
+    "line": 12,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-orders\\plan.py",
+    "line": 85,
+    "sql": " with cgdynamic_0",
+    "error": "Expecting (. Line 1, Col: 17.\n   with \u001b[4mcgdynamic_0\u001b[0m\n\nRequired keyword: 'this' missing for <class 'sqlglot.expressions.query.CTE'>. Line 1, Col: 17.\n   with \u001b[4mcgdynamic_0\u001b[0m\n\nFailed to parse any statement following CTE. Line 1, Col: 17.\n   wi"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-orders\\plan.py",
+    "line": 85,
+    "sql": " with ",
+    "error": "Expected CTE to have alias. Line 1, Col: 5.\n   \u001b[4mwith\u001b[0m \n\nExpecting (. Line 1, Col: 5.\n   \u001b[4mwith\u001b[0m \n\nRequired keyword: 'alias' missing for <class 'sqlglot.expressions.query.CTE'>. Line 1, Col: 5.\n   \u001b[4mwith\u001b[0m \n\n... and 2 more"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-pages\\plan.py",
+    "line": 55,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-pages\\plan.py",
+    "line": 63,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-pages\\plan.py",
+    "line": 72,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-pages\\shape.py",
+    "line": 7,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-products\\plan.py",
+    "line": 204,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-products\\plan.py",
+    "line": 222,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-products\\plan.py",
+    "line": 251,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\admin-products\\shape.py",
+    "line": 20,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\cart\\plan.py",
+    "line": 54,
+    "sql": "Insert or update one line, validated and clamped against the live catalogue.",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 20.\n  Insert or update \u001b[4mone\u001b[0m line, validated and clamped against the live catalogue."
+  },
+  {
+    "file": "shop\\cloudgate\\workflows\\cart\\plan.py",
+    "line": 93,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-categories\\plan.py",
+    "line": 7,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-categories\\plan.py",
+    "line": 12,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-categories\\plan.py",
+    "line": 22,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 22,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 27,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-customers\\plan.py",
+    "line": 31,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-customers\\shape.py",
+    "line": 9,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-products\\plan.py",
+    "line": 75,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-products\\plan.py",
+    "line": 84,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-products\\plan.py",
+    "line": 98,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-products\\shape.py",
+    "line": 15,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-registers\\plan.py",
+    "line": 8,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-registers\\plan.py",
+    "line": 13,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-registers\\plan.py",
+    "line": 25,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-suppliers\\plan.py",
+    "line": 7,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-suppliers\\plan.py",
+    "line": 12,
+    "sql": "update",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mupdate\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\admin-suppliers\\plan.py",
+    "line": 21,
+    "sql": "delete",
+    "error": "Expected table name but got <Token token_type: TokenType.SENTINEL, text: SENTINEL, line: 1, col: 1, start: 0, end: 0, comments: []>. Line 1, Col: 6.\n  \u001b[4mdelete\u001b[0m"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\pos-payment\\apply_status.py",
+    "line": 24,
+    "sql": "UPDATE products SET StockQty = StockQty - (SELECT COALESCE(SUM(i.Qty), 0) FROM sale_items i WHERE i.SaleId = {SID} AND i.ProductId = products.Id), UpdatedAt = CURRENT_TIMESTAMP WHERE TrackInventory = 1 AND Id IN (SELECT ProductId FROM sale_items WHERE SaleId = {SID}){GUARD};",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 287.\n  TAMP WHERE TrackInventory = 1 AND Id IN (SELECT ProductId FROM sale_items WHERE SaleId = cgformat_1)\u001b[4mcgformat_2\u001b[0m;"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\pos-payment\\apply_status.py",
+    "line": 26,
+    "sql": "INSERT INTO inventory_movements (ProductId, Delta, Reason, Reference, Note, CreatedBy) SELECT i.ProductId, -i.Qty, 'sale', (SELECT Reference FROM sales WHERE Id = {SID}), 'Sale (card)', cgdynamic_0 FROM sale_items i JOIN products p ON p.Id = i.ProductId WHERE i.SaleId = {SID} AND p.TrackInventory = 1{GUARD};",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 321.\n  e_items i JOIN products p ON p.Id = i.ProductId WHERE i.SaleId = cgformat_1 AND p.TrackInventory = 1\u001b[4mcgformat_2\u001b[0m;"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\pos-sale\\compute.py",
+    "line": 68,
+    "sql": "INSERT the sale + items using the next receipt number; the sale id is kept in _ctx('sid').",
+    "error": "Invalid expression / Unexpected token. Line 1, Col: 15.\n  INSERT the \u001b[4msale\u001b[0m + items using the next receipt number; the sale id is kept in _ctx('sid')."
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\pos-sale\\compute.py",
+    "line": 96,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\pos-sale\\compute.py",
+    "line": 112,
+    "sql": "create",
+    "error": "Unparsed command"
+  },
+  {
+    "file": "pos\\cloudgate\\workflows\\pos-shift\\plan.py",
+    "line": 39,
+    "sql": "drop",
+    "error": "Unparsed command"
+  }
+]

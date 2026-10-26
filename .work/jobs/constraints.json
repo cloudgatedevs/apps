@@ -1,0 +1,38 @@
+{
+  "triggers": [
+    [
+      "jobs_revision",
+      "CREATE TRIGGER jobs_revision BEFORE INSERT ON write_guard BEGIN SELECT RAISE(ABORT,'The workspace changed. Refresh and try again.') WHERE NEW.expected<>(SELECT value FROM settings WHERE key='_revision'); END"
+    ],
+    [
+      "jobs_no_overlap",
+      "CREATE TRIGGER jobs_no_overlap BEFORE INSERT ON allocations BEGIN SELECT RAISE(ABORT,'A team member is already assigned or unavailable at this time.') WHERE EXISTS(SELECT 1 FROM allocations a WHERE a.staff=NEW.staff AND a.starts<NEW.ends AND a.ends>NEW.starts); END"
+    ],
+    [
+      "jobs_no_overlap_update",
+      "CREATE TRIGGER jobs_no_overlap_update BEFORE UPDATE ON allocations BEGIN SELECT RAISE(ABORT,'A team member is already assigned or unavailable at this time.') WHERE EXISTS(SELECT 1 FROM allocations a WHERE a.Id<>NEW.Id AND a.staff=NEW.staff AND a.starts<NEW.ends AND a.ends>NEW.starts); END"
+    ]
+  ],
+  "tables": [
+    [
+      "settings",
+      "CREATE TABLE settings (Id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT UNIQUE NOT NULL, value TEXT NOT NULL)"
+    ],
+    [
+      "entities",
+      "CREATE TABLE entities (Id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, ref TEXT UNIQUE NOT NULL, owner TEXT NOT NULL DEFAULT '', job TEXT NOT NULL DEFAULT '', version INTEGER NOT NULL DEFAULT 1, data TEXT NOT NULL CHECK(json_valid(data)))"
+    ],
+    [
+      "write_guard",
+      "CREATE TABLE write_guard (Id INTEGER PRIMARY KEY AUTOINCREMENT, expected TEXT NOT NULL)"
+    ],
+    [
+      "allocations",
+      "CREATE TABLE allocations (Id INTEGER PRIMARY KEY AUTOINCREMENT, visit TEXT NOT NULL, staff TEXT NOT NULL, starts INTEGER NOT NULL, ends INTEGER NOT NULL CHECK(ends>starts), UNIQUE(visit,staff))"
+    ],
+    [
+      "attachments",
+      "CREATE TABLE attachments (Id INTEGER PRIMARY KEY AUTOINCREMENT, ref TEXT UNIQUE NOT NULL, content TEXT NOT NULL)"
+    ]
+  ]
+}

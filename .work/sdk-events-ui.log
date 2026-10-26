@@ -1,0 +1,181 @@
+
+> cloudgate-events@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+Browser errors: []
+Page: http://127.0.0.1:3492/ LOCAL PREVIEW · Payments and email are simulated
+attendee
+admin
+staff
+Events preview
+Discover events
+The experience
+Sign in
+THE ART OF BEING THERE
+Some nights
+stay with you.
+
+Extraordinary rooms. Unforgettable people. Discover live experiences that deserve a place in your story.
+
+Explore the collection
+SCROLL TO DISCOVER
+01
+COMING UP · MUSIC
+After Hours / Live
+28 Oct 2026, 04:08 UTC · The Glasshouse
+LIVE WELL. BE PRESENT.
+A LITTLE LESS ORDINARY
+
+For the music. For the conversation.
+For the feeling of being there.
+
+03
+EXPERIENCES
+TO DISCOVER
+THE COLLECTION
+Make room for something good.
+YOUR NEXT CHAPTER, LIVE
+All experiences
+Music
+Talks
+Food & culture
+16
+NOV
+FOOD & CULTURE
+01
+Sunday Table
+
+The Courtyard
+
+Free entry
+Discover event
+GOOD COMPANY. LASTING MEMORIES.
+MORE THAN A TICKET
+A place in
+the moment.
+
+A favourite new artist. A conversation that stays with you. A table with room for one more. Find an experience, bring your people, and let the evening unfold.
+
+Find your next moment
+Find your kind of live
+Music, culture and new perspectives.
+A seamless reservation
+Your bookings together in one place.
+Arrive. Scan. Enjoy.
+Your personal QR ticket at the door.
+Events preview
+
+Find your next unforgettable experience. Live music, ideas, culture and community.
+
+POWERED BY
+Cloudgate SDK
+v0.1.20
+Page: http://127.0.0.1:3492/admin/events Skip to content
+
+Events preview
+
+Local simulator
+
+Search menu
+
+EVENTS
+
+Overview
+Events
+Bookings
+Attendees
+Check-in
+Waitlist
+Event reports
+Event staff
+Event refunds
+Event emails
+Event settings
+Widget library
+Administration
+Powered by
+Cloudgate SDK
+v0.1.20
+Events preview
+Events
+View website
+Sandbox
+A
+Alex Morgan
+Admin
+LOCAL PREVIEW · Payments and email are simulated
+attendee
+admin
+staff
+ORGANISER CONSOLE
+Events
+Refresh
+Add event
+Saved successfully.
+← All events
+Edit event
+Publish event
+Unlist
+Cancel event
+MUSIC
+SDK Test Event
+
+26 Oct 2026, 05:08 UTC · Test theatre
+
+An event created through the SDK workspace.
+
+Published
+Ticket tiers
+Add tier
+TIER	PRICE	CAPACITY	SALES	
+Standard	$25.00	100	Active	Edit
+Community	$0.00	100	Active	Edit
+Page: http://127.0.0.1:3492/account/profile Skip to content
+Events preview
+JW
+Jordan Williams
+Back to website
+Profile
+
+YOUR ACCOUNT
+
+My profile
+
+A little more you. Keep your details, photo and wallet together.
+
+JW
+Jordan Williams
+
+attendee@example.invalid
+
+Email verified
+Make it yours.
+Click your photo to update it.
+Personal details
+
+How you appear in this app.
+
+First name
+Last name
+Email address
+
+Used for sign-in and account updates.
+
+Your details are up to date
+Save changes
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+  - waiting for getByRole('heading', { name: 'Profile', exact: true }) to be visible
+
+    at D:\repos\GitHub\apps\events\tests\sdk.browser.mjs:129:73 {
+  log: [
+    "  - waiting for getByRole('heading', { name: 'Profile', exact: true }) to be visible"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.16.0

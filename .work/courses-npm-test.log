@@ -1,0 +1,39 @@
+
+> cloudgate-courses@2.0.1 test
+> python ../test_support/run.py -m unittest discover -s tests -v && node --test tests/*.test.mjs
+
+test_attempt_limit_enforced (test_academy.AcademyTests.test_attempt_limit_enforced) ... ok
+test_catalog_has_no_quiz_answers_or_private_data (test_academy.AcademyTests.test_catalog_has_no_quiz_answers_or_private_data) ... ok
+test_completion_issues_one_certificate (test_academy.AcademyTests.test_completion_issues_one_certificate) ... ok
+test_cross_learner_access_denied (test_academy.AcademyTests.test_cross_learner_access_denied) ... ok
+test_free_enrollment_is_idempotent (test_academy.AcademyTests.test_free_enrollment_is_idempotent) ... ok
+test_full_refund_revokes_access (test_academy.AcademyTests.test_full_refund_revokes_access) ... ok
+test_instructor_scope (test_academy.AcademyTests.test_instructor_scope) ... ok
+test_internal_ops_denied (test_academy.AcademyTests.test_internal_ops_denied) ... ok
+test_local_media_urls_match_cloudgate_development (test_academy.AcademyTests.test_local_media_urls_match_cloudgate_development) ... ok
+test_outbox_lease_and_result (test_academy.AcademyTests.test_outbox_lease_and_result) ... ok
+test_paid_access_denied_until_verified (test_academy.AcademyTests.test_paid_access_denied_until_verified) ... ok
+test_payment_amount_mismatch_denied (test_academy.AcademyTests.test_payment_amount_mismatch_denied) ... ok
+test_published_curriculum_immutable_for_existing_enrollment (test_academy.AcademyTests.test_published_curriculum_immutable_for_existing_enrollment) ... ok
+test_published_media_references_are_retained (test_academy.AcademyTests.test_published_media_references_are_retained) ... ok
+test_quiz_cannot_be_marked_complete (test_academy.AcademyTests.test_quiz_cannot_be_marked_complete) ... ok
+test_sql_text_cannot_interpolate_keys (test_academy.AcademyTests.test_sql_text_cannot_interpolate_keys) ... ok
+test_stale_writes_rollback (test_academy.AcademyTests.test_stale_writes_rollback) ... ok
+test_unsigned_enrollment_denied (test_academy.AcademyTests.test_unsigned_enrollment_denied) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 1.198s
+
+OK
+✔ SDK media cannot remove a course image retained by a published curriculum (1.3119ms)
+✔ SDK media protects draft courses, homepage assets and native branding (0.77ms)
+✔ deletion needs a complete administrator reference check and a known file (0.3186ms)
+✔ Academy catalogue, SDK defaults and build modes stay consistent (3.7066ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.3201

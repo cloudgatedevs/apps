@@ -1,0 +1,222 @@
+
+> cloudgate-jobs@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+Browser errors: []
+Page: http://127.0.0.1:3592/ Local preview · simulated payments · no emails sent
+Customer
+Office
+Technician
+Jobs preview
+Our services
+How it works
+My account
+Log in
+Request a quote
+HERE TO HELP. READY TO WORK.
+Your next project, in good hands.
+
+Tell us what you need. We will take care of the details, from a clear quote to a job well done.
+
+Let’s get it sorted
+Clear, upfront quotes
+One place to manage it all
+A LITTLE LESS ON YOUR TO-DO LIST
+Home repairs.
+Fresh starts.
+Projects finished.
+
+Practical help for your
+home and business.
+
+Your local area
+Approve your quote online
+Secure payments
+OUR SERVICES
+Good people.
+Useful skills.
+
+From the everyday fixes to the jobs
+you’ve been meaning to get to.
+
+01
+REPAIRS
+Plumbing & repairs
+
+Leaks, fittings and everyday repairs, handled with care.
+
+Request a quote
+02
+INSTALLATION
+Electrical services
+
+Lighting, fault finding and safe installations.
+
+Request a quote
+03
+MAINTENANCE
+Home & office cleaning
+
+A fresh start for the spaces you use every day.
+
+Request a quote
+04
+MAINTENANCE
+Property maintenance
+
+Keep your property working as it should.
+
+Request a quote
+SIMPLE FROM THE START
+Less chasing.
+More getting done.
+Start your request
+01
+Tell us what you need
+
+Send a request, describe the work and share photos securely.
+
+02
+Make it a plan
+
+Review your quote, choose your extras and approve it online.
+
+03
+We’ll take it from here
+
+Follow your job, see upcoming visits and pay your invoice in one place.
+
+Jobs preview
+
+Reliable services for your home and business.
+
+Business workspace
+POWERED BY
+Cloudgate SDK
+v0.1.20
+Page: http://127.0.0.1:3592/admin/media Skip to content
+
+Jobs preview
+
+Local simulator
+
+Search menu
+
+JOBS
+
+Overview
+Requests
+Quotes
+Jobs
+Schedule
+Customers
+Invoices & payments
+Recurring work
+Job reports
+Services
+Job team
+Business settings
+Widget library
+Administration
+Analytics
+Logs
+Payments
+People & access
+Messaging
+Media server
+Branding
+Theme
+Settings
+Powered by
+Cloudgate SDK
+v0.1.20
+Jobs preview
+Administration
+Media server
+View website
+Sandbox
+A
+Alex Morgan
+Admin
+Media server
+
+Upload and manage the images stored for this application.
+
+Refresh
+Upload images
+Folder
+Media
+Branding
+Images up to 10 MB · Public image URLs
+
+sdk-service.png
+
+1 KB
+
+Copy URL
+1–1 of 1 images
+«
+‹ Prev
+1 / 1
+Next ›
+»
+Delete image?
+
+Delete image?
+
+sdk-service.png
+
+This permanently removes the file from the media server. Any other pages using its public URL will lose the image.
+
+sdk-service.png is now in use. Remove it from its service, team member or branding setting before deleting it.
+Cancel
+Delete image
+Page: http://127.0.0.1:3592/account/profile Skip to content
+Jobs preview
+JW
+Jordan Williams
+Back to website
+Profile
+
+YOUR ACCOUNT
+
+My profile
+
+A little more you. Keep your details, photo and wallet together.
+
+JW
+Jordan Williams
+
+customer@example.invalid
+
+Email verified
+Make it yours.
+Click your photo to update it.
+Personal details
+
+How you appear in this app.
+
+First name
+Last name
+Email address
+
+Used for sign-in and account updates.
+
+Your details are up to date
+Save changes
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+  - waiting for getByRole('heading', { name: 'Profile', exact: true }) to be visible
+
+    at D:\repos\GitHub\apps\jobs\tests\sdk.browser.mjs:107:73 {
+  log: [
+    "  - waiting for getByRole('heading', { name: 'Profile', exact: true }) to be visible"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.16.0

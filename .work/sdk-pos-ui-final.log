@@ -1,0 +1,5 @@
+
+> cloudgate-pos@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+Passed: SDK callback and refresh, native and retail access gates, shared pages, POS settings, SDK photo upload/deletion guard, real SQL Server cash/card sales and cash returns, live refresh, receipts/printing, independent till routes, responsive layouts, dark theme and public payment returns. Wallet responses were simulated.

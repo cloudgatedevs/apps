@@ -1,0 +1,69 @@
+
+> cloudgate-pos@3.0.0 test
+> npm run test:refunds && node --test tests/*.test.mjs
+
+
+> cloudgate-pos@3.0.0 test:refunds
+> python ../test_support/run.py cloudgate/test_refunds.py && node --test tests/refunds-client.mjs
+
+test_authorization (__main__.RefundTests.test_authorization) ... ok
+test_cash_cannot_refund_card_tender (__main__.RefundTests.test_cash_cannot_refund_card_tender) ... ok
+test_cash_refund_and_shift_are_atomic (__main__.RefundTests.test_cash_refund_and_shift_are_atomic) ... ok
+test_changed_request_details_rejected (__main__.RefundTests.test_changed_request_details_rejected) ... ok
+test_closed_shift_rejects_stale_cash_plan (__main__.RefundTests.test_closed_shift_rejects_stale_cash_plan) ... ok
+test_concurrent_claims_reserve_only_once (__main__.RefundTests.test_concurrent_claims_reserve_only_once) ... ok
+test_concurrent_same_key_returns_one_request (__main__.RefundTests.test_concurrent_same_key_returns_one_request) ... ok
+test_delayed_payment_poll_cannot_undo_a_refund (__main__.RefundTests.test_delayed_payment_poll_cannot_undo_a_refund) ... skipped 'Shop'
+test_discard_cannot_cancel_a_claim_that_already_won (__main__.RefundTests.test_discard_cannot_cancel_a_claim_that_already_won) ... ok
+test_discard_unsent_prevents_delayed_submission (__main__.RefundTests.test_discard_unsent_prevents_delayed_submission) ... ok
+test_discount_is_prorated_and_fractional_returns_conserve_cents (__main__.RefundTests.test_discount_is_prorated_and_fractional_returns_conserve_cents) ... ok
+test_failed_never_applies_or_retries_under_same_key (__main__.RefundTests.test_failed_never_applies_or_retries_under_same_key) ... ok
+test_full_refund_replay_retains_original_amount (__main__.RefundTests.test_full_refund_replay_retains_original_amount) ... skipped 'Shop'
+test_missing_key_and_invalid_quantities_rejected (__main__.RefundTests.test_missing_key_and_invalid_quantities_rejected) ... ok
+test_new_key_blocked_until_original_resolved (__main__.RefundTests.test_new_key_blocked_until_original_resolved) ... ok
+test_package_links_scripts_roles_and_versions (__main__.RefundTests.test_package_links_scripts_roles_and_versions) ... D:\repos\GitHub\apps\pos\cloudgate\deploy.py:223: ResourceWarning: unclosed file <_io.TextIOWrapper name='D:\\repos\\GitHub\\apps\\pos\\cloudgate\\workflows\\refunds\\workflow.json' mode='r' encoding='utf-8'>
+  spec = json.load(open(os.path.join(folder, "workflow.json"), encoding="utf-8"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_packaged_native_flow_pending_status_and_retry (__main__.RefundTests.test_packaged_native_flow_pending_status_and_retry) ... ok
+test_pending_and_uncertain_do_not_change_money_or_stock (__main__.RefundTests.test_pending_and_uncertain_do_not_change_money_or_stock) ... ok
+test_provider_reference_is_text_and_cannot_change (__main__.RefundTests.test_provider_reference_is_text_and_cannot_change) ... ok
+test_repeat_success_applies_once_even_with_stale_snapshot (__main__.RefundTests.test_repeat_success_applies_once_even_with_stale_snapshot) ... ok
+test_schema_reapply_keeps_history (__main__.RefundTests.test_schema_reapply_keeps_history) ... ok
+test_second_partial_refund_does_not_restock_order_twice (__main__.RefundTests.test_second_partial_refund_does_not_restock_order_twice) ... skipped 'Shop'
+test_stale_claim_after_another_success_cannot_overrefund (__main__.RefundTests.test_stale_claim_after_another_success_cannot_overrefund) ... ok
+test_status_lookup_cannot_create_request (__main__.RefundTests.test_status_lookup_cannot_create_request) ... ok
+test_wallet_contract_validates_all_bindings (__main__.RefundTests.test_wallet_contract_validates_all_bindings) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 4.116s
+
+OK (skipped=3)
+✔ network timeout and reload retain the original key and details (3.7778ms)
+✔ changed payload cannot reuse an outstanding request key (0.8727ms)
+✔ status checks are read-only and explicit retry uses the same key (1.24ms)
+✔ terminal confirmation requires a successful detail refresh before a new return (0.6727ms)
+✔ unsent dismissal reserves a tombstone on the server before clearing (0.8371ms)
+✔ dismissal cannot clear a request that has reached the provider (0.6414ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70.6295
+✔ POS rollout uses matching catalogue metadata, SDK settings and separate build modes (6.3024ms)
+✔ media deletion checks fresh references, including inactive product IDs (0.771ms)
+✔ full and thumbnail file URLs protect the same product or appearance image (0.5038ms)
+✔ unused images can be deleted and preserve cancellation options (0.2361ms)
+✔ media deletion fails closed when references, file membership or pagination cannot be verified (0.3176ms)
+✔ media deletion follows pagination before checking the requested file (0.1436ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 128.151

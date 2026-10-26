@@ -1,0 +1,4 @@
+bootstrap ok: 24 settings, 3 categories, 1 nav / 5 footer pages, 3 featured, 6 newest  (SQL 5823 chars)
+withBounds ok: {'minCents': 18900, 'maxCents': 79900}  category "apparel": {'minCents': 34900, 'maxCents': 79900}
+product ok: Classic Tee -> 1 related (Apparel)
+all catalog checks passed

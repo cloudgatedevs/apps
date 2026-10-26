@@ -1,0 +1,90 @@
+{
+  "triggers": [
+    [
+      "refund_key_guard",
+      "CREATE TRIGGER refund_key_guard BEFORE INSERT ON refund_requests WHEN EXISTS(SELECT 1 FROM refund_requests WHERE RequestKey=NEW.RequestKey AND (BusinessId<>NEW.BusinessId OR IntentJson<>NEW.IntentJson)) BEGIN SELECT RAISE(ROLLBACK,'Refund request key is already bound to different details.'); END"
+    ],
+    [
+      "refund_claim_guard",
+      "CREATE TRIGGER refund_claim_guard BEFORE INSERT ON refund_requests WHEN NEW.Status<>'failed' AND NOT EXISTS(SELECT 1 FROM refund_requests WHERE RequestKey=NEW.RequestKey) BEGIN  SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM sales WHERE Id=NEW.BusinessId AND Status IN ('completed','partially_refunded')  AND RefundedCents=NEW.SnapshotRefunded AND NEW.AmountCents<=TotalCents-RefundedCents AND upper(Currency)=NEW.Currency)  THEN RAISE(ROLLBACK,'Sale balance changed. Reload the sale before refunding.') END;  SELECT CASE WHEN NEW.AmountCents>(SELECT COALESCE(SUM(AmountCents),0) FROM sale_payments WHERE SaleId=NEW.BusinessId AND Method=NEW.Method AND Status='succeeded')  -(SELECT COALESCE(SUM(AmountCents),0) FROM refunds WHERE SaleId=NEW.BusinessId AND Method=NEW.Method AND Status='completed')  THEN RAISE(ROLLBACK,'Refund exceeds the amount paid by this method.') END;  SELECT CASE WHEN NEW.Method='card' AND NOT EXISTS(SELECT 1 FROM sale_payments WHERE Id=NEW.PaymentRowId AND SaleId=NEW.BusinessId AND ConnectPaymentId=NEW.PaymentId AND Method='card' AND Status='succeeded' AND AmountCents>=NEW.AmountCents)  THEN RAISE(ROLLBACK,'Original card payment is not refundable.') END;  SELECT CASE WHEN json_array_length(NEW.LinesJson)=0 OR EXISTS(SELECT 1 FROM json_each(NEW.LinesJson) l LEFT JOIN sale_items i ON i.Id=json_extract(l.value,'$.saleItemId')  WHERE i.Id IS NULL OR i.SaleId<>NEW.BusinessId OR abs(i.RefundedQty-json_extract(l.value,'$.expectedRefundedQty'))>0.000000001  OR json_extract(l.value,'$.qty')<=0 OR json_extract(l.value,'$.qty')>i.Qty-i.RefundedQty+0.000000001)  THEN RAISE(ROLLBACK,'Returned quantities changed. Reload the sale.') END;  SELECT CASE WHEN NEW.ShiftId IS NOT NULL AND NOT EXISTS(SELECT 1 FROM shifts WHERE Id=NEW.ShiftId AND Status='open')  THEN RAISE(ROLLBACK,'The cash refund shift has closed.') END; END"
+    ],
+    [
+      "refund_apply",
+      "CREATE TRIGGER refund_apply AFTER UPDATE OF Status ON refund_requests WHEN NEW.Status='succeeded' AND OLD.Applied=0 AND OLD.Status<>'succeeded' BEGIN  SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM sales WHERE Id=NEW.BusinessId AND RefundedCents=NEW.SnapshotRefunded)  THEN RAISE(ROLLBACK,'Refund needs reconciliation: local sale balance changed.') END;  INSERT INTO refunds(SaleId,Reference,Method,AmountCents,Reason,ItemsJson,ConnectRefundId,ShiftId,CreatedBy)  VALUES(NEW.BusinessId,(SELECT Reference FROM sales WHERE Id=NEW.BusinessId)||'-RF-'||NEW.Id,NEW.Method,NEW.AmountCents,json_extract(NEW.IntentJson,'$.reason'),NEW.LinesJson,NEW.ProviderRefundId,NEW.ShiftId,NEW.CreatedBy);  UPDATE sale_items SET RefundedQty=RefundedQty+(SELECT json_extract(value,'$.qty') FROM json_each(NEW.LinesJson) WHERE json_extract(value,'$.saleItemId')=sale_items.Id)  WHERE Id IN (SELECT json_extract(value,'$.saleItemId') FROM json_each(NEW.LinesJson));  UPDATE products SET StockQty=StockQty+(SELECT SUM(json_extract(value,'$.qty')) FROM json_each(NEW.LinesJson) WHERE json_extract(value,'$.productId')=products.Id),UpdatedAt=CURRENT_TIMESTAMP  WHERE Id IN (SELECT json_extract(value,'$.productId') FROM json_each(NEW.LinesJson)) AND TrackInventory=1;  INSERT INTO inventory_movements(ProductId,Delta,Reason,Reference,Note,CreatedBy)  SELECT p.Id,json_extract(l.value,'$.qty'),'refund',(SELECT Reference FROM sales WHERE Id=NEW.BusinessId),'Confirmed refund '||NEW.RequestKey,NEW.CreatedBy  FROM json_each(NEW.LinesJson) l JOIN products p ON p.Id=json_extract(l.value,'$.productId') WHERE p.TrackInventory=1;  UPDATE sales SET RefundedCents=RefundedCents+NEW.AmountCents,  Status=CASE WHEN RefundedCents+NEW.AmountCents>=TotalCents THEN 'refunded' ELSE 'partially_refunded' END,UpdatedAt=CURRENT_TIMESTAMP WHERE Id=NEW.BusinessId;  INSERT INTO sale_events(SaleId,Type,Message,DataJson,CreatedBy)  VALUES(NEW.BusinessId,'refund',NEW.Method||' refund confirmed',json_object('requestKey',NEW.RequestKey,'refundId',NEW.ProviderRefundId,'reason',json_extract(NEW.IntentJson,'$.reason')),NEW.CreatedBy);  UPDATE refund_requests SET Applied=1,UpdatedAt=CURRENT_TIMESTAMP WHERE Id=NEW.Id; END"
+    ]
+  ],
+  "tables": [
+    [
+      "settings",
+      "CREATE TABLE settings (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Key TEXT NOT NULL UNIQUE,\n  Value TEXT,\n  UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "categories",
+      "CREATE TABLE categories (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Name TEXT NOT NULL,\n  Color TEXT,                            -- tile colour on the POS grid (hex)\n  SortOrder INTEGER NOT NULL DEFAULT 0,\n  IsActive INTEGER NOT NULL DEFAULT 1,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "suppliers",
+      "CREATE TABLE suppliers (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Name TEXT NOT NULL,\n  ContactName TEXT,\n  Email TEXT,\n  Phone TEXT,\n  Notes TEXT,\n  IsActive INTEGER NOT NULL DEFAULT 1,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "products",
+      "CREATE TABLE products (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Name TEXT NOT NULL,\n  Sku TEXT,\n  Barcode TEXT,                          -- primary barcode (EAN/UPC/Code128); extra ones in product_barcodes\n  CategoryId INTEGER,\n  SupplierId INTEGER,\n  PriceCents INTEGER NOT NULL DEFAULT 0, -- selling price incl. tax when prices_include_tax = 1\n  CostCents INTEGER,\n  TaxRateBp INTEGER,                     -- NULL = store default (settings.tax_rate_bp)\n  TaxExempt INTEGER NOT NULL DEFAULT 0,\n  TrackInventory INTEGER NOT NULL DEFAULT 1,\n  StockQty REAL NOT NULL DEFAULT 0,\n  LowStockThreshold REAL,\n  Unit TEXT NOT NULL DEFAULT 'each',     -- each | kg | g | l | m\n  IsWeighed INTEGER NOT NULL DEFAULT 0,  -- quantity entered/scale, price per unit\n  ImageUrl TEXT,\n  ImageFileId TEXT,\n  Color TEXT,                            -- tile colour override\n  Status TEXT NOT NULL DEFAULT 'active', -- active | inactive\n  Notes TEXT,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "product_barcodes",
+      "CREATE TABLE product_barcodes (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  ProductId INTEGER NOT NULL,\n  Barcode TEXT NOT NULL,\n  Label TEXT,\n  PackQty REAL NOT NULL DEFAULT 1,       -- units of the product one scan adds (e.g. 6 for a six-pack)\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "inventory_movements",
+      "CREATE TABLE inventory_movements (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  ProductId INTEGER NOT NULL,\n  Delta REAL NOT NULL,\n  Reason TEXT NOT NULL,                  -- sale | refund | receive | adjust | count | void\n  Reference TEXT,\n  Note TEXT,\n  CreatedBy TEXT,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "stock_receipts",
+      "CREATE TABLE stock_receipts (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Reference TEXT NOT NULL,\n  SupplierId INTEGER,\n  Note TEXT,\n  TotalCostCents INTEGER NOT NULL DEFAULT 0,\n  CreatedBy TEXT,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "stock_receipt_items",
+      "CREATE TABLE stock_receipt_items (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  ReceiptId INTEGER NOT NULL,\n  ProductId INTEGER NOT NULL,\n  Qty REAL NOT NULL,\n  UnitCostCents INTEGER NOT NULL DEFAULT 0\n)"
+    ],
+    [
+      "registers",
+      "CREATE TABLE registers (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Name TEXT NOT NULL,\n  Location TEXT,\n  IsActive INTEGER NOT NULL DEFAULT 1,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "shifts",
+      "CREATE TABLE shifts (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  RegisterId INTEGER NOT NULL,\n  TellerUserId INTEGER NOT NULL,\n  TellerName TEXT,\n  TellerEmail TEXT,\n  Status TEXT NOT NULL DEFAULT 'open',   -- open | closed\n  OpeningFloatCents INTEGER NOT NULL DEFAULT 0,\n  ExpectedCashCents INTEGER,             -- filled at close: float + cash sales - cash refunds + pay-ins - pay-outs\n  CountedCashCents INTEGER,\n  DifferenceCents INTEGER,\n  Note TEXT,\n  OpenedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  ClosedAt DATETIME,\n  ClosedBy TEXT\n)"
+    ],
+    [
+      "cash_movements",
+      "CREATE TABLE cash_movements (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  ShiftId INTEGER NOT NULL,\n  Type TEXT NOT NULL,                    -- payin | payout | drop\n  AmountCents INTEGER NOT NULL,\n  Note TEXT,\n  CreatedBy TEXT,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "customers",
+      "CREATE TABLE customers (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Name TEXT NOT NULL,\n  Email TEXT,\n  Phone TEXT,\n  Notes TEXT,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "sales",
+      "CREATE TABLE sales (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  Reference TEXT NOT NULL UNIQUE,        -- receipt number, e.g. R-100042\n  ShiftId INTEGER,\n  RegisterId INTEGER,\n  TellerUserId INTEGER,\n  TellerName TEXT,\n  CustomerId INTEGER,\n  CustomerName TEXT,\n  CustomerEmail TEXT,\n  Status TEXT NOT NULL DEFAULT 'open',   -- open | held | completed | voided | refunded | partially_refunded\n  Currency TEXT NOT NULL DEFAULT 'ZAR',\n  SubtotalCents INTEGER NOT NULL DEFAULT 0,   -- sum of line totals after line discounts\n  DiscountCents INTEGER NOT NULL DEFAULT 0,   -- sale-level discount\n  TaxCents INTEGER NOT NULL DEFAULT 0,\n  TotalCents INTEGER NOT NULL DEFAULT 0,\n  PaidCents INTEGER NOT NULL DEFAULT 0,\n  ChangeCents INTEGER NOT NULL DEFAULT 0,\n  RefundedCents INTEGER NOT NULL DEFAULT 0,\n  HoldLabel TEXT,\n  Note TEXT,\n  CompletedAt DATETIME,\n  VoidedAt DATETIME,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "sale_items",
+      "CREATE TABLE sale_items (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  SaleId INTEGER NOT NULL,\n  ProductId INTEGER,\n  Name TEXT NOT NULL,\n  Sku TEXT,\n  Barcode TEXT,\n  Unit TEXT NOT NULL DEFAULT 'each',\n  Qty REAL NOT NULL DEFAULT 1,\n  UnitPriceCents INTEGER NOT NULL DEFAULT 0,\n  DiscountCents INTEGER NOT NULL DEFAULT 0, -- per line, absolute\n  TaxRateBp INTEGER NOT NULL DEFAULT 0,\n  TaxCents INTEGER NOT NULL DEFAULT 0,\n  LineTotalCents INTEGER NOT NULL DEFAULT 0, -- qty * unit - discount (incl. tax when tax-inclusive)\n  RefundedQty REAL NOT NULL DEFAULT 0,\n  Position INTEGER NOT NULL DEFAULT 0\n)"
+    ],
+    [
+      "sale_payments",
+      "CREATE TABLE sale_payments (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  SaleId INTEGER NOT NULL,\n  Method TEXT NOT NULL,                  -- cash | card (Cloudgate Wallet hosted page)\n  AmountCents INTEGER NOT NULL,          -- applied to the sale\n  TenderedCents INTEGER,                 -- cash handed over\n  ChangeCents INTEGER NOT NULL DEFAULT 0,\n  Status TEXT NOT NULL DEFAULT 'succeeded', -- pending | succeeded | failed | expired | refunded\n  Reference TEXT,\n  ConnectPaymentId INTEGER,\n  PaymentUrl TEXT,\n  IsProduction INTEGER NOT NULL DEFAULT 0,\n  RawJson TEXT,\n  CreatedBy TEXT,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "refunds",
+      "CREATE TABLE refunds (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  SaleId INTEGER NOT NULL,\n  Reference TEXT NOT NULL,\n  Method TEXT NOT NULL,                  -- cash | card\n  AmountCents INTEGER NOT NULL,\n  Reason TEXT,\n  ItemsJson TEXT,                        -- [{saleItemId, qty, amountCents}]\n  ConnectRefundId INTEGER,\n  Status TEXT NOT NULL DEFAULT 'completed',\n  ShiftId INTEGER,\n  CreatedBy TEXT,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "sale_events",
+      "CREATE TABLE sale_events (\n  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n  SaleId INTEGER NOT NULL,\n  Type TEXT NOT NULL,\n  Message TEXT,\n  DataJson TEXT,\n  CreatedBy TEXT,\n  CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ],
+    [
+      "refund_requests",
+      "CREATE TABLE refund_requests (\n Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n RequestKey TEXT NOT NULL UNIQUE,\n BusinessId INTEGER NOT NULL,\n Method TEXT NOT NULL CHECK(Method IN ('card','cash')),\n AmountCents INTEGER NOT NULL CHECK(AmountCents > 0 OR (AmountCents=0 AND Status='failed')),\n Currency TEXT NOT NULL,\n PaymentRowId INTEGER,\n PaymentId INTEGER,\n IntentJson TEXT NOT NULL CHECK(json_valid(IntentJson)),\n LinesJson TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(LinesJson)),\n SnapshotRefunded INTEGER NOT NULL,\n Status TEXT NOT NULL DEFAULT 'submitting' CHECK(Status IN ('submitting','pending','succeeded','failed','reconciliation_required')),\n ProviderRefundId TEXT,\n Applied INTEGER NOT NULL DEFAULT 0,\n ShiftId INTEGER,\n CreatedBy TEXT,\n RawJson TEXT,\n CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n UpdatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)"
+    ]
+  ]
+}

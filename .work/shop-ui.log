@@ -1,0 +1,5 @@
+
+> cloudgate-shop@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+Passed: SDK session/refresh, native and commerce permissions, shared pages, business settings, SDK media upload and reference guard, content pages, live orders, guest cart/checkout/payment return, stock decrement, customer order history/profile, light/dark/mobile and public website settings. Native services and Wallet were simulated.

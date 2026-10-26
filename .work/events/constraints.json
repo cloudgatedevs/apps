@@ -1,0 +1,22 @@
+{
+  "triggers": [
+    [
+      "events_revision",
+      "CREATE TRIGGER events_revision BEFORE INSERT ON write_guard BEGIN SELECT RAISE(ABORT,'The events changed. Refresh and try again.') WHERE NEW.expected<>(SELECT value FROM settings WHERE key='_revision'); END"
+    ]
+  ],
+  "tables": [
+    [
+      "settings",
+      "CREATE TABLE settings(Id INTEGER PRIMARY KEY AUTOINCREMENT,key TEXT UNIQUE NOT NULL,value TEXT NOT NULL)"
+    ],
+    [
+      "entities",
+      "CREATE TABLE entities(Id INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT NOT NULL,ref TEXT UNIQUE NOT NULL,owner TEXT NOT NULL DEFAULT '',version INTEGER NOT NULL,data TEXT NOT NULL CHECK(json_valid(data)))"
+    ],
+    [
+      "write_guard",
+      "CREATE TABLE write_guard(Id INTEGER PRIMARY KEY AUTOINCREMENT,expected TEXT NOT NULL)"
+    ]
+  ]
+}

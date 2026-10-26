@@ -1,0 +1,6 @@
+
+> cloudgate-courses@3.0.0 test:ui
+> node tests/sdk.browser.mjs
+
+Passed: public catalogue, preview lesson, enrolment, learning, assessment, certificate PDF/verification, payment/refund, SDK profile/permissions, custom pages, settings, course creation/upload, media protection, mobile and instructor restrictions.
+Passed: connected SDK composition with mocked native APIs, callback, session refresh/retry, shared pages without domain queries, permission denial, logout, sign-in destination and public website access policies.

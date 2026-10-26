@@ -1,0 +1,181 @@
+{
+  "customer_accounts": [
+    "Id",
+    "user_id",
+    "name",
+    "phone",
+    "created",
+    "updated"
+  ],
+  "booking_accounts": [
+    "Id",
+    "booking_ref",
+    "user_id",
+    "created"
+  ],
+  "settings": [
+    "Id",
+    "key",
+    "value"
+  ],
+  "write_guard": [
+    "Id",
+    "expected"
+  ],
+  "services": [
+    "Id",
+    "name",
+    "category",
+    "description",
+    "duration",
+    "buffer",
+    "price",
+    "deposit_percent",
+    "resource_type",
+    "active",
+    "color",
+    "intake"
+  ],
+  "staff": [
+    "Id",
+    "name",
+    "title",
+    "bio",
+    "color",
+    "service_ids",
+    "hours",
+    "active"
+  ],
+  "resources": [
+    "Id",
+    "name",
+    "type",
+    "active"
+  ],
+  "blocks": [
+    "Id",
+    "staff_id",
+    "resource_id",
+    "starts",
+    "ends",
+    "reason"
+  ],
+  "customers": [
+    "Id",
+    "email",
+    "name",
+    "phone",
+    "notes",
+    "marketing",
+    "created"
+  ],
+  "bookings": [
+    "Id",
+    "reference",
+    "token_hash",
+    "request_key",
+    "customer_id",
+    "starts",
+    "ends",
+    "status",
+    "expires",
+    "total",
+    "due",
+    "paid",
+    "refunded",
+    "currency",
+    "notes",
+    "intake",
+    "payment_id",
+    "payment_url",
+    "created",
+    "updated",
+    "version"
+  ],
+  "allocations": [
+    "Id",
+    "booking_ref",
+    "service_id",
+    "staff_id",
+    "resource_id",
+    "starts",
+    "ends",
+    "service_name",
+    "price",
+    "duration",
+    "active"
+  ],
+  "payments": [
+    "Id",
+    "booking_ref",
+    "external_id",
+    "kind",
+    "amount",
+    "status",
+    "created"
+  ],
+  "refund_requests": [
+    "Id",
+    "request_key",
+    "booking_ref",
+    "amount",
+    "status",
+    "provider_id",
+    "created"
+  ],
+  "waitlist": [
+    "Id",
+    "name",
+    "email",
+    "phone",
+    "service_id",
+    "staff_id",
+    "preferred_date",
+    "notes",
+    "status",
+    "created"
+  ],
+  "promos": [
+    "Id",
+    "code",
+    "percent",
+    "ends",
+    "active"
+  ],
+  "messages": [
+    "Id",
+    "booking_ref",
+    "recipient",
+    "subject",
+    "body",
+    "due",
+    "status",
+    "attempts",
+    "last_error",
+    "dedupe"
+  ],
+  "audit": [
+    "Id",
+    "booking_ref",
+    "action",
+    "actor",
+    "detail",
+    "created"
+  ],
+  "abandoned_booking_requests": [
+    "Id",
+    "request_key",
+    "created"
+  ],
+  "service_metadata": [
+    "Id",
+    "service_id",
+    "image_url",
+    "deleted"
+  ],
+  "staff_metadata": [
+    "Id",
+    "staff_id",
+    "image_url"
+  ]
+}

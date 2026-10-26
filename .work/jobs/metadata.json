@@ -1,0 +1,32 @@
+{
+  "settings": [
+    "Id",
+    "key",
+    "value"
+  ],
+  "entities": [
+    "Id",
+    "kind",
+    "ref",
+    "owner",
+    "job",
+    "version",
+    "data"
+  ],
+  "write_guard": [
+    "Id",
+    "expected"
+  ],
+  "allocations": [
+    "Id",
+    "visit",
+    "staff",
+    "starts",
+    "ends"
+  ],
+  "attachments": [
+    "Id",
+    "ref",
+    "content"
+  ]
+}
