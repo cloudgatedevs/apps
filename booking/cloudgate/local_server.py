@@ -6,7 +6,7 @@ import argparse
 import json
 import os
 import secrets
-import sqlite3
+import local_sql
 import threading
 import time
 from contextlib import contextmanager
@@ -19,14 +19,9 @@ from local_media import upload as upload_media, listing as list_media, delete as
 ROOT=Path(__file__).parent
 LOCK=threading.RLock()
 ADMIN={'Role':'Admin','Email':'preview-admin@localhost','IsActive':True}
-DB=None
-@contextmanager
-def connect():
-    c=sqlite3.connect(DB,timeout=15)
-    try:
-        c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON')
-        with c:yield c
-    finally:c.close()
+DATA_DIR=ROOT.parent/'.local'
+def connect():return local_sql.connect()
+
 def snapshot(c):return {t:[dict(r) for r in c.execute('SELECT * FROM '+t)] for t in TABLES}
 def run(d,identity=None,internal=False):
     with LOCK,connect() as c:
@@ -52,7 +47,7 @@ class Handler(BaseHTTPRequestHandler):
     def reply(self,status,data):
         payload=encoded(data).encode();self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Length',str(len(payload)));self.end_headers();self.wfile.write(payload)
     def do_GET(self):
-        data=read_image(Path(DB).parent/'media',urlparse(self.path).path)
+        data=read_image(DATA_DIR/'media',urlparse(self.path).path)
         if data is None:return self.reply(404,{'error':'Image not found.'})
         self.send_response(200);self.send_header('Content-Type','image/png');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Cache-Control','public, max-age=31536000, immutable');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
     def do_POST(self):
@@ -68,14 +63,14 @@ class Handler(BaseHTTPRequestHandler):
             if route=='/api/branding-media':
                 if not admin:raise PermissionError('Admin access required.')
                 with LOCK:
-                    if d.get('op')=='upload':result=upload_media(Path(DB).parent/'media',d.get('content'),d.get('name'),d.get('path','booking/branding'))
-                    elif d.get('op')=='list':result=list_media(Path(DB).parent/'media',d.get('skip',0),d.get('take',36),d.get('path','*'))
+                    if d.get('op')=='upload':result=upload_media(DATA_DIR/'media',d.get('content'),d.get('name'),d.get('path','booking/branding'))
+                    elif d.get('op')=='list':result=list_media(DATA_DIR/'media',d.get('skip',0),d.get('take',36),d.get('path','*'))
                     elif d.get('op')=='delete':
                         current=run({'op':'admin-data'},ADMIN)
                         references=[s.get('image_url','') for s in current['services'] if not s.get('deleted')]
                         references += [person.get('image_url','') for person in current['staff']]
                         references += [current['settings'].get(k,'') for k in ('logo_url','icon_url','favicon_url','hero_image_url','about_image_url')]
-                        result=delete_media(Path(DB).parent/'media',d.get('id'),references)
+                        result=delete_media(DATA_DIR/'media',d.get('id'),references)
                     else:raise ValueError('Unknown media operation.')
             elif route=='/api/booking':
                 if str(d.get('op','')).startswith(('payment-','refund-')) or d.get('op')=='maintenance':raise ValueError('Internal operation.')
@@ -115,7 +110,7 @@ class Handler(BaseHTTPRequestHandler):
             else:return self.reply(404,{'error':'Unknown action.'})
             self.reply(200,result)
         except PermissionError as exc:self.reply(403,{'error':str(exc)})
-        except (ValueError,KeyError,TypeError,sqlite3.IntegrityError) as exc:self.reply(400,{'error':str(exc)})
+        except (ValueError,KeyError,TypeError,local_sql.IntegrityError) as exc:self.reply(400,{'error':str(exc)})
         except Exception as exc:
             print(type(exc).__name__,str(exc),flush=True);self.reply(500,{'error':'Request failed. Please retry.'})
 
@@ -129,11 +124,12 @@ def worker():
         except Exception as exc:print('Maintenance:',str(exc),flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--db',default=str(ROOT.parent/'.local'/'booking.sqlite'));p.add_argument('--port',type=int,default=3003);args=p.parse_args();DB=args.db
-    Path(DB).parent.mkdir(parents=True,exist_ok=True)
+    p=argparse.ArgumentParser();p.add_argument('--data-dir',type=Path,default=DATA_DIR);p.add_argument('--port',type=int,default=3003);args=p.parse_args();DATA_DIR=args.data_dir.resolve()
+    DATA_DIR.mkdir(parents=True,exist_ok=True)
     with connect() as c:
-        c.executescript((ROOT/'schema.sql').read_text());c.executescript((ROOT/'seed.sql').read_text())
-        c.execute('CREATE TABLE IF NOT EXISTS test_provider(id TEXT PRIMARY KEY, reference TEXT, amount INTEGER, currency TEXT, status INTEGER)')
+        c.executescript((ROOT/'schema.sql').read_text(encoding='utf8'));
+        if not c.execute('SELECT TOP 1 Id FROM services').fetchone():c.executescript((ROOT/'sample-data.sql').read_text(encoding='utf8'))
+        c.execute("IF OBJECT_ID('test_provider','U') IS NULL CREATE TABLE test_provider(id nvarchar(128) PRIMARY KEY, reference nvarchar(254), amount bigint, currency nvarchar(8), status int)")
     threading.Thread(target=worker,daemon=True).start()
     print('Booking development API: http://127.0.0.1:'+str(args.port)+' (TEST PAYMENTS ONLY)',flush=True)
     ThreadingHTTPServer(('127.0.0.1',args.port),Handler).serve_forever()

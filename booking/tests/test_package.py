@@ -1,7 +1,7 @@
 """Check the installation boundary that separates sample and real business data."""
 import json
 from pathlib import Path
-import sqlite3
+import sqlserver
 import unittest
 
 APP = Path(__file__).parents[1]
@@ -25,13 +25,13 @@ class PackageTests(unittest.TestCase):
         for database in databases:
             # Matches ApplyAppSchemaSql in Cloudgate's App Store importer.
             production = database['FileId'] in prod_ids
-            with sqlite3.connect(':memory:') as db:
+            with sqlserver.connect() as db:
                 db.executescript(schema + ('' if production else samples))
                 self.assertEqual(db.execute('SELECT COUNT(*) FROM services').fetchone()[0], 0 if production else 6)
                 self.assertEqual(db.execute('SELECT COUNT(*) FROM staff').fetchone()[0], 0 if production else 3)
-                db.execute("UPDATE settings SET value='My studio' WHERE key='name'")
+                db.execute("UPDATE settings SET [value]='My studio' WHERE [key]='name'")
                 db.executescript(schema)
-                self.assertEqual(db.execute("SELECT value FROM settings WHERE key='name'").fetchone()[0], 'My studio')
+                self.assertEqual(db.execute("SELECT [value] FROM settings WHERE [key]='name'").fetchone()[0], 'My studio')
 
     def test_store_manifest_matches_and_assets_exist(self):
         manifest = json.loads((APP / 'template.json').read_text())

@@ -1,3 +1,4 @@
+from workflow_inputs import bind_inputs
 #!/usr/bin/env python3
 """
 Cloudgate workflow deployer for the POS controller.
@@ -194,7 +195,7 @@ def read_script(folder, name, with_lib=False, libraries=None):
             with open(os.path.join(folder, library), encoding="utf-8") as f:
                 sources.append(f.read().replace("\r\n", "\n"))
         text = "\n".join(sources) + "\n" + text
-    return text
+    return bind_inputs(text) if with_lib or libraries else text
 
 
 def base_node(name, kind, endpoint_id, x, y):

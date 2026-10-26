@@ -1,6 +1,9 @@
 # Cloudgate Jobs
 
-Jobs 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`, following Booking, Academy and Events. This project owns field-service workflows and customer pages. The SDK owns the shared back office.
+Version 3.0 uses managed Microsoft SQL Server and standard Python workflows. Fresh installation is required; see [runtime, email and development setup](../SQL-SERVER-REWRITE.md).
+
+
+Jobs 3.0.0 uses `@cloudgatedevs/cloudgate-client-react@0.1.20`, following Booking, Academy and Events. This project owns field-service workflows and customer pages. The SDK owns the shared back office.
 
 ## Ownership
 
@@ -11,7 +14,7 @@ Jobs 2.0.1 uses `@cloudgatedevs/cloudgate-client-react@0.1.6`, following Booking
 | Invoices, receipts, credit notes, job payments and refunds | Users, roles, registration, notifications, analytics and workflow logs |
 | Job team, services, recurring work, reports and business settings | Native media library/storage, appearance, themes, website policy and SMTP |
 | Private request/job photos, PDF documents and image-reference checks | Shared native payment administration and platform API clients |
-| Python workflows, SQLite and Wallet orchestration | Framework-independent gateway helpers, re-exported by the React SDK |
+| Python workflows, SQL Server and Wallet orchestration | Framework-independent gateway helpers, re-exported by the React SDK |
 
 There is no copied `src/shared` platform implementation. Add Jobs features in `src/jobs`; maintain shared functionality in the React SDK project and update its npm dependency here. Job payments and refunds remain custom because they update deposits, invoice allocations, job balances and credit records.
 
@@ -57,7 +60,7 @@ Private request/job photos remain in the Jobs attachment table. Each upload/read
 
 ## Rollout
 
-`template.json` and the matching root `apps.json` entry declare version 2.0.1 and native `appSettings`: the full Jobs Evergreen light palette, flexible layout, public website enabled and guest access allowed. The installation supplies the selected app name and deployment URL. Owners can change theme, appearance and public-site policy in the SDK.
+`template.json` and the matching root `apps.json` entry declare version 3.0.0 and native `appSettings`: the full Jobs Evergreen light palette, flexible layout, public website enabled and guest access allowed. The installation supplies the selected app name and deployment URL. Owners can change theme, appearance and public-site policy in the SDK.
 
 Sandbox and production have separate native settings and app IDs. Updates preserve saved owner choices, including a disabled public website. See the [native defaults contract](../README.md#native-sdk-defaults).
 
@@ -77,7 +80,7 @@ npm run dev:preview
 
 Open http://127.0.0.1:3010/. The loopback API runs on 3011. Preview explicitly requires Vite's `preview` mode; missing connection settings never silently enable fake identities. The preview banner switches between fictional customer, office and technician accounts. Payments are simulations and no email is sent. Native profile, appearance and media are simulated; other SDK administration requires a connected tenant.
 
-The default database is `.local/jobs.sqlite`, with public preview images in `.local/media`. Use `python cloudgate/local_server.py --port 3011 --db .local/sdk-preview/jobs.sqlite` for an isolated review database and media folder. Never expose the preview API to a network.
+The default database is `a dedicated SQL Server development database`, with public preview images in `.local/media`. Use `python -X utf8 cloudgate/local_server.py --port 3011 --data-dir .local/review` for an isolated review database and media folder. Never expose the preview API to a network.
 
 ```sh
 npm test
@@ -87,7 +90,7 @@ npm run build
 npm run build:dev
 ```
 
-`npm test` exercises domain rules, native workflow generation, package consistency, SDK rollout defaults and media-reference protection. `test:ui` starts and stops its own isolated SQLite simulator and Vite server on ports 3593/3592. It checks customer/office/technician journeys, quotes, scheduling, simulated payments/refunds, private photos, service media, addresses, PDF downloads and responsive navigation. A connected-mode section mocks native APIs to verify SDK callbacks, refresh/retry, permissions, profile and public-site access policies. Set `JOBS_TEST_OUTPUT_DIR` to save screenshots.
+`npm test` exercises domain rules, native workflow generation, package consistency, SDK rollout defaults and media-reference protection. `test:ui` starts and stops its own isolated SQL Server simulator and Vite server on ports 3593/3592. It checks customer/office/technician journeys, quotes, scheduling, simulated payments/refunds, private photos, service media, addresses, PDF downloads and responsive navigation. A connected-mode section mocks native APIs to verify SDK callbacks, refresh/retry, permissions, profile and public-site access policies. Set `JOBS_TEST_OUTPUT_DIR` to save screenshots.
 
 `hosted-smoke.mjs` performs read-only checks against the running local Jobs gateway in both environments. Override `JOBS_GATEWAY` and `JOBS_PROJECT` if needed. It checks the public catalogue, protected routes and scheduler guards without authenticated writes, payments or email. A real logged-in Jobs session is still needed to verify connected SDK administration; real Wallet and email delivery require a hosted sandbox. This migration does not deploy the frontend or publish workflows.
 
@@ -111,7 +114,7 @@ The controller was created and all 17 workflows were created/updated through `mc
 | refund | Owner refund claim, submission and status recovery |
 | maintenance | Owner-triggered recurrence/reminder maintenance |
 | automation | Scheduled recurrence, expiry and reminder generation |
-| notifications | Claim outbox messages, send via Cloudgate tenant email and record results |
+| notifications | Claim outbox messages, send via Python SMTP and record results |
 | reconcile | Scheduled read-only Wallet payment recovery |
 | refund-reconcile | Scheduled read-only refund recovery |
 

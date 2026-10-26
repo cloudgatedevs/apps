@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Link, Route } from 'react-router-dom';
-import { CloudgateBackoffice, Profile, RequireAuth } from '@cloudgatedevs/cloudgate-client-react/react';
+import { BrowserRouter, Route } from 'react-router-dom';
+import { CloudgateBackoffice } from '@cloudgatedevs/cloudgate-client-react/react';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from './shared/ui/menus';
 import { cloudgate } from './platform';
@@ -14,7 +14,6 @@ export function App() {
     <Suspense fallback={<p className="p-8">Opening Shop…</p>}>
       <CloudgateBackoffice client={cloudgate} metadata={metadata} navigation={NAV} basePath="/admin" fallback="/" publicHome={<Storefront />}
         publicRoutes={<>
-          <Route path="/account/profile" element={<RequireAuth><main className="mx-auto max-w-3xl space-y-6 px-5 py-8"><Link to="/account" className="text-accent">← Your orders</Link><Profile /></main></RequireAuth>} />
           <Route path="/shop/:category?" element={<Storefront screen="Catalog" />} />
           <Route path="/p/:slug" element={<Storefront screen="Product" />} />
           <Route path="/cart" element={<Storefront screen="Cart" />} />

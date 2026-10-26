@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the catalog / pages workflows locally against a throwaway SQLite database built from
+"""Run the catalog / pages workflows locally against a throwaway SQL Server database built from
 schema.sql + sample-data.sql, emulating the Cloudgate engine (shared lib inlined, `def main()`
 wrapper, textual ${body} / ${Run} substitution). No tenant needed.
 
@@ -7,7 +7,8 @@ wrapper, textual ${body} / ${Run} substitution). No tenant needed.
 """
 import json
 import os
-import sqlite3
+import sqlserver
+import workflow
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -18,19 +19,13 @@ LIB = open(os.path.join(HERE, 'workflows', '_shared', 'lib.py'), encoding='utf-8
 def run_node(route, script, keys):
     src = open(os.path.join(HERE, 'workflows', route, script), encoding='utf-8').read()
     text = LIB.rstrip('\n') + '\n\n# ---- node script ----\n' + src
-    for k, v in keys.items():
-        text = text.replace('${' + k + '}', v)
-    # PrepLambda doubles any \" — mimic it (this is why lib.load_json repairs backslashes).
-    text = text.replace('\\"', '\\\\"')
-    body = '\n'.join('    ' + ln for ln in text.splitlines())
-    ns = {}
-    exec('def main():\n' + body + '\n', ns)  # noqa: S102 — local test harness
-    return ns['main']()
+    return workflow.run(text,keys)
+
 
 
 def db():
-    con = sqlite3.connect(':memory:')
-    con.row_factory = sqlite3.Row
+    con = sqlserver.connect()
+    con.row_factory = sqlserver.Row
     con.executescript(open(os.path.join(APP, '.template', 'schema.sql'), encoding='utf-8').read())
     con.executescript(open(os.path.join(APP, '.template', 'sample-data.sql'), encoding='utf-8').read())
     return con

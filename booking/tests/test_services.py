@@ -1,6 +1,6 @@
 import json
 import secrets
-import sqlite3
+import sqlserver
 import unittest
 from pathlib import Path
 import test_engine as base
@@ -87,14 +87,14 @@ class ServiceTests(unittest.TestCase):
         ident=self.create();slot=self.slot([ident])
         sql,_=plan(self.snapshot(),dict(op='hold',service_ids=[ident],starts=slot['starts'],staff_id=slot['staff_id'],name='Client',email='client@example.com',consent=True,request_key=secrets.token_hex(16),token=self.token),now=self.now)
         self.run_op('admin-delete-service',Id=ident,_identity=ADMIN)
-        with self.assertRaisesRegex(sqlite3.IntegrityError,'calendar changed'):self.db.executescript(sql)
+        with self.assertRaisesRegex(sqlserver.IntegrityError,'calendar changed'):self.db.executescript(sql)
         self.db.rollback();self.assertFalse(self.snapshot()['bookings'])
 
     def test_migration_is_idempotent_and_keeps_service_and_business_customizations(self):
         ident=self.create();self.run_op('admin-settings',settings=dict(hero_title='Book a lesson',hero_image_url='https://cdn.example/school.png'),_identity=ADMIN)
         self.run_op('admin-delete-service',Id=ident,_identity=ADMIN)
         before=self.snapshot()
-        for _ in range(2):self.db.executescript((ROOT/'migrations/1.4.0-services.sql').read_text(encoding='utf-8'))
+        for _ in range(2):self.db.executescript((ROOT/'schema.sql').read_text(encoding='utf-8'))
         self.assertEqual(before,self.snapshot())
 
 if __name__=='__main__':unittest.main()

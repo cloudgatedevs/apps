@@ -1,10 +1,10 @@
-// SDK integration against real POS workflow scripts and an isolated SQLite database.
+// SDK integration against real POS workflow scripts and an isolated SQL Server database.
 // Native Cloudgate services, identity and Wallet are simulated; no real payments or email.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createServer } from 'vite';
@@ -17,7 +17,7 @@ const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'pos-sdk-'));
 const origin = 'http://127.0.0.1:3594', apiOrigin = 'http://127.0.0.1:3595';
 const appId = '12345678-1234-4234-8234-123456789abc';
 const metadata = JSON.parse(await fs.readFile(path.join(root, 'template.json'), 'utf8'));
-const python = spawn('python', ['-B', '-X', 'utf8', 'tests/workflow_fixture.py', '--db', path.join(directory, 'pos.sqlite'), '--port', '3595'], { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+const python = spawn('python', ['-B', '-X', 'utf8', '../test_support/ui_server.py', 'pos', '--record', path.join(directory, 'sql-server.json'), '--data-dir', directory, '--port', '3595'], { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
 let pythonOutput = '';
 python.stdout.on('data', chunk => { pythonOutput += chunk; });
 python.stderr.on('data', chunk => { pythonOutput += chunk; });
@@ -76,6 +76,8 @@ try {
       rolePermissions: grants ? BACKOFFICE_PERMISSION_KEYS.map(key => ({ key, value: 'true' })) : [] });
     if (pathname.includes('/notifications/')) return reply(pathname.endsWith('/unread-count') ? { unreadCount: 0 } : { items: [], totalCount: 0 });
     if (pathname.endsWith('/profile/cloudgate-link')) return reply({ linked: false, available: true });
+    if (pathname.endsWith('/agents/overview')) return route.fulfill({ status: 403, json: { code: 'agents-link-required', message: 'Link a Cloudgate account to use agents.' } });
+    if (pathname.endsWith('/wallet/status')) return reply({ linked: false, production: false });
     if (pathname.endsWith('/files')) return reply({ items: files.filter(file => file.path === url.searchParams.get('path')), total: files.filter(file => file.path === url.searchParams.get('path')).length });
     if (pathname.endsWith('/files/upload')) {
       assert.equal(url.searchParams.get('path'), 'pos/media');
@@ -84,6 +86,7 @@ try {
     }
     if (pathname.endsWith('/admin/appearance/details')) return reply({ values, revision: appId });
     if (pathname.includes('/admin/workflow-logs/')) return reply({ items: [], totalCount: 0, endpoints: [], stats: {} });
+    if (pathname.endsWith('/developer-workspace/sdk-status')) return reply({updateAvailable:false});
     throw new Error('Unexpected native endpoint: ' + pathname);
   });
   await context.route('https://hub.example.invalid/**', route => route.fulfill({ contentType: 'text/html', body: '<h1>Hosted sign in</h1>' }));
@@ -129,7 +132,7 @@ try {
   await page.getByRole('dialog').getByRole('button', { name: 'Delete image', exact: true }).click();
   await page.getByText(/sdk-product.jpg is in use/).waitFor();
   assert.ok((await api('admin-products', { op: 'image-refs' })).fileIds.includes(files[0].id));
-  for (const [route, title] of [['profile','Profile'], ['media','Media server'], ['appearance','Appearance'], ['logs','Logs'], ['settings','Settings']]) {
+  for (const [route, title] of [['profile','My profile'], ['media','Media server'], ['appearance','Appearance'], ['logs','Logs'], ['settings','Settings']]) {
     const count = calls.length; await page.goto(origin + '/admin/' + route);
     await page.getByRole('heading', { name: title, exact: true }).waitFor();
     assert.equal(await page.locator('.pos-ui').count(), 0); assert.equal(calls.length, count, 'SDK page must not query retail workflows');
@@ -209,7 +212,7 @@ try {
   await page.getByRole('heading', { name: 'Retail administrator access required' }).waitFor();
   assert.equal(calls.length, count);
   await page.goto(origin + '/account/profile');
-  await page.getByRole('heading', { name: 'Profile', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'My profile', exact: true }).waitFor();
   grants = false; role = 'Admin';
   await page.goto(origin + '/admin/products');
   await page.getByRole('heading', { name: 'Back office access required' }).waitFor();
@@ -224,7 +227,7 @@ try {
     await page.getByRole('heading', { name: heading, exact: true }).waitFor();
   }
   assert.deepEqual(errors, []);
-  console.log('Passed: SDK callback and refresh, native and retail access gates, shared pages, POS settings, SDK photo upload/deletion guard, real SQLite cash/card sales and cash returns, live refresh, receipts/printing, independent till routes, responsive layouts, dark theme and public payment returns. Wallet responses were simulated.');
+  console.log('Passed: SDK callback and refresh, native and retail access gates, shared pages, POS settings, SDK photo upload/deletion guard, real SQL Server cash/card sales and cash returns, live refresh, receipts/printing, independent till routes, responsive layouts, dark theme and public payment returns. Wallet responses were simulated.');
 } catch (error) {
   console.error('Fixture output:', pythonOutput);
   console.error('Browser errors:', errors);
@@ -237,5 +240,7 @@ try {
   await browser?.close(); await server?.close();
   python.kill(); await new Promise(resolve => python.exitCode !== null ? resolve() : python.once('exit', resolve));
   // All fixture files live in this newly created, verified temporary directory.
+  const cleanup = spawnSync('python', ['-X','utf8','../test_support/ui_server.py','pos','--record',path.join(directory,'sql-server.json'),'--cleanup'], {cwd:root,windowsHide:true,encoding:'utf8'});
+  if (cleanup.status !== 0) throw new Error('SQL Server fixture cleanup failed: '+cleanup.stderr);
   if (path.dirname(directory) === os.tmpdir() && path.basename(directory).startsWith('pos-sdk-')) await fs.rm(directory, { recursive: true, force: true });
 }

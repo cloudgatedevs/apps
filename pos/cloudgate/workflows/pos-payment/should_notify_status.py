@@ -1,1 +1,1 @@
-return bool(str('''${NotifyStatusBody}''').strip())
+return bool(str(value('NotifyStatusBody')).strip())

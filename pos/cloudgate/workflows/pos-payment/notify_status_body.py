@@ -1,5 +1,4 @@
-# POS Payment / NotifyStatusBody — announce a completed card sale to the back office (only on the poll that completed it).
-rows = rows_of('''${RunStatus}''')
+rows = rows_of(value('RunStatus'))
 if not rows:
     return ''
 s = rows[0]

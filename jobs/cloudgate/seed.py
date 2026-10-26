@@ -16,5 +16,5 @@ def seed_sql(local=False):
         for r in rows:
             if r['owner']:r['owner']='sandbox-demo-customer'
             if 'user_id' in r:r['user_id']=''
-    return '\n'.join('INSERT OR IGNORE INTO entities(kind,ref,owner,job,version,data) VALUES('+','.join([q(r['kind']),q(r['ref']),q(r['owner']),q(r['job']),'1',q(encoded(r))])+');' for r in rows)
+    return '\n'.join('INSERT INTO entities(kind,ref,owner,job,version,data) VALUES('+','.join([q(r['kind']),q(r['ref']),q(r['owner']),q(r['job']),'1',q(encoded(r))])+');' for r in rows)
 if __name__=='__main__':Path(__file__).with_name('seed.sql').write_text(seed_sql(),encoding='utf8')

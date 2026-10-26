@@ -1,6 +1,6 @@
 d = body()
 op = op_of(d, 'levels')
-rows = rows_of('''${Run}''')
+rows = rows_of(value('Run'))
 if op in ('levels', 'movements', 'receipts'):
     total = to_int(rows[0].get('TotalCount'), 0) if rows else 0
     for r in rows:

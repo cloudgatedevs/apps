@@ -1,9 +1,9 @@
-"""Real SQLite regression tests for the source and packaged native refund workflow.
+"""Real SQL Server regression tests for the source and packaged native refund workflow.
 Run: python -X utf8 cloudgate/test_refunds.py (in either template).
 """
 import copy
 import json
-import sqlite3
+import sqlserver
 import sys
 import tempfile
 import threading
@@ -20,46 +20,37 @@ KEY = 'refund-regression-0001'
 
 
 def execute(db, sql):
-    statement, result = '', []
-    for c in sql:
-        statement += c
-        if c == ';' and sqlite3.complete_statement(statement):
-            cursor = db.execute(statement)
-            if cursor.description:
-                result = [dict(r) for r in cursor.fetchall()]
-            statement = ''
-    if statement.strip():
-        raise AssertionError('Incomplete SQL: ' + statement)
-    return result
+    return [dict(row) for row in db.execute(sql).fetchall()]
+
 
 
 def connection(path):
-    db = sqlite3.connect(path, timeout=10, isolation_level=None)
-    db.row_factory = sqlite3.Row
-    return db
+    return sqlserver.connect(path)
+
 
 
 class RefundTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.path = str(Path(self.temp.name) / 'refunds.sqlite')
+        self.path = None
         self.db = connection(self.path)
+        self.path = self.db.schema
         self.db.executescript((ROOT / 'schema.sql').read_text(encoding='utf-8'))
         if APP == 'shop':
             self.db.executescript("""
-            INSERT INTO products(Id,Name,Slug,TrackInventory) VALUES(9001,'Test','refund-test',1);
-            INSERT INTO product_variants(Id,ProductId,StockQty) VALUES(9001,9001,10);
-            INSERT INTO orders(Id,Reference,Email,TotalCents,Status,PaymentStatus) VALUES(9001,'TEST-1','buyer@example.test',1000,'paid','paid');
-            INSERT INTO order_items(Id,OrderId,ProductId,VariantId,Title,Qty,UnitPriceCents,LineTotalCents) VALUES(9001,9001,9001,9001,'Test',2,500,1000);
-            INSERT INTO payments(Id,OrderId,ConnectPaymentId,AmountCents,Currency,Status) VALUES(9001,9001,71001,1000,'ZAR','succeeded');
+            SET IDENTITY_INSERT products ON; INSERT INTO products(Id,Name,Slug,TrackInventory) VALUES(9001,'Test','refund-test',1); SET IDENTITY_INSERT products OFF;
+            SET IDENTITY_INSERT product_variants ON; INSERT INTO product_variants(Id,ProductId,StockQty) VALUES(9001,9001,10); SET IDENTITY_INSERT product_variants OFF;
+            SET IDENTITY_INSERT orders ON; INSERT INTO orders(Id,Reference,Email,TotalCents,Status,PaymentStatus) VALUES(9001,'TEST-1','buyer@example.test',1000,'paid','paid'); SET IDENTITY_INSERT orders OFF;
+            SET IDENTITY_INSERT order_items ON; INSERT INTO order_items(Id,OrderId,ProductId,VariantId,Title,Qty,UnitPriceCents,LineTotalCents) VALUES(9001,9001,9001,9001,'Test',2,500,1000); SET IDENTITY_INSERT order_items OFF;
+            SET IDENTITY_INSERT payments ON; INSERT INTO payments(Id,OrderId,ConnectPaymentId,AmountCents,Currency,Status) VALUES(9001,9001,71001,1000,'ZAR','succeeded'); SET IDENTITY_INSERT payments OFF;
             """)
         else:
             self.db.executescript("""
-            INSERT INTO products(Id,Name,StockQty,TrackInventory) VALUES(9001,'Test',10,1);
-            INSERT INTO shifts(Id,RegisterId,TellerUserId,Status) VALUES(9001,1,91,'open');
-            INSERT INTO sales(Id,Reference,TotalCents,PaidCents,Status) VALUES(9001,'TEST-1',1000,1000,'completed');
-            INSERT INTO sale_items(Id,SaleId,ProductId,Name,Qty,LineTotalCents) VALUES(9001,9001,9001,'Test',2,1000);
-            INSERT INTO sale_payments(Id,SaleId,Method,ConnectPaymentId,AmountCents,Status) VALUES(9001,9001,'card',71001,1000,'succeeded');
+            SET IDENTITY_INSERT products ON; INSERT INTO products(Id,Name,StockQty,TrackInventory) VALUES(9001,'Test',10,1); SET IDENTITY_INSERT products OFF;
+            SET IDENTITY_INSERT shifts ON; INSERT INTO shifts(Id,RegisterId,TellerUserId,Status) VALUES(9001,1,91,'open'); SET IDENTITY_INSERT shifts OFF;
+            SET IDENTITY_INSERT sales ON; INSERT INTO sales(Id,Reference,TotalCents,PaidCents,Status) VALUES(9001,'TEST-1',1000,1000,'completed'); SET IDENTITY_INSERT sales OFF;
+            SET IDENTITY_INSERT sale_items ON; INSERT INTO sale_items(Id,SaleId,ProductId,Name,Qty,LineTotalCents) VALUES(9001,9001,9001,'Test',2,1000); SET IDENTITY_INSERT sale_items OFF;
+            SET IDENTITY_INSERT sale_payments ON; INSERT INTO sale_payments(Id,SaleId,Method,ConnectPaymentId,AmountCents,Status) VALUES(9001,9001,'card',71001,1000,'succeeded'); SET IDENTITY_INSERT sale_payments OFF;
             """)
         self.data = dict(op='refund', id=9001, requestKey=KEY, reason="Customer's return", method='card')
         self.data.update(dict(amountCents=500, restock=True) if APP == 'shop' else dict(items=[dict(saleItemId=9001, qty=1)]))
@@ -114,7 +105,7 @@ class RefundTests(unittest.TestCase):
 
     def test_new_key_blocked_until_original_resolved(self):
         self.claim()
-        with self.assertRaises(sqlite3.IntegrityError):
+        with self.assertRaises(sqlserver.IntegrityError):
             self.claim(dict(self.data, requestKey='different-request-0002'))
         self.db.rollback()
         self.assertEqual(self.db.execute('SELECT COUNT(*) FROM refund_requests').fetchone()[0], 1)
@@ -153,7 +144,7 @@ class RefundTests(unittest.TestCase):
         snapshot = self.loaded()
         stale = engine.claim_sql(APP, dict(self.data, requestKey='stale-request-0002'), USER, snapshot)
         self.apply(self.claim())
-        with self.assertRaisesRegex(sqlite3.IntegrityError, 'balance changed'):
+        with self.assertRaisesRegex(sqlserver.IntegrityError, 'balance changed'):
             execute(self.db, stale)
         self.assertEqual(self.money(), 500)
 
@@ -167,7 +158,7 @@ class RefundTests(unittest.TestCase):
                 barrier.wait()
                 execute(db, sql)
                 return 'claimed'
-            except sqlite3.IntegrityError:
+            except sqlserver.IntegrityError:
                 return 'blocked'
             finally:
                 db.close()
@@ -193,39 +184,11 @@ class RefundTests(unittest.TestCase):
         self.claim()
         self.assertEqual(execute(self.db, discard)[0]['Status'], 'submitting')
 
-    def test_migration_repeat_keeps_history(self):
+    def test_schema_reapply_keeps_history(self):
         self.apply(self.claim())
-        self.db.executescript((ROOT/'migrations/1.1.1-refunds.sql').read_text(encoding='utf-8'))
-        self.assertEqual(self.money(), 500)
-        self.assertEqual(self.claim()['Status'], 'succeeded')
-
-    def test_packaged_schema_works_with_app_store_update_splitter(self):
-        import re
-        self.apply(self.claim())
-        # Match WebAppService.AppStoreUpdate.cs exactly; do not hide split errors.
-        schema=(ROOT.parent/'.template/schema.sql').read_text(encoding='utf-8')
-        for statement in re.split(r';\s*(?:\r?\n|$)',schema):
-            if statement.strip():
-                try:
-                    self.db.execute(statement+';')
-                except sqlite3.OperationalError as error:
-                    # The updater explicitly treats an existing ALTER column as benign.
-                    if 'duplicate column name:' not in str(error):
-                        raise
+        self.db.executescript((ROOT.parent/'.template/schema.sql').read_text(encoding='utf8'))
         self.assertEqual(self.money(),500)
         self.assertEqual(self.claim()['Status'],'succeeded')
-
-    def test_upgrade_from_previous_schema_creates_complete_triggers(self):
-        import re
-        old=connection(':memory:')
-        try:
-            old.executescript((ROOT/'schema.sql').read_text(encoding='utf-8').split('-- @durable-refunds')[0])
-            migration=(ROOT.parent/'.template/schema.sql').read_text(encoding='utf-8').split('-- @durable-refunds')[1]
-            for statement in re.split(r';\s*(?:\r?\n|$)',migration):
-                if statement.strip(): old.execute(statement+';')
-            self.assertEqual(old.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name LIKE 'refund_%'").fetchone()[0],3)
-        finally:
-            old.close()
 
     @unittest.skipUnless(APP == 'shop', 'Shop')
     def test_delayed_payment_poll_cannot_undo_a_refund(self):
@@ -233,10 +196,9 @@ class RefundTests(unittest.TestCase):
         lib=(ROOT/'workflows/_shared/lib.py').read_text(encoding='utf-8')
         script=(ROOT/'workflows/payment-status/apply.py').read_text(encoding='utf-8')
         for status in (1,2,3):
-            code=lib+'\n'+script.replace('${LoadOrder}',json.dumps([{'Id':9001,'PaymentRowId':9001,'ConnectPaymentId':71001,'Reference':'TEST-1','TotalCents':1000,'Currency':'ZAR'}])).replace('${WalletGet}',json.dumps({'Id':71001,'GrossAmount':1000,'Currency':'zar','Status':status}))
-            scope={}
-            exec('def main():\n'+'\n'.join('    '+ln for ln in code.splitlines()),scope)
-            execute(self.db,scope['main']())
+            import workflow
+            values={'LoadOrder':json.dumps([{'Id':9001,'PaymentRowId':9001,'ConnectPaymentId':71001,'Reference':'TEST-1','TotalCents':1000,'Currency':'ZAR'}]),'WalletGet':json.dumps({'Id':71001,'GrossAmount':1000,'Currency':'zar','Status':status})}
+            execute(self.db,workflow.run(lib+'\n'+script,values))
             self.assertEqual(self.money(),500)
             self.assertEqual(self.stock(),12)
             self.assertEqual(self.db.execute('SELECT Status FROM payments WHERE Id=9001').fetchone()[0],'partially_refunded')
@@ -283,7 +245,7 @@ class RefundTests(unittest.TestCase):
         data=dict(self.data,method='cash')
         sql=engine.claim_sql(APP,data,USER,self.loaded(data))
         self.db.execute("UPDATE shifts SET Status='closed'")
-        with self.assertRaisesRegex(sqlite3.IntegrityError,'shift has closed'):
+        with self.assertRaisesRegex(sqlserver.IntegrityError,'shift has closed'):
             execute(self.db,sql)
 
     @unittest.skipUnless(APP == 'pos', 'POS')
@@ -309,10 +271,7 @@ class RefundTests(unittest.TestCase):
         status=['pending']
         def run(data):
             values={'body':json.dumps(data),'IdpAuth':json.dumps(USER)}
-            module=types.ModuleType('Web.Core.Shared.Services.Endpoints.Engine')
-            module.WorkflowSessionKeyExecutionContext=types.SimpleNamespace(GetKeys=lambda sid:[types.SimpleNamespace(Key=k,Value=v) for k,v in values.items()])
-            sys.modules[module.__name__]=module
-            sys.modules['clr']=types.SimpleNamespace(AddReference=lambda _:None)
+            import workflow
             def substitute(s):
                 import re
                 return re.sub(r'\$\{([^}]+)\}',lambda m:str(values[m[1]]),s)
@@ -330,12 +289,12 @@ class RefundTests(unittest.TestCase):
                     code=n['MainScript'].replace('${sessionid}','1')
                     scope={}
                     exec('def main():\n'+'\n'.join('    '+ln for ln in code.splitlines()),scope)
-                    result=scope['main']()
+                    result=workflow.run(code,values)
                 values[n['Name']]=str(result)
                 nid=n.get('PositiveNodeId') if n['NodeType']==4 and result else n.get('NegativeNodeId') if n['NodeType']==4 else n.get('NodeId')
                 if not nid: return json.loads(result)
             self.fail('Workflow did not terminate')
-        # Quotes, newlines and placeholder-like text remain data in the Python bridge.
+        # Quotes, newlines and placeholder-like text remain data in workflow selectors.
         data=dict(self.data,reason="Customer's ''' return\n${WalletRefund}")
         self.assertEqual(run(data)['request']['Status'],'pending')
         self.assertEqual(self.stock(),10)

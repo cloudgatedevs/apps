@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
-import { CloudgateBackoffice, Profile, RequireAuth } from '@cloudgatedevs/cloudgate-client-react/react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { CloudgateBackoffice } from '@cloudgatedevs/cloudgate-client-react/react';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from './shared/ui/menus';
 import { ConfirmProvider } from './shared/ui/confirm';
@@ -23,7 +23,6 @@ export function App() {
           basePath="/admin" fallback="/" publicHome={<Till />}
           publicRoutes={<>
             {['sales','returns','shift'].map(path => <Route key={path} path={'/' + path} element={<Till screen={path} />} />)}
-            <Route path="/account/profile" element={<RequireAuth><main className="mx-auto max-w-3xl space-y-6 px-5 py-8"><Link className="text-accent" to="/">← Back to till</Link><Profile /></main></RequireAuth>} />
           </>}>{retailRoutes}</CloudgateBackoffice>} />
       </Routes></Suspense>
     </ConfirmProvider></TooltipProvider>

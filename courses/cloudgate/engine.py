@@ -1,11 +1,65 @@
 """Academy domain shared by native Cloudgate workflows and the loopback simulator.
-All writes use an optimistic global revision inside an atomic SQLite transaction.
+All writes use an optimistic global revision inside an atomic SQL Server transaction.
 """
 import copy,json,re,time,uuid,hashlib
 from urllib.parse import urlsplit
 
 def encoded(v):return json.dumps(v,ensure_ascii=False,separators=(',',':'))
-def q(v):return "CAST(X'"+str(v).encode('utf8').hex()+"' AS TEXT)"
+"""Native T-SQL builders, inlined into standalone workflow functions."""
+
+def q(value):
+    if value is None:
+        return 'NULL'
+    if isinstance(value, bool):
+        return '1' if value else '0'
+    if isinstance(value, (int, float)):
+        return str(value)
+    # Unicode data never introduces SQL syntax or Cloudgate selector tokens.
+    return "CONVERT(nvarchar(max),0x" + str(value).encode('utf-16le').hex() + ")"
+
+def identifier(value):
+    import re
+    if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', value):
+        raise ValueError('Invalid SQL identifier.')
+    return '[' + value + ']'
+
+def insert(table, record, ignore_key=None):
+    target=identifier(table)
+    columns=','.join(identifier(k) for k in record)
+    values=','.join(q(v) for v in record.values())
+    sql='INSERT INTO '+target+' ('+columns+') '
+    if ignore_key:
+        sql+='SELECT '+values+' WHERE NOT EXISTS (SELECT 1 FROM '+target+' WITH (UPDLOCK,HOLDLOCK) WHERE '+identifier(ignore_key)+'='+q(record[ignore_key])+');'
+    else:
+        sql+='VALUES ('+values+');'
+    if 'Id' in record:
+        sql='SET IDENTITY_INSERT '+target+' ON; '+sql+' SET IDENTITY_INSERT '+target+' OFF;'
+    return sql
+
+def update(table, record, where):
+    return 'UPDATE '+identifier(table)+' SET '+','.join(identifier(k)+'='+q(v) for k,v in record.items())+' WHERE '+where+';'
+
+def upsert(table, record, key, columns=None):
+    changes={k:record[k] for k in (columns or record) if k!=key and k!='Id'}
+    return update(table,changes,identifier(key)+'='+q(record[key]))+' IF @@ROWCOUNT=0 BEGIN '+insert(table,record)+' END;'
+
+def transaction(statements, revision=None):
+    body='\n'.join(statements)
+    if revision is not None:
+        body=("UPDATE [settings] WITH (UPDLOCK,HOLDLOCK) SET [value]=CONVERT(nvarchar(30),CONVERT(bigint,[value])+1) "
+              "WHERE [key]=N'_revision' AND [value]="+q(str(revision))+";\n"
+              "IF @@ROWCOUNT<>1 THROW 50001, 'The data changed. Refresh and try again.', 1;\n"+body)
+    return ('SET NOCOUNT ON; SET XACT_ABORT ON; BEGIN TRY BEGIN TRANSACTION;\n'+body+
+            '\nCOMMIT TRANSACTION; END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK TRANSACTION; THROW; END CATCH;\n')
+
+def entity_snapshot_sql(limit):
+    return ("SELECT (SELECT JSON_QUERY((SELECT [key],[value] FROM [settings] FOR JSON PATH)) AS [settings], "
+            "JSON_QUERY(COALESCE((SELECT N'['+STRING_AGG(CONVERT(nvarchar(max),[data]),N',')+N']' "
+            "FROM (SELECT TOP ("+str(limit+1)+") [data] FROM [entities] ORDER BY [Id]) AS bounded),N'[]')) AS [entities] "
+            "FOR JSON PATH,WITHOUT_ARRAY_WRAPPER) AS [snapshot];")
+
+
+
 def require(v,message):
     if not v:raise ValueError(message)
 def text(v,limit=500):
@@ -18,7 +72,7 @@ def integer(v,lo=0,hi=100000000):
 def asset(v):
     s=text(v,2048);u=urlsplit(s);local=u.hostname in ('localhost','127.0.0.1','::1') or (u.hostname or '').endswith('.localhost')
     require(not re.search(r'[\s\\<>]',s) and (not s or (s.startswith('/') and not s.startswith('//')) or (u.hostname and not u.username and not u.password and (u.scheme=='https' or (u.scheme=='http' and local)))),'Use an HTTPS URL or a local asset path.');return s
-def snapshot_sql():return "SELECT json_object('settings',json(COALESCE((SELECT json_group_array(json_object('key',key,'value',value)) FROM settings),'[]')),'entities',json(COALESCE((SELECT json_group_array(json(data)) FROM (SELECT data FROM entities ORDER BY Id LIMIT 20001)),'[]'))) AS snapshot;"
+def snapshot_sql(): return entity_snapshot_sql(20000)
 
 class Engine:
     def __init__(self,snapshot,identity=None,now=None,internal=False):
@@ -93,7 +147,7 @@ class Engine:
             if kind=='quiz':
                 require(questions,'Add quiz questions.')
                 for question in questions:
-                    require(text(question.get('prompt'),1000),'Question is required.');choices=question.get('choices',[]);require(isinstance(choices,list) and 2<=len(choices)<=6 and all(text(x,500) for x in choices),'Add 2–6 answer choices.');integer(question.get('answer'),0,len(choices)-1)
+                    require(text(question.get('prompt'),1000),'Question is required.');choices=question.get('choices',[]);require(isinstance(choices,list) and 2<=len(choices)<=6 and all(text(x,500) for x in choices),'Add 2Ã¢â‚¬â€œ6 answer choices.');integer(question.get('answer'),0,len(choices)-1)
             r=self.save('lesson',dict(course=c['ref'],title=title,module=text(d.get('module','Getting started'),100),position=integer(d.get('position',0),0,1000),type=kind,body=text(d.get('body'),50000),video_url=asset(d.get('video_url')),minutes=integer(d.get('minutes',5),1,1000),required=bool(d.get('required',True)),preview=bool(d.get('preview',False)),questions=questions if kind=='quiz' else [],pass_percent=integer(d.get('pass_percent',70),1,100),max_attempts=integer(d.get('max_attempts',3),1,20),drip_days=integer(d.get('drip_days',0),0,365),archived=bool(d.get('archived',False))),old);self.audit(r,'lesson-saved');return r
         if op=='course-publish':
             self.admin();c=self.get(d['ref'],'course');self.expected(c,d);lessons=sorted([l for l in self.all('lesson') if l['course']==c['ref'] and not l['archived']],key=lambda l:(l['position'],l['ref']));require(lessons and any(l['required'] for l in lessons),'Add at least one required lesson.')
@@ -159,7 +213,7 @@ class Engine:
                 if k not in allowed:continue
                 v=text(v,12000)
                 if k.endswith('_url'):v=asset(v)
-                self.sql.append('INSERT INTO settings(key,value) VALUES('+q(k)+','+q(v)+') ON CONFLICT(key) DO UPDATE SET value=excluded.value;')
+                self.sql.append(upsert('settings',dict(key=k,value=v),'key',['value']))
             self.audit(dict(ref='settings'),'settings-saved');return dict(ok=True)
         if op in ('checkout-prepare','payment-prepare','_checkout-save','_payment-apply','refund-prepare','_refund-claim','_refund-apply'):return self.payments(op,d)
         if op=='_mail-claim':
@@ -207,8 +261,10 @@ class Engine:
         result=self.save('refund',dict(status=status,provider_id=p.get('RefundId','')),r);self.audit(result,'refund-'+status);return result
 
 def plan(snapshot,request,identity=None,now=None,internal=False):
-    e=Engine(snapshot,identity,now,internal);result=e.dispatch(request);writes=list(e.sql)
-    for r in e.changed.values():writes.append('INSERT INTO entities(kind,ref,owner,version,data) VALUES('+','.join([q(r['kind']),q(r['ref']),q(r['owner']),str(r['version']),q(encoded(r))])+') ON CONFLICT(ref) DO UPDATE SET owner=excluded.owner,version=excluded.version,data=excluded.data;')
-    sql=''
-    if writes:sql='BEGIN IMMEDIATE; INSERT INTO write_guard(expected) VALUES('+q(e.settings.get('_revision','0'))+');\n'+'\n'.join(writes)+"\nUPDATE settings SET value=CAST(value AS INTEGER)+1 WHERE key='_revision'; DELETE FROM write_guard; COMMIT;\n"
+    e=Engine(snapshot,identity,now,internal)
+    result=e.dispatch(request)
+    writes=list(e.sql)
+    for r in e.changed.values():
+        writes.append(upsert('entities',dict(kind=r['kind'],ref=r['ref'],owner=r['owner'],version=r['version'],data=encoded(r)),'ref'))
+    sql=transaction(writes,e.settings.get('_revision','0')) if writes else ''
     return sql+'SELECT '+q(encoded(result))+' AS result;',result

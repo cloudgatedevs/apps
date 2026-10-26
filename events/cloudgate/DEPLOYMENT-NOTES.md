@@ -1,5 +1,8 @@
 # Events deployment
 
+Version 3.0 is a fresh-install SQL Server release. See [the runtime contract](../../SQL-SERVER-REWRITE.md) for standard Python inputs, email configuration and verification.
+
+
 ## React SDK migration (2.0)
 
 Shared administration, authentication and appearance now come from

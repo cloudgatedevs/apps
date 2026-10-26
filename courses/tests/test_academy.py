@@ -1,4 +1,4 @@
-import unittest,sqlite3,json,sys,copy
+import unittest,sqlserver,json,sys,copy
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'cloudgate'))
 from engine import Engine,plan,snapshot_sql,asset
@@ -16,7 +16,7 @@ class AcademyTests(unittest.TestCase):
   self.assertTrue(all(r['url'] for r in data['mediaReferences']))
   self.assertEqual([],self.runop('workspace')['mediaReferences'])
  def setUp(self):
-  self.db=sqlite3.connect(':memory:');self.db.row_factory=sqlite3.Row;self.db.executescript((Path(__file__).resolve().parents[1]/'cloudgate/schema.sql').read_text());self.db.executescript(seed_sql());self.now=1800000000
+  self.db=sqlserver.connect();self.db.row_factory=sqlserver.Row;self.db.executescript((Path(__file__).resolve().parents[1]/'cloudgate/schema.sql').read_text());self.db.executescript(seed_sql());self.now=1800000000
  def tearDown(self):self.db.close()
  def snapshot(self):return json.loads(self.db.execute(snapshot_sql()).fetchone()['snapshot'])
  def runop(self,op,who=LEARNER,internal=False,**data):
@@ -63,7 +63,7 @@ class AcademyTests(unittest.TestCase):
   e=self.enroll();c=next(r for r in self.snapshot()['entities'] if r['ref']==e['course']);l=next(r for r in self.snapshot()['entities'] if r['kind']=='lesson' and r['course']==c['ref']);self.runop('lesson-save',who=ADMIN,**dict(l,title='Changed lesson'));self.runop('course-publish',who=ADMIN,ref=c['ref'],version=c['version']);self.assertNotIn('Changed lesson',[l['title'] for l in self.runop('learn',ref=e['ref'])['lessons']])
  def test_stale_writes_rollback(self):
   snapshot=self.snapshot();c=next(r for r in snapshot['entities'] if r['kind']=='course');sql,_=plan(snapshot,dict(op='course-archive',ref=c['ref'],version=c['version']),ADMIN);self.runop('course-save',who=ADMIN,**dict(c,title='New title'))
-  with self.assertRaises(sqlite3.IntegrityError):self.db.executescript(sql)
+  with self.assertRaises(sqlserver.IntegrityError):self.db.executescript(sql)
   self.db.rollback();self.assertEqual('New title',next(r for r in self.snapshot()['entities'] if r['ref']==c['ref'])['title'])
  def test_full_refund_revokes_access(self):
   e=self.enroll(True);o=self.pay(e);v=self.runop('refund-prepare',who=ADMIN,ref=o['ref'],request_key='abcdefghijklmnop');self.runop('_refund-claim',internal=True,prepared=v);self.runop('_refund-apply',internal=True,request_key=v['request_key'],provider={'PaymentId':v['payment_id'],'Amount':v['amount'],'Currency':v['currency'],'IdempotencyKey':'courses-refund-'+v['request_key'],'RefundId':'refund-1','Status':'succeeded'})

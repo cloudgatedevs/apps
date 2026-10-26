@@ -1,7 +1,6 @@
-# POS Shift / Shape — the shift with derived cash figures.
 d = body()
 op = op_of(d, 'current')
-rows = rows_of('''${Run}''')
+rows = rows_of(value('Run'))
 if op == 'registers':
     return out({'items': rows})
 if not rows:

@@ -1,1 +1,1 @@
-return read_sql('shop',request(),obj('IdpAuth',{}))
+return read_sql('shop', request(), obj('IdpAuth', {}))

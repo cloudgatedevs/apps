@@ -1,510 +1,573 @@
--- Shop — Cloudgate SQLite schema (shop_db)
--- Conventions: every table has Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL (Cloudgate rule),
--- PascalCase columns, money stored as INTEGER minor units (cents) to match the Cloudgate
--- Wallet API, booleans as INTEGER 0/1, timestamps as UTC DATETIME text.
--- Safe to re-run: IF NOT EXISTS everywhere, seed rows guarded by NOT EXISTS.
+-- Microsoft SQL Server 2022 / Cloudgate managed schema. Fresh installations only.
 
--- ---------------------------------------------------------------- settings
-CREATE TABLE IF NOT EXISTS settings (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  Key TEXT NOT NULL UNIQUE,
-  Value TEXT,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+SET NOCOUNT ON; SET XACT_ABORT ON;
+
+IF OBJECT_ID(N'settings',N'U') IS NULL
+CREATE TABLE [settings] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Key] NVARCHAR(254) NOT NULL,
+    [Value] NVARCHAR(MAX) NULL,
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
--- ---------------------------------------------------------------- catalog
-CREATE TABLE IF NOT EXISTS categories (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  Name TEXT NOT NULL,
-  Slug TEXT NOT NULL UNIQUE,
-  Description TEXT,
-  ParentId INTEGER,
-  ImageUrl TEXT,
-  SortOrder INTEGER DEFAULT 0,
-  IsActive INTEGER DEFAULT 1,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'categories',N'U') IS NULL
+CREATE TABLE [categories] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Name] NVARCHAR(MAX) NOT NULL,
+    [Slug] NVARCHAR(254) NOT NULL,
+    [Description] NVARCHAR(MAX) NULL,
+    [ParentId] BIGINT NULL,
+    [ImageUrl] NVARCHAR(MAX) NULL,
+    [SortOrder] BIGINT NULL DEFAULT (0),
+    [IsActive] BIGINT NULL DEFAULT (1),
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
-CREATE TABLE IF NOT EXISTS products (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  Name TEXT NOT NULL,
-  Slug TEXT NOT NULL UNIQUE,
-  Sku TEXT,
-  Brand TEXT,
-  ShortDescription TEXT,
-  Description TEXT,
-  CategoryId INTEGER,
-  Status TEXT DEFAULT 'draft',              -- draft | active | archived
-  PriceCents INTEGER NOT NULL DEFAULT 0,    -- default price; variants may override
-  CompareAtCents INTEGER,
-  CostCents INTEGER,
-  Currency TEXT DEFAULT 'ZAR',
-  TrackInventory INTEGER DEFAULT 1,
-  HasVariants INTEGER DEFAULT 0,            -- 0 = single default variant, 1 = option-driven variants
-  WeightGrams INTEGER,
-  Tags TEXT,                                -- comma separated
-  IsFeatured INTEGER DEFAULT 0,
-  SortOrder INTEGER DEFAULT 0,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'products',N'U') IS NULL
+CREATE TABLE [products] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Name] NVARCHAR(254) NOT NULL,
+    [Slug] NVARCHAR(254) NOT NULL,
+    [Sku] NVARCHAR(MAX) NULL,
+    [Brand] NVARCHAR(MAX) NULL,
+    [ShortDescription] NVARCHAR(MAX) NULL,
+    [Description] NVARCHAR(MAX) NULL,
+    [CategoryId] BIGINT NULL,
+    [Status] NVARCHAR(254) NULL DEFAULT ('draft'),
+    [PriceCents] BIGINT NOT NULL DEFAULT (0),
+    [CompareAtCents] BIGINT NULL,
+    [CostCents] BIGINT NULL,
+    [Currency] NVARCHAR(MAX) NULL DEFAULT ('ZAR'),
+    [TrackInventory] BIGINT NULL DEFAULT (1),
+    [HasVariants] BIGINT NULL DEFAULT (0),
+    [WeightGrams] BIGINT NULL,
+    [Tags] NVARCHAR(MAX) NULL,
+    [IsFeatured] BIGINT NULL DEFAULT (0),
+    [SortOrder] BIGINT NULL DEFAULT (0),
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
--- Option axes per product (e.g. Size, Colour) and their allowed values.
-CREATE TABLE IF NOT EXISTS product_options (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  ProductId INTEGER NOT NULL,
-  Name TEXT NOT NULL,
-  Position INTEGER DEFAULT 0
+IF OBJECT_ID(N'product_options',N'U') IS NULL
+CREATE TABLE [product_options] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [ProductId] BIGINT NOT NULL,
+    [Name] NVARCHAR(MAX) NOT NULL,
+    [Position] BIGINT NULL DEFAULT (0)
 );
 
-CREATE TABLE IF NOT EXISTS product_option_values (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  OptionId INTEGER NOT NULL,
-  Value TEXT NOT NULL,
-  Position INTEGER DEFAULT 0
+IF OBJECT_ID(N'product_option_values',N'U') IS NULL
+CREATE TABLE [product_option_values] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [OptionId] BIGINT NOT NULL,
+    [Value] NVARCHAR(MAX) NOT NULL,
+    [Position] BIGINT NULL DEFAULT (0)
 );
 
--- Every product has at least one variant (the default). Stock and sellable
--- prices always live here, so cart and order lines reference a variant.
-CREATE TABLE IF NOT EXISTS product_variants (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  ProductId INTEGER NOT NULL,
-  Sku TEXT,
-  Barcode TEXT,
-  Title TEXT,                               -- e.g. "Red / L"; NULL or 'Default' for single-variant products
-  OptionsJson TEXT,                         -- {"Size":"L","Colour":"Red"}
-  PriceCents INTEGER,                       -- NULL = inherit products.PriceCents
-  CompareAtCents INTEGER,
-  CostCents INTEGER,
-  StockQty INTEGER DEFAULT 0,
-  ReservedQty INTEGER DEFAULT 0,
-  LowStockThreshold INTEGER DEFAULT 5,
-  ImageId INTEGER,
-  IsDefault INTEGER DEFAULT 0,
-  IsActive INTEGER DEFAULT 1,
-  Position INTEGER DEFAULT 0,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'product_variants',N'U') IS NULL
+CREATE TABLE [product_variants] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [ProductId] BIGINT NOT NULL,
+    [Sku] NVARCHAR(254) NULL,
+    [Barcode] NVARCHAR(MAX) NULL,
+    [Title] NVARCHAR(MAX) NULL,
+    [OptionsJson] NVARCHAR(MAX) NULL,
+    [PriceCents] BIGINT NULL,
+    [CompareAtCents] BIGINT NULL,
+    [CostCents] BIGINT NULL,
+    [StockQty] BIGINT NULL DEFAULT (0),
+    [ReservedQty] BIGINT NULL DEFAULT (0),
+    [LowStockThreshold] BIGINT NULL DEFAULT (5),
+    [ImageId] BIGINT NULL,
+    [IsDefault] BIGINT NULL DEFAULT (0),
+    [IsActive] BIGINT NULL DEFAULT (1),
+    [Position] BIGINT NULL DEFAULT (0),
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
-CREATE TABLE IF NOT EXISTS product_images (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  ProductId INTEGER NOT NULL,
-  VariantId INTEGER,
-  FileId TEXT,                              -- Cloudgate DataFile id (once upload exists)
-  Url TEXT NOT NULL,
-  ThumbUrl TEXT,
-  Alt TEXT,
-  Position INTEGER DEFAULT 0,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'product_images',N'U') IS NULL
+CREATE TABLE [product_images] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [ProductId] BIGINT NOT NULL,
+    [VariantId] BIGINT NULL,
+    [FileId] NVARCHAR(MAX) NULL,
+    [Url] NVARCHAR(MAX) NOT NULL,
+    [ThumbUrl] NVARCHAR(MAX) NULL,
+    [Alt] NVARCHAR(MAX) NULL,
+    [Position] BIGINT NULL DEFAULT (0),
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
--- Append-only stock ledger; StockQty on the variant is the materialised sum.
-CREATE TABLE IF NOT EXISTS inventory_movements (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  VariantId INTEGER NOT NULL,
-  ProductId INTEGER NOT NULL,
-  Delta INTEGER NOT NULL,
-  Reason TEXT NOT NULL,                     -- receive | adjust | sale | refund | cancel | correction
-  Reference TEXT,                           -- order reference, PO number, ...
-  Note TEXT,
-  CreatedBy TEXT,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'inventory_movements',N'U') IS NULL
+CREATE TABLE [inventory_movements] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [VariantId] BIGINT NOT NULL,
+    [ProductId] BIGINT NOT NULL,
+    [Delta] BIGINT NOT NULL,
+    [Reason] NVARCHAR(MAX) NOT NULL,
+    [Reference] NVARCHAR(254) NULL,
+    [Note] NVARCHAR(MAX) NULL,
+    [CreatedBy] NVARCHAR(MAX) NULL,
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
--- ---------------------------------------------------------------- customers & carts
-CREATE TABLE IF NOT EXISTS customers (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  IdpUserId INTEGER UNIQUE,                 -- NULL for guest checkouts
-  Email TEXT NOT NULL,
-  Name TEXT,
-  Surname TEXT,
-  Phone TEXT,
-  DefaultAddressJson TEXT,
-  MarketingOptIn INTEGER DEFAULT 0,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'customers',N'U') IS NULL
+CREATE TABLE [customers] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [IdpUserId] BIGINT NULL,
+    [Email] NVARCHAR(254) NOT NULL,
+    [Name] NVARCHAR(MAX) NULL,
+    [Surname] NVARCHAR(MAX) NULL,
+    [Phone] NVARCHAR(MAX) NULL,
+    [DefaultAddressJson] NVARCHAR(MAX) NULL,
+    [MarketingOptIn] BIGINT NULL DEFAULT (0),
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
-CREATE TABLE IF NOT EXISTS carts (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  Token TEXT NOT NULL UNIQUE,               -- opaque id held by the browser
-  IdpUserId INTEGER,
-  CustomerId INTEGER,
-  Status TEXT DEFAULT 'open',               -- open | converted | abandoned
-  Currency TEXT DEFAULT 'ZAR',
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'carts',N'U') IS NULL
+CREATE TABLE [carts] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Token] NVARCHAR(254) NOT NULL,
+    [IdpUserId] BIGINT NULL,
+    [CustomerId] BIGINT NULL,
+    [Status] NVARCHAR(MAX) NULL DEFAULT ('open'),
+    [Currency] NVARCHAR(MAX) NULL DEFAULT ('ZAR'),
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
-CREATE TABLE IF NOT EXISTS cart_items (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  CartId INTEGER NOT NULL,
-  ProductId INTEGER NOT NULL,
-  VariantId INTEGER NOT NULL,
-  Qty INTEGER NOT NULL DEFAULT 1,
-  UnitPriceCents INTEGER NOT NULL,          -- price snapshot at add time; re-priced at checkout
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (CartId, VariantId)
+IF OBJECT_ID(N'cart_items',N'U') IS NULL
+CREATE TABLE [cart_items] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [CartId] BIGINT NOT NULL,
+    [ProductId] BIGINT NOT NULL,
+    [VariantId] BIGINT NOT NULL,
+    [Qty] BIGINT NOT NULL DEFAULT (1),
+    [UnitPriceCents] BIGINT NOT NULL,
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
--- ---------------------------------------------------------------- orders & payments
-CREATE TABLE IF NOT EXISTS orders (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  Reference TEXT NOT NULL UNIQUE,           -- human order number, e.g. SO-100042
-  CartId INTEGER,
-  CustomerId INTEGER,
-  IdpUserId INTEGER,
-  Email TEXT NOT NULL,
-  Name TEXT,
-  Surname TEXT,
-  Phone TEXT,
-  ShippingAddressJson TEXT,
-  BillingAddressJson TEXT,
-  Currency TEXT DEFAULT 'ZAR',
-  SubtotalCents INTEGER NOT NULL DEFAULT 0,
-  DiscountCents INTEGER NOT NULL DEFAULT 0,
-  ShippingCents INTEGER NOT NULL DEFAULT 0,
-  TaxCents INTEGER NOT NULL DEFAULT 0,
-  TotalCents INTEGER NOT NULL DEFAULT 0,
-  Status TEXT DEFAULT 'pending',            -- pending | paid | processing | shipped | delivered | cancelled | refunded
-  PaymentStatus TEXT DEFAULT 'unpaid',      -- unpaid | pending | paid | failed | refunded | partially_refunded
-  FulfillmentStatus TEXT DEFAULT 'unfulfilled', -- unfulfilled | partial | fulfilled
-  CustomerNote TEXT,
-  InternalNote TEXT,
-  PaidAt DATETIME,
-  ShippedAt DATETIME,
-  CancelledAt DATETIME,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'orders',N'U') IS NULL
+CREATE TABLE [orders] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Reference] NVARCHAR(254) NOT NULL,
+    [CartId] BIGINT NULL,
+    [CustomerId] BIGINT NULL,
+    [IdpUserId] BIGINT NULL,
+    [Email] NVARCHAR(254) NOT NULL,
+    [Name] NVARCHAR(MAX) NULL,
+    [Surname] NVARCHAR(MAX) NULL,
+    [Phone] NVARCHAR(MAX) NULL,
+    [ShippingAddressJson] NVARCHAR(MAX) NULL,
+    [BillingAddressJson] NVARCHAR(MAX) NULL,
+    [Currency] NVARCHAR(MAX) NULL DEFAULT ('ZAR'),
+    [SubtotalCents] BIGINT NOT NULL DEFAULT (0),
+    [DiscountCents] BIGINT NOT NULL DEFAULT (0),
+    [ShippingCents] BIGINT NOT NULL DEFAULT (0),
+    [TaxCents] BIGINT NOT NULL DEFAULT (0),
+    [TotalCents] BIGINT NOT NULL DEFAULT (0),
+    [Status] NVARCHAR(254) NULL DEFAULT ('pending'),
+    [PaymentStatus] NVARCHAR(MAX) NULL DEFAULT ('unpaid'),
+    [FulfillmentStatus] NVARCHAR(MAX) NULL DEFAULT ('unfulfilled'),
+    [CustomerNote] NVARCHAR(MAX) NULL,
+    [InternalNote] NVARCHAR(MAX) NULL,
+    [PaidAt] DATETIME2(3) NULL,
+    [ShippedAt] DATETIME2(3) NULL,
+    [CancelledAt] DATETIME2(3) NULL,
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
-CREATE TABLE IF NOT EXISTS order_items (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  OrderId INTEGER NOT NULL,
-  ProductId INTEGER NOT NULL,
-  VariantId INTEGER NOT NULL,
-  Sku TEXT,
-  Title TEXT NOT NULL,                      -- product name snapshot
-  VariantTitle TEXT,
-  ImageUrl TEXT,
-  Qty INTEGER NOT NULL,
-  UnitPriceCents INTEGER NOT NULL,
-  LineTotalCents INTEGER NOT NULL,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'order_items',N'U') IS NULL
+CREATE TABLE [order_items] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [OrderId] BIGINT NOT NULL,
+    [ProductId] BIGINT NOT NULL,
+    [VariantId] BIGINT NOT NULL,
+    [Sku] NVARCHAR(MAX) NULL,
+    [Title] NVARCHAR(MAX) NOT NULL,
+    [VariantTitle] NVARCHAR(MAX) NULL,
+    [ImageUrl] NVARCHAR(MAX) NULL,
+    [Qty] BIGINT NOT NULL,
+    [UnitPriceCents] BIGINT NOT NULL,
+    [LineTotalCents] BIGINT NOT NULL,
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
--- Order timeline (status changes, payment events, notes) — audit trail.
-CREATE TABLE IF NOT EXISTS order_events (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  OrderId INTEGER NOT NULL,
-  Type TEXT NOT NULL,                       -- created | payment_pending | paid | payment_failed | status | note | refund | shipped
-  Message TEXT,
-  DataJson TEXT,
-  CreatedBy TEXT,                           -- 'customer' | 'system' | admin user id/email
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'order_events',N'U') IS NULL
+CREATE TABLE [order_events] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [OrderId] BIGINT NOT NULL,
+    [Type] NVARCHAR(MAX) NOT NULL,
+    [Message] NVARCHAR(MAX) NULL,
+    [DataJson] NVARCHAR(MAX) NULL,
+    [CreatedBy] NVARCHAR(MAX) NULL,
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
--- One row per Cloudgate Wallet checkout session created for an order.
-CREATE TABLE IF NOT EXISTS payments (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  OrderId INTEGER NOT NULL,
-  Provider TEXT DEFAULT 'cloudgate_wallet',
-  ConnectPaymentId INTEGER,                 -- Cloudgate ConnectPaymentRecord.Id
-  IdempotencyKey TEXT UNIQUE,
-  PaymentUrl TEXT,
-  AmountCents INTEGER NOT NULL,
-  Currency TEXT,
-  Status TEXT DEFAULT 'pending',            -- pending | succeeded | failed | expired | refunded | partially_refunded
-  RefundedCents INTEGER DEFAULT 0,
-  IsProduction INTEGER DEFAULT 0,
-  RawJson TEXT,
-  PaidAt DATETIME,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'payments',N'U') IS NULL
+CREATE TABLE [payments] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [OrderId] BIGINT NOT NULL,
+    [Provider] NVARCHAR(MAX) NULL DEFAULT ('cloudgate_wallet'),
+    [ConnectPaymentId] BIGINT NULL,
+    [IdempotencyKey] NVARCHAR(254) NULL,
+    [PaymentUrl] NVARCHAR(MAX) NULL,
+    [AmountCents] BIGINT NOT NULL,
+    [Currency] NVARCHAR(MAX) NULL,
+    [Status] NVARCHAR(MAX) NULL DEFAULT ('pending'),
+    [RefundedCents] BIGINT NULL DEFAULT (0),
+    [IsProduction] BIGINT NULL DEFAULT (0),
+    [RawJson] NVARCHAR(MAX) NULL,
+    [PaidAt] DATETIME2(3) NULL,
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
 
--- ---------------------------------------------------------------- indexes
-CREATE INDEX IF NOT EXISTS ix_categories_parent ON categories(ParentId);
-CREATE INDEX IF NOT EXISTS ix_products_category ON products(CategoryId);
-CREATE INDEX IF NOT EXISTS ix_products_status ON products(Status);
-CREATE INDEX IF NOT EXISTS ix_products_name ON products(Name);
-CREATE INDEX IF NOT EXISTS ix_options_product ON product_options(ProductId);
-CREATE INDEX IF NOT EXISTS ix_option_values_option ON product_option_values(OptionId);
-CREATE INDEX IF NOT EXISTS ix_variants_product ON product_variants(ProductId);
-CREATE INDEX IF NOT EXISTS ix_variants_sku ON product_variants(Sku);
-CREATE INDEX IF NOT EXISTS ix_images_product ON product_images(ProductId, Position);
-CREATE INDEX IF NOT EXISTS ix_movements_variant ON inventory_movements(VariantId, CreatedAt);
-CREATE INDEX IF NOT EXISTS ix_customers_email ON customers(Email);
-CREATE INDEX IF NOT EXISTS ix_carts_user ON carts(IdpUserId);
-CREATE INDEX IF NOT EXISTS ix_cart_items_cart ON cart_items(CartId);
-CREATE INDEX IF NOT EXISTS ix_orders_email ON orders(Email);
-CREATE INDEX IF NOT EXISTS ix_orders_user ON orders(IdpUserId);
-CREATE INDEX IF NOT EXISTS ix_orders_status ON orders(Status);
-CREATE INDEX IF NOT EXISTS ix_orders_created ON orders(CreatedAt);
-CREATE INDEX IF NOT EXISTS ix_order_items_order ON order_items(OrderId);
-CREATE INDEX IF NOT EXISTS ix_order_events_order ON order_events(OrderId, CreatedAt);
-CREATE INDEX IF NOT EXISTS ix_payments_order ON payments(OrderId);
-CREATE INDEX IF NOT EXISTS ix_payments_connect ON payments(ConnectPaymentId);
-
--- ---------------------------------------------------------------- seed: settings
-INSERT INTO settings (Key, Value)
-SELECT v.Key, v.Value FROM (
-  SELECT 'store_name' AS Key, 'Cloudgate Shop' AS Value UNION ALL
-  SELECT 'currency', 'ZAR' UNION ALL
-  SELECT 'tax_rate_bp', '1500' UNION ALL          -- basis points; 1500 = 15% VAT, prices are tax-inclusive
-  SELECT 'prices_include_tax', '1' UNION ALL
-  SELECT 'shipping_flat_cents', '9900' UNION ALL
-  SELECT 'free_shipping_threshold_cents', '100000' UNION ALL
-  SELECT 'order_reference_prefix', 'SO-' UNION ALL
-  SELECT 'order_reference_seed', '100000' UNION ALL
-  SELECT 'support_email', 'support@example.com'
-) v
-WHERE NOT EXISTS (SELECT 1 FROM settings s WHERE s.Key = v.Key);
-
--- @sample-catalog:start (skipped with apply_sql.py --skip-sample, e.g. for production)
--- ---------------------------------------------------------------- seed: sample catalog (dev only, guarded)
-INSERT INTO categories (Name, Slug, Description, SortOrder)
-SELECT v.Name, v.Slug, v.Description, v.SortOrder FROM (
-  SELECT 'Apparel' AS Name, 'apparel' AS Slug, 'T-shirts, hoodies and caps.' AS Description, 1 AS SortOrder UNION ALL
-  SELECT 'Accessories', 'accessories', 'Bags, bottles and everyday carry.', 2 UNION ALL
-  SELECT 'Home', 'home', 'Mugs, prints and desk gear.', 3
-) v
-WHERE NOT EXISTS (SELECT 1 FROM categories c WHERE c.Slug = v.Slug);
-
-INSERT INTO products (Name, Slug, Sku, Brand, ShortDescription, Description, CategoryId, Status, PriceCents, CompareAtCents, HasVariants, IsFeatured, Tags)
-SELECT v.Name, v.Slug, v.Sku, v.Brand, v.Short, v.Description,
-       (SELECT Id FROM categories c WHERE c.Slug = v.CategorySlug),
-       'active', v.PriceCents, v.CompareAtCents, v.HasVariants, v.IsFeatured, v.Tags FROM (
-  SELECT 'Classic Tee' AS Name, 'classic-tee' AS Slug, 'TEE-CLASSIC' AS Sku, 'Cloudgate' AS Brand,
-         'Heavyweight cotton tee with a relaxed fit.' AS Short,
-         'A 220gsm combed-cotton tee that holds its shape wash after wash. Pre-shrunk, side-seamed, printed in Cape Town.' AS Description,
-         'apparel' AS CategorySlug, 34900 AS PriceCents, 39900 AS CompareAtCents, 1 AS HasVariants, 1 AS IsFeatured, 'cotton,tee,unisex' AS Tags UNION ALL
-  SELECT 'Everyday Hoodie', 'everyday-hoodie', 'HOOD-EVERYDAY', 'Cloudgate',
-         'Brushed fleece hoodie with a kangaroo pocket.',
-         'Mid-weight 350gsm fleece, double-lined hood, ribbed cuffs and hem. Runs true to size.',
-         'apparel', 79900, NULL, 1, 1, 'fleece,hoodie,unisex' UNION ALL
-  SELECT 'Insulated Bottle 750ml', 'insulated-bottle-750', 'BTL-750', 'Cloudgate',
-         'Keeps drinks cold for 24 hours, hot for 12.',
-         'Double-wall stainless steel, powder-coated finish, leak-proof bamboo lid. Fits standard cup holders.',
-         'accessories', 44900, NULL, 1, 0, 'bottle,steel' UNION ALL
-  SELECT 'Canvas Tote', 'canvas-tote', 'TOTE-CANVAS', 'Cloudgate',
-         '12oz canvas tote with an interior pocket.',
-         'Reinforced handles rated to 15kg, natural canvas, screen-printed logo.',
-         'accessories', 24900, NULL, 0, 0, 'bag,canvas' UNION ALL
-  SELECT 'Ceramic Mug', 'ceramic-mug', 'MUG-CERAMIC', 'Cloudgate',
-         '350ml stoneware mug, dishwasher safe.',
-         'Hand-glazed stoneware with a matte exterior and gloss interior.',
-         'home', 18900, 21900, 1, 0, 'mug,ceramic' UNION ALL
-  SELECT 'Desk Mat', 'desk-mat', 'MAT-DESK', 'Cloudgate',
-         'Vegan leather desk mat, 80 x 40cm.',
-         'Water-resistant surface, anti-slip base, stitched edges.',
-         'home', 39900, NULL, 0, 1, 'desk,mat'
-) v
-WHERE NOT EXISTS (SELECT 1 FROM products p WHERE p.Slug = v.Slug);
-
--- Option axes for variant products
-INSERT INTO product_options (ProductId, Name, Position)
-SELECT p.Id, v.Name, v.Position FROM (
-  SELECT 'classic-tee' AS Slug, 'Size' AS Name, 0 AS Position UNION ALL
-  SELECT 'classic-tee', 'Colour', 1 UNION ALL
-  SELECT 'everyday-hoodie', 'Size', 0 UNION ALL
-  SELECT 'insulated-bottle-750', 'Colour', 0 UNION ALL
-  SELECT 'ceramic-mug', 'Colour', 0
-) v JOIN products p ON p.Slug = v.Slug
-WHERE NOT EXISTS (SELECT 1 FROM product_options o WHERE o.ProductId = p.Id AND o.Name = v.Name);
-
-INSERT INTO product_option_values (OptionId, Value, Position)
-SELECT o.Id, v.Value, v.Position FROM (
-  SELECT 'classic-tee' AS Slug, 'Size' AS OptionName, 'S' AS Value, 0 AS Position UNION ALL
-  SELECT 'classic-tee', 'Size', 'M', 1 UNION ALL
-  SELECT 'classic-tee', 'Size', 'L', 2 UNION ALL
-  SELECT 'classic-tee', 'Colour', 'Black', 0 UNION ALL
-  SELECT 'classic-tee', 'Colour', 'White', 1 UNION ALL
-  SELECT 'everyday-hoodie', 'Size', 'S', 0 UNION ALL
-  SELECT 'everyday-hoodie', 'Size', 'M', 1 UNION ALL
-  SELECT 'everyday-hoodie', 'Size', 'L', 2 UNION ALL
-  SELECT 'everyday-hoodie', 'Size', 'XL', 3 UNION ALL
-  SELECT 'insulated-bottle-750', 'Colour', 'Slate', 0 UNION ALL
-  SELECT 'insulated-bottle-750', 'Colour', 'Sand', 1 UNION ALL
-  SELECT 'ceramic-mug', 'Colour', 'Charcoal', 0 UNION ALL
-  SELECT 'ceramic-mug', 'Colour', 'Cream', 1
-) v
-JOIN products p ON p.Slug = v.Slug
-JOIN product_options o ON o.ProductId = p.Id AND o.Name = v.OptionName
-WHERE NOT EXISTS (SELECT 1 FROM product_option_values pv WHERE pv.OptionId = o.Id AND pv.Value = v.Value);
-
--- Variants (stock lives here). Single-variant products get one default row.
-INSERT INTO product_variants (ProductId, Sku, Title, OptionsJson, PriceCents, StockQty, IsDefault, Position)
-SELECT p.Id, v.Sku, v.Title, v.OptionsJson, v.PriceCents, v.StockQty, v.IsDefault, v.Position FROM (
-  SELECT 'classic-tee' AS Slug, 'TEE-CLASSIC-S-BLK' AS Sku, 'S / Black' AS Title, '{"Size":"S","Colour":"Black"}' AS OptionsJson, NULL AS PriceCents, 12 AS StockQty, 1 AS IsDefault, 0 AS Position UNION ALL
-  SELECT 'classic-tee', 'TEE-CLASSIC-M-BLK', 'M / Black', '{"Size":"M","Colour":"Black"}', NULL, 20, 0, 1 UNION ALL
-  SELECT 'classic-tee', 'TEE-CLASSIC-L-BLK', 'L / Black', '{"Size":"L","Colour":"Black"}', NULL, 8, 0, 2 UNION ALL
-  SELECT 'classic-tee', 'TEE-CLASSIC-S-WHT', 'S / White', '{"Size":"S","Colour":"White"}', NULL, 10, 0, 3 UNION ALL
-  SELECT 'classic-tee', 'TEE-CLASSIC-M-WHT', 'M / White', '{"Size":"M","Colour":"White"}', NULL, 0, 0, 4 UNION ALL
-  SELECT 'classic-tee', 'TEE-CLASSIC-L-WHT', 'L / White', '{"Size":"L","Colour":"White"}', NULL, 4, 0, 5 UNION ALL
-  SELECT 'everyday-hoodie', 'HOOD-EVERYDAY-S', 'S', '{"Size":"S"}', NULL, 6, 1, 0 UNION ALL
-  SELECT 'everyday-hoodie', 'HOOD-EVERYDAY-M', 'M', '{"Size":"M"}', NULL, 9, 0, 1 UNION ALL
-  SELECT 'everyday-hoodie', 'HOOD-EVERYDAY-L', 'L', '{"Size":"L"}', NULL, 3, 0, 2 UNION ALL
-  SELECT 'everyday-hoodie', 'HOOD-EVERYDAY-XL', 'XL', '{"Size":"XL"}', 84900, 2, 0, 3 UNION ALL
-  SELECT 'insulated-bottle-750', 'BTL-750-SLATE', 'Slate', '{"Colour":"Slate"}', NULL, 25, 1, 0 UNION ALL
-  SELECT 'insulated-bottle-750', 'BTL-750-SAND', 'Sand', '{"Colour":"Sand"}', NULL, 14, 0, 1 UNION ALL
-  SELECT 'canvas-tote', 'TOTE-CANVAS', 'Default', NULL, NULL, 40, 1, 0 UNION ALL
-  SELECT 'ceramic-mug', 'MUG-CERAMIC-CHAR', 'Charcoal', '{"Colour":"Charcoal"}', NULL, 30, 1, 0 UNION ALL
-  SELECT 'ceramic-mug', 'MUG-CERAMIC-CREAM', 'Cream', '{"Colour":"Cream"}', NULL, 18, 0, 1 UNION ALL
-  SELECT 'desk-mat', 'MAT-DESK', 'Default', NULL, NULL, 11, 1, 0
-) v JOIN products p ON p.Slug = v.Slug
-WHERE NOT EXISTS (SELECT 1 FROM product_variants pv WHERE pv.Sku = v.Sku);
-
--- Opening stock movements so the ledger reconciles with StockQty
-INSERT INTO inventory_movements (VariantId, ProductId, Delta, Reason, Reference, Note, CreatedBy)
-SELECT pv.Id, pv.ProductId, pv.StockQty, 'receive', 'SEED', 'Opening stock', 'system'
-FROM product_variants pv
-WHERE pv.StockQty > 0
-  AND NOT EXISTS (SELECT 1 FROM inventory_movements m WHERE m.VariantId = pv.Id AND m.Reference = 'SEED');
-
--- @sample-catalog:end
--- ---------------------------------------------------------------- content pages (terms, privacy, about …)
-CREATE TABLE IF NOT EXISTS pages (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  Slug TEXT NOT NULL UNIQUE,                -- /pages/{slug}
-  Title TEXT NOT NULL,
-  Summary TEXT,                             -- one line under the title / for link previews
-  BodyMarkdown TEXT NOT NULL DEFAULT '',    -- rendered on the storefront (sanitised)
-  Status TEXT DEFAULT 'published',          -- draft | published
-  ShowInNav INTEGER DEFAULT 0,              -- top navigation
-  ShowInFooter INTEGER DEFAULT 1,           -- footer link list
-  Position INTEGER DEFAULT 0,
-  IsSystem INTEGER DEFAULT 0,               -- seeded legal pages cannot be deleted, only edited
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'pages',N'U') IS NULL
+CREATE TABLE [pages] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Slug] NVARCHAR(254) NOT NULL,
+    [Title] NVARCHAR(MAX) NOT NULL,
+    [Summary] NVARCHAR(MAX) NULL,
+    [BodyMarkdown] NVARCHAR(MAX) NOT NULL DEFAULT (''),
+    [Status] NVARCHAR(MAX) NULL DEFAULT ('published'),
+    [ShowInNav] BIGINT NULL DEFAULT (0),
+    [ShowInFooter] BIGINT NULL DEFAULT (1),
+    [Position] BIGINT NULL DEFAULT (0),
+    [IsSystem] BIGINT NULL DEFAULT (0),
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [ShowContact] BIGINT NULL DEFAULT (0)
 );
 
--- ---------------------------------------------------------------- contact form submissions
-CREATE TABLE IF NOT EXISTS contact_messages (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  Name TEXT,
-  Email TEXT NOT NULL,
-  Subject TEXT,
-  Message TEXT NOT NULL,
-  OrderReference TEXT,
-  Status TEXT DEFAULT 'new',                -- new | read | replied | archived
-  IdpUserId INTEGER,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'contact_messages',N'U') IS NULL
+CREATE TABLE [contact_messages] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Name] NVARCHAR(MAX) NULL,
+    [Email] NVARCHAR(MAX) NOT NULL,
+    [Subject] NVARCHAR(MAX) NULL,
+    [Message] NVARCHAR(MAX) NOT NULL,
+    [OrderReference] NVARCHAR(MAX) NULL,
+    [Status] NVARCHAR(254) NULL DEFAULT ('new'),
+    [IdpUserId] BIGINT NULL,
+    [CreatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NULL DEFAULT (SYSUTCDATETIME())
 );
-CREATE INDEX IF NOT EXISTS ix_contact_status ON contact_messages(Status, CreatedAt);
 
--- ---------------------------------------------------------------- seed: storefront settings
-INSERT INTO settings (Key, Value)
-SELECT v.Key, v.Value FROM (
-  SELECT 'store_tagline' AS Key, 'Considered essentials for everyday life.' AS Value UNION ALL
-  SELECT 'announcement_text', 'Free shipping on orders over R1 000' UNION ALL
-  SELECT 'announcement_url', '/shop' UNION ALL
-  SELECT 'cookie_consent_enabled', '1' UNION ALL
-  SELECT 'cookie_consent_text', 'We use cookies to keep your cart, remember your preferences and understand how the store is used.' UNION ALL
-  SELECT 'contact_phone', '' UNION ALL
-  SELECT 'contact_address', '' UNION ALL
-  SELECT 'contact_hours', 'Monday to Friday, 9:00-17:00' UNION ALL
-  SELECT 'social_instagram', '' UNION ALL
-  SELECT 'social_facebook', '' UNION ALL
-  SELECT 'social_x', '' UNION ALL
-  SELECT 'social_tiktok', '' UNION ALL
-  SELECT 'footer_note', '' UNION ALL
-  SELECT 'theme_primary', '#18181b' UNION ALL
-  SELECT 'theme_secondary', '#4f46e5'
-) v
-WHERE NOT EXISTS (SELECT 1 FROM settings s WHERE s.Key = v.Key);
-
--- ---------------------------------------------------------------- seed: system pages (edit them in Back office -> Pages)
-INSERT INTO pages (Slug, Title, Summary, BodyMarkdown, Status, ShowInNav, ShowInFooter, Position, IsSystem)
-SELECT v.Slug, v.Title, v.Summary, v.Body, 'published', v.Nav, 1, v.Pos, 1 FROM (
-  SELECT 'about' AS Slug, 'About us' AS Title, 'Who we are and why we make what we make.' AS Summary, 1 AS Nav, 10 AS Pos,
-    '## Our story' || char(10) || char(10) || 'Write a few paragraphs about the people behind the store, what you make or curate, and what you care about. Customers buy from people, not catalogues.' || char(10) || char(10) || '## What we stand for' || char(10) || char(10) || '- **Quality first.** Describe how you choose or make your products.' || char(10) || '- **Honest pricing.** Say something about value.' || char(10) || '- **Real support.** Explain how customers can reach you.' AS Body UNION ALL
-  SELECT 'shipping-returns', 'Shipping & returns', 'Delivery times, costs and how to return something.', 0, 20,
-    '## Shipping' || char(10) || char(10) || 'Orders are dispatched within 1-2 working days. Delivery within South Africa usually takes 2-4 working days with tracking sent by email once your parcel is on its way.' || char(10) || char(10) || 'Shipping is a flat rate per order, and free above the threshold shown in your cart.' || char(10) || char(10) || '## Returns' || char(10) || char(10) || 'Changed your mind? Contact us within 14 days of delivery. Items must be unused and in their original packaging. Refunds go back to the original card once the return has been received and checked.' || char(10) || char(10) || '## Damaged or wrong items' || char(10) || char(10) || 'Send us a photo within 48 hours of delivery and we will sort it out at no cost to you.' UNION ALL
-  SELECT 'terms', 'Terms of service', 'The agreement between you and the store when you buy from us.', 0, 30,
-    '_Last updated: ' || date('now') || '_' || char(10) || char(10) || '## 1. About these terms' || char(10) || char(10) || 'These terms apply to every order placed through this store. By placing an order you agree to them. Please replace this template with terms reviewed for your business and jurisdiction.' || char(10) || char(10) || '## 2. Orders and payment' || char(10) || char(10) || 'An order is accepted when payment has been confirmed and you receive an order confirmation. Prices include VAT unless stated otherwise. Payments are processed securely by our payment provider; we never see or store your card details.' || char(10) || char(10) || '## 3. Delivery' || char(10) || char(10) || 'Delivery times are estimates. Risk in the goods passes to you on delivery.' || char(10) || char(10) || '## 4. Returns and refunds' || char(10) || char(10) || 'See our Shipping & returns page for how returns work. Your statutory rights are not affected.' || char(10) || char(10) || '## 5. Liability' || char(10) || char(10) || 'To the extent permitted by law, our liability for any claim is limited to the amount you paid for the order concerned.' || char(10) || char(10) || '## 6. Contact' || char(10) || char(10) || 'Questions about these terms? Use the Contact page.' UNION ALL
-  SELECT 'privacy', 'Privacy policy', 'What we collect, why, and how we look after it.', 0, 40,
-    '_Last updated: ' || date('now') || '_' || char(10) || char(10) || '## What we collect' || char(10) || char(10) || 'When you order we collect your name, email address, phone number and delivery address so we can fulfil and support your order. If you create an account, your login is handled by our identity provider.' || char(10) || char(10) || '## How we use it' || char(10) || char(10) || '- To process, deliver and support your orders.' || char(10) || '- To send order confirmations and shipping updates.' || char(10) || '- To send marketing email only if you opted in; every email has an unsubscribe link.' || char(10) || char(10) || '## Cookies' || char(10) || char(10) || 'We use a small number of cookies and local storage entries to keep your cart, remember your preferences and understand how the store is used. See the cookie notice for details.' || char(10) || char(10) || '## Payments' || char(10) || char(10) || 'Card payments are processed by our payment provider. We never receive your full card number.' || char(10) || char(10) || '## Your rights' || char(10) || char(10) || 'You can ask us to show, correct or delete the personal information we hold about you. Contact us and we will respond within a reasonable time.' UNION ALL
-  SELECT 'faq', 'Frequently asked questions', 'Quick answers about ordering, delivery and returns.', 0, 50,
-    '## Do I need an account to order?' || char(10) || char(10) || 'No. You can check out as a guest with just an email address. Creating an account lets you see your order history.' || char(10) || char(10) || '## How do I track my order?' || char(10) || char(10) || 'When your order ships you receive an email with the carrier and tracking number. Signed-in customers can also see it under Your orders.' || char(10) || char(10) || '## Which payment methods do you accept?' || char(10) || char(10) || 'All major debit and credit cards through our secure payment page.' || char(10) || char(10) || '## Can I change or cancel an order?' || char(10) || char(10) || 'Contact us as soon as possible. Orders that have not shipped can usually be changed or cancelled.'
-) v
-WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.Slug = v.Slug);
-
--- ---------------------------------------------------------------- pages: optional store contact block under the content
-ALTER TABLE pages ADD COLUMN ShowContact INTEGER DEFAULT 0;
-UPDATE pages SET ShowContact = 1 WHERE Slug = 'about' AND ShowContact = 0 AND UpdatedAt = CreatedAt;
-INSERT INTO settings (Key, Value)
-SELECT v.Key, v.Value FROM (
-  SELECT 'store_icon_url' AS Key, '' AS Value UNION ALL
-  SELECT 'store_description', 'Thoughtfully made pieces, priced honestly, delivered with care.'
-) v
-WHERE NOT EXISTS (SELECT 1 FROM settings s WHERE s.Key = v.Key);
-
--- @durable-refunds
--- Durable refund requests. Safe to apply to existing sandbox/production databases.
-CREATE TABLE IF NOT EXISTS refund_requests (
- Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
- RequestKey TEXT NOT NULL UNIQUE,
- BusinessId INTEGER NOT NULL,
- Method TEXT NOT NULL CHECK(Method IN ('card','cash')),
- AmountCents INTEGER NOT NULL CHECK(AmountCents > 0 OR (AmountCents=0 AND Status='failed')),
- Currency TEXT NOT NULL,
- PaymentRowId INTEGER,
- PaymentId INTEGER,
- IntentJson TEXT NOT NULL CHECK(json_valid(IntentJson)),
- LinesJson TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(LinesJson)),
- SnapshotRefunded INTEGER NOT NULL,
- Status TEXT NOT NULL DEFAULT 'submitting' CHECK(Status IN ('submitting','pending','succeeded','failed','reconciliation_required')),
- ProviderRefundId TEXT,
- Applied INTEGER NOT NULL DEFAULT 0,
- ShiftId INTEGER,
- CreatedBy TEXT,
- RawJson TEXT,
- CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
- UpdatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+IF OBJECT_ID(N'refund_requests',N'U') IS NULL
+CREATE TABLE [refund_requests] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [RequestKey] NVARCHAR(254) NOT NULL,
+    [BusinessId] BIGINT NOT NULL,
+    [Method] NVARCHAR(MAX) NOT NULL,
+    [AmountCents] BIGINT NOT NULL,
+    [Currency] NVARCHAR(MAX) NOT NULL,
+    [PaymentRowId] BIGINT NULL,
+    [PaymentId] BIGINT NULL,
+    [IntentJson] NVARCHAR(MAX) NOT NULL,
+    [LinesJson] NVARCHAR(MAX) NOT NULL DEFAULT ('[]'),
+    [SnapshotRefunded] BIGINT NOT NULL,
+    [Status] NVARCHAR(MAX) NOT NULL DEFAULT ('submitting'),
+    [ProviderRefundId] NVARCHAR(254) NULL,
+    [Applied] BIGINT NOT NULL DEFAULT (0),
+    [ShiftId] BIGINT NULL,
+    [CreatedBy] NVARCHAR(MAX) NULL,
+    [RawJson] NVARCHAR(MAX) NULL,
+    [CreatedAt] DATETIME2(3) NOT NULL DEFAULT (SYSUTCDATETIME()),
+    [UpdatedAt] DATETIME2(3) NOT NULL DEFAULT (SYSUTCDATETIME())
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ux_refund_unresolved ON refund_requests(BusinessId) WHERE Status NOT IN ('succeeded','failed');
-CREATE UNIQUE INDEX IF NOT EXISTS ux_refund_provider ON refund_requests(PaymentId,ProviderRefundId) WHERE ProviderRefundId IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ix_refund_business ON refund_requests(BusinessId,Id);
-CREATE TRIGGER IF NOT EXISTS refund_key_guard BEFORE INSERT ON refund_requests
-WHEN EXISTS(SELECT 1 FROM refund_requests WHERE RequestKey=NEW.RequestKey AND (BusinessId<>NEW.BusinessId OR IntentJson<>NEW.IntentJson))
-BEGIN SELECT RAISE(ROLLBACK,'Refund request key is already bound to different details.'); END;
 
-CREATE TRIGGER IF NOT EXISTS refund_claim_guard BEFORE INSERT ON refund_requests
-WHEN NEW.Status<>'failed' AND NOT EXISTS(SELECT 1 FROM refund_requests WHERE RequestKey=NEW.RequestKey)
-BEGIN
- SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM payments p JOIN orders o ON o.Id=p.OrderId WHERE p.Id=NEW.PaymentRowId
- AND p.OrderId=NEW.BusinessId AND p.ConnectPaymentId=NEW.PaymentId AND NEW.Method='card'
- AND p.Status IN ('succeeded','partially_refunded') AND COALESCE(p.RefundedCents,0)=NEW.SnapshotRefunded
- AND NEW.AmountCents<=p.AmountCents-COALESCE(p.RefundedCents,0) AND upper(o.Currency)=NEW.Currency)
- THEN RAISE(ROLLBACK,'Payment balance changed. Reload the order before refunding.') END;
-END;
-CREATE TRIGGER IF NOT EXISTS refund_apply AFTER UPDATE OF Status ON refund_requests
-WHEN NEW.Status='succeeded' AND OLD.Applied=0 AND OLD.Status<>'succeeded'
-BEGIN
- SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM payments WHERE Id=NEW.PaymentRowId AND COALESCE(RefundedCents,0)=NEW.SnapshotRefunded)
- THEN RAISE(ROLLBACK,'Refund needs reconciliation: local payment balance changed.') END;
- UPDATE payments SET RefundedCents=COALESCE(RefundedCents,0)+NEW.AmountCents,
- Status=CASE WHEN COALESCE(RefundedCents,0)+NEW.AmountCents>=AmountCents THEN 'refunded' ELSE 'partially_refunded' END,
- RawJson=NEW.RawJson,UpdatedAt=CURRENT_TIMESTAMP WHERE Id=NEW.PaymentRowId;
- UPDATE orders SET PaymentStatus=(SELECT Status FROM payments WHERE Id=NEW.PaymentRowId),
- Status=CASE WHEN (SELECT Status FROM payments WHERE Id=NEW.PaymentRowId)='refunded' THEN 'refunded' ELSE Status END,
- UpdatedAt=CURRENT_TIMESTAMP WHERE Id=NEW.BusinessId;
- UPDATE product_variants SET StockQty=StockQty+(SELECT COALESCE(SUM(Qty),0) FROM order_items WHERE OrderId=NEW.BusinessId AND VariantId=product_variants.Id),UpdatedAt=CURRENT_TIMESTAMP
- WHERE Id IN (SELECT VariantId FROM order_items WHERE OrderId=NEW.BusinessId)
- AND EXISTS(SELECT 1 FROM products p WHERE p.Id=product_variants.ProductId AND p.TrackInventory=1)
- AND json_extract(NEW.IntentJson,'$.restock')=1
- AND NOT EXISTS(SELECT 1 FROM inventory_movements WHERE Reference=(SELECT Reference FROM orders WHERE Id=NEW.BusinessId) AND Reason='refund');
- INSERT INTO inventory_movements(VariantId,ProductId,Delta,Reason,Reference,Note,CreatedBy)
- SELECT i.VariantId,i.ProductId,i.Qty,'refund',o.Reference,'Restocked on confirmed refund',NEW.CreatedBy
- FROM order_items i JOIN products p ON p.Id=i.ProductId JOIN orders o ON o.Id=i.OrderId
- WHERE i.OrderId=NEW.BusinessId AND p.TrackInventory=1 AND json_extract(NEW.IntentJson,'$.restock')=1
- AND NOT EXISTS(SELECT 1 FROM inventory_movements WHERE Reference=o.Reference AND Reason='refund');
- INSERT INTO order_events(OrderId,Type,Message,DataJson,CreatedBy)
- VALUES(NEW.BusinessId,'refund','Confirmed refund: '||NEW.AmountCents||' cents',json_object('requestKey',NEW.RequestKey,'refundId',NEW.ProviderRefundId,'reason',json_extract(NEW.IntentJson,'$.reason')),NEW.CreatedBy);
- UPDATE refund_requests SET Applied=1,UpdatedAt=CURRENT_TIMESTAMP WHERE Id=NEW.Id;
-END;
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'settings') AND name=N'ux_settings_0')
+CREATE UNIQUE INDEX [ux_settings_0] ON [settings] ([Key]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'categories') AND name=N'ix_categories_parent')
+CREATE INDEX [ix_categories_parent] ON [categories] ([ParentId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'categories') AND name=N'ux_categories_1')
+CREATE UNIQUE INDEX [ux_categories_1] ON [categories] ([Slug]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'products') AND name=N'ix_products_name')
+CREATE INDEX [ix_products_name] ON [products] ([Name]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'products') AND name=N'ix_products_status')
+CREATE INDEX [ix_products_status] ON [products] ([Status]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'products') AND name=N'ix_products_category')
+CREATE INDEX [ix_products_category] ON [products] ([CategoryId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'products') AND name=N'ux_products_3')
+CREATE UNIQUE INDEX [ux_products_3] ON [products] ([Slug]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'product_options') AND name=N'ix_options_product')
+CREATE INDEX [ix_options_product] ON [product_options] ([ProductId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'product_option_values') AND name=N'ix_option_values_option')
+CREATE INDEX [ix_option_values_option] ON [product_option_values] ([OptionId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'product_variants') AND name=N'ix_variants_sku')
+CREATE INDEX [ix_variants_sku] ON [product_variants] ([Sku]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'product_variants') AND name=N'ix_variants_product')
+CREATE INDEX [ix_variants_product] ON [product_variants] ([ProductId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'product_images') AND name=N'ix_images_product')
+CREATE INDEX [ix_images_product] ON [product_images] ([ProductId], [Position]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'inventory_movements') AND name=N'ix_movements_variant')
+CREATE INDEX [ix_movements_variant] ON [inventory_movements] ([VariantId], [CreatedAt]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'customers') AND name=N'ix_customers_email')
+CREATE INDEX [ix_customers_email] ON [customers] ([Email]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'customers') AND name=N'ux_customers_1')
+CREATE UNIQUE INDEX [ux_customers_1] ON [customers] ([IdpUserId]) WHERE [IdpUserId] IS NOT NULL;
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'carts') AND name=N'ix_carts_user')
+CREATE INDEX [ix_carts_user] ON [carts] ([IdpUserId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'carts') AND name=N'ux_carts_1')
+CREATE UNIQUE INDEX [ux_carts_1] ON [carts] ([Token]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'cart_items') AND name=N'ix_cart_items_cart')
+CREATE INDEX [ix_cart_items_cart] ON [cart_items] ([CartId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'cart_items') AND name=N'ux_cart_items_1')
+CREATE UNIQUE INDEX [ux_cart_items_1] ON [cart_items] ([CartId], [VariantId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'orders') AND name=N'ix_orders_created')
+CREATE INDEX [ix_orders_created] ON [orders] ([CreatedAt]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'orders') AND name=N'ix_orders_status')
+CREATE INDEX [ix_orders_status] ON [orders] ([Status]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'orders') AND name=N'ix_orders_user')
+CREATE INDEX [ix_orders_user] ON [orders] ([IdpUserId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'orders') AND name=N'ix_orders_email')
+CREATE INDEX [ix_orders_email] ON [orders] ([Email]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'orders') AND name=N'ux_orders_4')
+CREATE UNIQUE INDEX [ux_orders_4] ON [orders] ([Reference]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'order_items') AND name=N'ix_order_items_order')
+CREATE INDEX [ix_order_items_order] ON [order_items] ([OrderId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'order_events') AND name=N'ix_order_events_order')
+CREATE INDEX [ix_order_events_order] ON [order_events] ([OrderId], [CreatedAt]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'payments') AND name=N'ix_payments_connect')
+CREATE INDEX [ix_payments_connect] ON [payments] ([ConnectPaymentId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'payments') AND name=N'ix_payments_order')
+CREATE INDEX [ix_payments_order] ON [payments] ([OrderId]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'payments') AND name=N'ux_payments_2')
+CREATE UNIQUE INDEX [ux_payments_2] ON [payments] ([IdempotencyKey]) WHERE [IdempotencyKey] IS NOT NULL;
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'pages') AND name=N'ux_pages_0')
+CREATE UNIQUE INDEX [ux_pages_0] ON [pages] ([Slug]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'contact_messages') AND name=N'ix_contact_status')
+CREATE INDEX [ix_contact_status] ON [contact_messages] ([Status], [CreatedAt]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'refund_requests') AND name=N'ix_refund_business')
+CREATE INDEX [ix_refund_business] ON [refund_requests] ([BusinessId], [Id]);
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'refund_requests') AND name=N'ux_refund_provider')
+CREATE UNIQUE INDEX [ux_refund_provider] ON [refund_requests] ([PaymentId], [ProviderRefundId]) WHERE ProviderRefundId IS NOT NULL;
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'refund_requests') AND name=N'ux_refund_unresolved')
+CREATE UNIQUE INDEX [ux_refund_unresolved] ON [refund_requests] ([BusinessId]) WHERE Status <> 'succeeded' AND Status <> 'failed';
+
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'refund_requests') AND name=N'ux_refund_requests_3')
+CREATE UNIQUE INDEX [ux_refund_requests_3] ON [refund_requests] ([RequestKey]);
+SET IDENTITY_INSERT [settings] ON;
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=1)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (1, N'store_name', N'Cloudgate Shop', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=2)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (2, N'currency', N'ZAR', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=3)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (3, N'tax_rate_bp', N'1500', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=4)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (4, N'prices_include_tax', N'1', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=5)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (5, N'shipping_flat_cents', N'9900', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=6)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (6, N'free_shipping_threshold_cents', N'100000', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=7)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (7, N'order_reference_prefix', N'SO-', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=8)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (8, N'order_reference_seed', N'100000', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=9)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (9, N'support_email', N'support@example.com', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=10)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (10, N'store_tagline', N'Considered essentials for everyday life.', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=11)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (11, N'announcement_text', N'Free shipping on orders over R1 000', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=12)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (12, N'announcement_url', N'/shop', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=13)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (13, N'cookie_consent_enabled', N'1', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=14)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (14, N'cookie_consent_text', N'We use cookies to keep your cart, remember your preferences and understand how the store is used.', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=15)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (15, N'contact_phone', N'', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=16)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (16, N'contact_address', N'', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=17)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (17, N'contact_hours', N'Monday to Friday, 9:00-17:00', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=18)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (18, N'social_instagram', N'', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=19)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (19, N'social_facebook', N'', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=20)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (20, N'social_x', N'', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=21)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (21, N'social_tiktok', N'', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=22)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (22, N'footer_note', N'', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=23)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (23, N'theme_primary', N'#18181b', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=24)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (24, N'theme_secondary', N'#4f46e5', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=25)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (25, N'store_icon_url', N'', N'2026-10-26 02:36:42');
+IF NOT EXISTS(SELECT 1 FROM [settings] WHERE [Id]=26)
+INSERT INTO [settings] ([Id], [Key], [Value], [UpdatedAt]) VALUES (26, N'store_description', N'Thoughtfully made pieces, priced honestly, delivered with care.', N'2026-10-26 02:36:42');
+SET IDENTITY_INSERT [settings] OFF;
+SET IDENTITY_INSERT [pages] ON;
+IF NOT EXISTS(SELECT 1 FROM [pages] WHERE [Id]=1)
+IF NOT EXISTS(SELECT 1 FROM [pages] WHERE [Id]=1)
+INSERT INTO [pages] ([Id], [Slug], [Title], [Summary], [BodyMarkdown], [Status], [ShowInNav], [ShowInFooter], [Position], [IsSystem], [CreatedAt], [UpdatedAt], [ShowContact]) VALUES (1, N'about', N'About us', N'Who we are and why we make what we make.', N'## Our story
+
+Write a few paragraphs about the people behind the store, what you make or curate, and what you care about. Customers buy from people, not catalogues.
+
+## What we stand for
+
+- **Quality first.** Describe how you choose or make your products.
+- **Honest pricing.** Say something about value.
+- **Real support.** Explain how customers can reach you.', N'published', 1, 1, 10, 1, N'2026-10-26 02:36:42', N'2026-10-26 02:36:42', 1);
+IF NOT EXISTS(SELECT 1 FROM [pages] WHERE [Id]=2)
+IF NOT EXISTS(SELECT 1 FROM [pages] WHERE [Id]=2)
+INSERT INTO [pages] ([Id], [Slug], [Title], [Summary], [BodyMarkdown], [Status], [ShowInNav], [ShowInFooter], [Position], [IsSystem], [CreatedAt], [UpdatedAt], [ShowContact]) VALUES (2, N'shipping-returns', N'Shipping & returns', N'Delivery times, costs and how to return something.', N'## Shipping
+
+Orders are dispatched within 1-2 working days. Delivery within South Africa usually takes 2-4 working days with tracking sent by email once your parcel is on its way.
+
+Shipping is a flat rate per order, and free above the threshold shown in your cart.
+
+## Returns
+
+Changed your mind? Contact us within 14 days of delivery. Items must be unused and in their original packaging. Refunds go back to the original card once the return has been received and checked.
+
+## Damaged or wrong items
+
+Send us a photo within 48 hours of delivery and we will sort it out at no cost to you.', N'published', 0, 1, 20, 1, N'2026-10-26 02:36:42', N'2026-10-26 02:36:42', 0);
+IF NOT EXISTS(SELECT 1 FROM [pages] WHERE [Id]=3)
+INSERT INTO [pages] ([Id], [Slug], [Title], [Summary], [BodyMarkdown], [Status], [ShowInNav], [ShowInFooter], [Position], [IsSystem], [CreatedAt], [UpdatedAt], [ShowContact]) VALUES (3, N'terms', N'Terms of service', N'The agreement between you and the store when you buy from us.', N'_Last updated: 2026-10-26_
+
+## 1. About these terms
+
+These terms apply to every order placed through this store. By placing an order you agree to them. Please replace this template with terms reviewed for your business and jurisdiction.
+
+## 2. Orders and payment
+
+An order is accepted when payment has been confirmed and you receive an order confirmation. Prices include VAT unless stated otherwise. Payments are processed securely by our payment provider; we never see or store your card details.
+
+## 3. Delivery
+
+Delivery times are estimates. Risk in the goods passes to you on delivery.
+
+## 4. Returns and refunds
+
+See our Shipping & returns page for how returns work. Your statutory rights are not affected.
+
+## 5. Liability
+
+To the extent permitted by law, our liability for any claim is limited to the amount you paid for the order concerned.
+
+## 6. Contact
+
+Questions about these terms? Use the Contact page.', N'published', 0, 1, 30, 1, N'2026-10-26 02:36:42', N'2026-10-26 02:36:42', 0);
+IF NOT EXISTS(SELECT 1 FROM [pages] WHERE [Id]=4)
+INSERT INTO [pages] ([Id], [Slug], [Title], [Summary], [BodyMarkdown], [Status], [ShowInNav], [ShowInFooter], [Position], [IsSystem], [CreatedAt], [UpdatedAt], [ShowContact]) VALUES (4, N'privacy', N'Privacy policy', N'What we collect, why, and how we look after it.', N'_Last updated: 2026-10-26_
+
+## What we collect
+
+When you order we collect your name, email address, phone number and delivery address so we can fulfil and support your order. If you create an account, your login is handled by our identity provider.
+
+## How we use it
+
+- To process, deliver and support your orders.
+- To send order confirmations and shipping updates.
+- To send marketing email only if you opted in; every email has an unsubscribe link.
+
+## Cookies
+
+We use a small number of cookies and local storage entries to keep your cart, remember your preferences and understand how the store is used. See the cookie notice for details.
+
+## Payments
+
+Card payments are processed by our payment provider. We never receive your full card number.
+
+## Your rights
+
+You can ask us to show, correct or delete the personal information we hold about you. Contact us and we will respond within a reasonable time.', N'published', 0, 1, 40, 1, N'2026-10-26 02:36:42', N'2026-10-26 02:36:42', 0);
+IF NOT EXISTS(SELECT 1 FROM [pages] WHERE [Id]=5)
+IF NOT EXISTS(SELECT 1 FROM [pages] WHERE [Id]=5)
+INSERT INTO [pages] ([Id], [Slug], [Title], [Summary], [BodyMarkdown], [Status], [ShowInNav], [ShowInFooter], [Position], [IsSystem], [CreatedAt], [UpdatedAt], [ShowContact]) VALUES (5, N'faq', N'Frequently asked questions', N'Quick answers about ordering, delivery and returns.', N'## Do I need an account to order?
+
+No. You can check out as a guest with just an email address. Creating an account lets you see your order history.
+
+## How do I track my order?
+
+When your order ships you receive an email with the carrier and tracking number. Signed-in customers can also see it under Your orders.
+
+## Which payment methods do you accept?
+
+All major debit and credit cards through our secure payment page.
+
+## Can I change or cancel an order?
+
+Contact us as soon as possible. Orders that have not shipped can usually be changed or cancelled.', N'published', 0, 1, 50, 1, N'2026-10-26 02:36:42', N'2026-10-26 02:36:42', 0);
+SET IDENTITY_INSERT [pages] OFF;
+
+IF OBJECT_ID(N'ck_refund_requests_0',N'C') IS NULL ALTER TABLE [refund_requests] ADD CONSTRAINT [ck_refund_requests_0] CHECK ([Method] IN ('card', 'cash'));
+
+IF OBJECT_ID(N'ck_refund_requests_1',N'C') IS NULL ALTER TABLE [refund_requests] ADD CONSTRAINT [ck_refund_requests_1] CHECK ([AmountCents] > 0 OR ([AmountCents] = 0 AND [Status] = 'failed'));
+
+IF OBJECT_ID(N'ck_refund_requests_2',N'C') IS NULL ALTER TABLE [refund_requests] ADD CONSTRAINT [ck_refund_requests_2] CHECK (ISJSON([IntentJson])=1);
+
+IF OBJECT_ID(N'ck_refund_requests_3',N'C') IS NULL ALTER TABLE [refund_requests] ADD CONSTRAINT [ck_refund_requests_3] CHECK (ISJSON([LinesJson])=1);
+
+IF OBJECT_ID(N'ck_refund_requests_4',N'C') IS NULL ALTER TABLE [refund_requests] ADD CONSTRAINT [ck_refund_requests_4] CHECK ([Status] IN ('submitting', 'pending', 'succeeded', 'failed', 'reconciliation_required'));
+
+EXEC(N'CREATE OR ALTER TRIGGER [refund_claim_guard] ON [refund_requests] AFTER INSERT AS
+BEGIN SET NOCOUNT ON; SET XACT_ABORT ON;
+DECLARE @Id INT, @RequestKey NVARCHAR(254), @BusinessId BIGINT, @Method NVARCHAR(MAX), @AmountCents BIGINT, @Currency NVARCHAR(MAX), @PaymentRowId BIGINT, @PaymentId BIGINT, @IntentJson NVARCHAR(MAX), @LinesJson NVARCHAR(MAX), @SnapshotRefunded BIGINT, @Status NVARCHAR(MAX), @ProviderRefundId NVARCHAR(254), @Applied BIGINT, @ShiftId BIGINT, @CreatedBy NVARCHAR(MAX), @RawJson NVARCHAR(MAX), @CreatedAt DATETIME2(3), @UpdatedAt DATETIME2(3);
+DECLARE refund_rows CURSOR LOCAL FAST_FORWARD FOR SELECT i.[Id], i.[RequestKey], i.[BusinessId], i.[Method], i.[AmountCents], i.[Currency], i.[PaymentRowId], i.[PaymentId], i.[IntentJson], i.[LinesJson], i.[SnapshotRefunded], i.[Status], i.[ProviderRefundId], i.[Applied], i.[ShiftId], i.[CreatedBy], i.[RawJson], i.[CreatedAt], i.[UpdatedAt] FROM inserted i WHERE i.[Status]<>''failed'';
+OPEN refund_rows; FETCH NEXT FROM refund_rows INTO @Id, @RequestKey, @BusinessId, @Method, @AmountCents, @Currency, @PaymentRowId, @PaymentId, @IntentJson, @LinesJson, @SnapshotRefunded, @Status, @ProviderRefundId, @Applied, @ShiftId, @CreatedBy, @RawJson, @CreatedAt, @UpdatedAt;
+WHILE @@FETCH_STATUS=0 BEGIN
+IF NOT EXISTS(SELECT 1 FROM payments AS p JOIN orders AS o ON o.Id = p.OrderId WHERE p.Id = @PaymentRowId AND p.OrderId = @BusinessId AND p.ConnectPaymentId = @PaymentId AND @Method = ''card'' AND p.Status IN (''succeeded'', ''partially_refunded'') AND COALESCE(p.RefundedCents, 0) = @SnapshotRefunded AND @AmountCents <= p.AmountCents - COALESCE(p.RefundedCents, 0) AND UPPER(o.Currency) = @Currency) THROW 50002, N''Payment balance changed. Reload the order before refunding.'', 1;
+FETCH NEXT FROM refund_rows INTO @Id, @RequestKey, @BusinessId, @Method, @AmountCents, @Currency, @PaymentRowId, @PaymentId, @IntentJson, @LinesJson, @SnapshotRefunded, @Status, @ProviderRefundId, @Applied, @ShiftId, @CreatedBy, @RawJson, @CreatedAt, @UpdatedAt;
+END; CLOSE refund_rows; DEALLOCATE refund_rows; END;');
+
+EXEC(N'CREATE OR ALTER TRIGGER [refund_apply] ON [refund_requests] AFTER UPDATE AS
+BEGIN SET NOCOUNT ON; SET XACT_ABORT ON;
+DECLARE @Id INT, @RequestKey NVARCHAR(254), @BusinessId BIGINT, @Method NVARCHAR(MAX), @AmountCents BIGINT, @Currency NVARCHAR(MAX), @PaymentRowId BIGINT, @PaymentId BIGINT, @IntentJson NVARCHAR(MAX), @LinesJson NVARCHAR(MAX), @SnapshotRefunded BIGINT, @Status NVARCHAR(MAX), @ProviderRefundId NVARCHAR(254), @Applied BIGINT, @ShiftId BIGINT, @CreatedBy NVARCHAR(MAX), @RawJson NVARCHAR(MAX), @CreatedAt DATETIME2(3), @UpdatedAt DATETIME2(3);
+DECLARE refund_rows CURSOR LOCAL FAST_FORWARD FOR SELECT i.[Id], i.[RequestKey], i.[BusinessId], i.[Method], i.[AmountCents], i.[Currency], i.[PaymentRowId], i.[PaymentId], i.[IntentJson], i.[LinesJson], i.[SnapshotRefunded], i.[Status], i.[ProviderRefundId], i.[Applied], i.[ShiftId], i.[CreatedBy], i.[RawJson], i.[CreatedAt], i.[UpdatedAt] FROM inserted i JOIN deleted d ON d.Id=i.Id WHERE i.[Status]=''succeeded'' AND d.[Applied]=0 AND d.[Status]<>''succeeded'';
+OPEN refund_rows; FETCH NEXT FROM refund_rows INTO @Id, @RequestKey, @BusinessId, @Method, @AmountCents, @Currency, @PaymentRowId, @PaymentId, @IntentJson, @LinesJson, @SnapshotRefunded, @Status, @ProviderRefundId, @Applied, @ShiftId, @CreatedBy, @RawJson, @CreatedAt, @UpdatedAt;
+WHILE @@FETCH_STATUS=0 BEGIN
+IF NOT EXISTS(SELECT 1 FROM payments WHERE Id = @PaymentRowId AND COALESCE(RefundedCents, 0) = @SnapshotRefunded) THROW 50002, N''Refund needs reconciliation: local payment balance changed.'', 1;
+UPDATE payments SET RefundedCents = COALESCE(RefundedCents, 0) + @AmountCents, Status = CASE WHEN COALESCE(RefundedCents, 0) + @AmountCents >= AmountCents THEN ''refunded'' ELSE ''partially_refunded'' END, RawJson = @RawJson, UpdatedAt = GETDATE() WHERE Id = @PaymentRowId;
+UPDATE orders SET PaymentStatus = (SELECT Status FROM payments WHERE Id = @PaymentRowId), Status = CASE WHEN (SELECT Status FROM payments WHERE Id = @PaymentRowId) = ''refunded'' THEN ''refunded'' ELSE Status END, UpdatedAt = GETDATE() WHERE Id = @BusinessId;
+UPDATE product_variants SET StockQty = StockQty + (SELECT COALESCE(SUM(Qty), 0) FROM order_items WHERE OrderId = @BusinessId AND VariantId = product_variants.Id), UpdatedAt = GETDATE() WHERE Id IN (SELECT VariantId FROM order_items WHERE OrderId = @BusinessId) AND EXISTS(SELECT 1 FROM products AS p WHERE p.Id = product_variants.ProductId AND p.TrackInventory = 1) AND CASE JSON_VALUE(@IntentJson, ''$.restock'') WHEN ''true'' THEN 1 ELSE 0 END = 1 AND NOT EXISTS(SELECT 1 FROM inventory_movements WHERE Reference = (SELECT Reference FROM orders WHERE Id = @BusinessId) AND Reason = ''refund'');
+INSERT INTO inventory_movements (VariantId, ProductId, Delta, Reason, Reference, Note, CreatedBy) SELECT i.VariantId, i.ProductId, i.Qty, ''refund'', o.Reference, ''Restocked on confirmed refund'', @CreatedBy FROM order_items AS i JOIN products AS p ON p.Id = i.ProductId JOIN orders AS o ON o.Id = i.OrderId WHERE i.OrderId = @BusinessId AND p.TrackInventory = 1 AND CASE JSON_VALUE(@IntentJson, ''$.restock'') WHEN ''true'' THEN 1 ELSE 0 END = 1 AND NOT EXISTS(SELECT 1 FROM inventory_movements WHERE Reference = o.Reference AND Reason = ''refund'');
+INSERT INTO order_events (OrderId, Type, Message, DataJson, CreatedBy) VALUES (@BusinessId, ''refund'', CONCAT(''Confirmed refund: '', @AmountCents, '' cents''), JSON_OBJECT(''requestKey'': @RequestKey, ''refundId'': @ProviderRefundId, ''reason'': ISNULL(JSON_QUERY(@IntentJson, ''$.reason''), JSON_VALUE(@IntentJson, ''$.reason''))), @CreatedBy);
+UPDATE refund_requests SET Applied = 1, UpdatedAt = GETDATE() WHERE Id = @Id;
+FETCH NEXT FROM refund_rows INTO @Id, @RequestKey, @BusinessId, @Method, @AmountCents, @Currency, @PaymentRowId, @PaymentId, @IntentJson, @LinesJson, @SnapshotRefunded, @Status, @ProviderRefundId, @Applied, @ShiftId, @CreatedBy, @RawJson, @CreatedAt, @UpdatedAt;
+END; CLOSE refund_rows; DEALLOCATE refund_rows; END;');

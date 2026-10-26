@@ -1,6 +1,6 @@
 """Durable refund plans shared by the Shop/POS refund workflows.
 
-No provider calls here: claim commits before Wallet, and SQLite triggers apply a
+No provider calls here: claim commits before Wallet, and SQL Server triggers apply a
 confirmed result atomically. Keep the POS copy identical (enforced by tests).
 """
 import json
@@ -15,7 +15,7 @@ def encode(value):
 def quote(value):
     if value is None:
         return 'NULL'
-    return "'" + str(value).replace("'", "''") + "'"
+    return 'CONVERT(nvarchar(max),0x'+str(value).encode('utf-16le').hex()+')'
 
 
 def require(test, message):
@@ -82,16 +82,15 @@ def read_sql(app, data, user):
     payment_columns = ['Id', 'AmountCents', 'ConnectPaymentId', 'Status'] + (['RefundedCents'] if app == 'shop' else ['Method'])
 
     def array(table, columns, where):
-        fields = ','.join(quote(c) + ',' + c for c in columns)
-        return '(SELECT json_group_array(json_object(' + fields + ')) FROM ' + table + ' WHERE ' + where + ')'
+        return "COALESCE((SELECT "+','.join('['+c+']' for c in columns)+' FROM '+table+' WHERE '+where+" FOR JSON PATH,INCLUDE_NULL_VALUES),N'[]')"
 
     result = 'SELECT ' + array(entity, columns, 'Id=' + str(bid)) + ' AS EntityJson,'
     result += array(items, item_columns, fk + '=' + str(bid)) + ' AS ItemsJson,'
     result += array(payments, payment_columns, fk + '=' + str(bid)) + ' AS PaymentsJson,'
-    result += '(SELECT json_group_array(json_object(' + ','.join(quote(c) + ',' + c for c in REQUEST_COLUMNS) + ')) FROM refund_requests WHERE BusinessId=' + str(bid) + ') AS RequestsJson'
+    result += array('refund_requests',REQUEST_COLUMNS,'BusinessId='+str(bid))+' AS RequestsJson'
     if app == 'pos':
-        result += ',(SELECT json_group_object(Key,Value) FROM settings) AS SettingsJson'
-        result += ',' + array('shifts', ['Id', 'Status'], 'Status=\'open\' AND TellerUserId=' + str(integer(user['Id']))) + ' AS ShiftsJson'
+        result += ",COALESCE((SELECT [Value] FROM settings WHERE [Key]='require_shift'),'1') AS RequireShift"
+        result += ',' + array('shifts', ['Id', 'Status'], "Status='open' AND TellerUserId=" + str(integer(user['Id']))) + ' AS ShiftsJson'
         result += ',' + array('refunds', ['AmountCents', 'Method', 'ConnectRefundId'], 'SaleId=' + str(bid) + " AND Status='completed'") + ' AS LegacyJson'
     return result + ';'
 
@@ -125,9 +124,8 @@ def claim_sql(app, data, user, loaded):
         # A tombstone races atomically with a delayed claim. If the claim won,
         # preserve it; otherwise the original key can never submit a payment.
         spec = intent(app, data)
-        return ("BEGIN IMMEDIATE;\nINSERT INTO refund_requests(RequestKey,BusinessId,Method,AmountCents,Currency,IntentJson,SnapshotRefunded,Status,CreatedBy) VALUES (" +
-                ','.join(quote(v) for v in [key,bid,spec['method'],0,str(entity['Currency']).upper(),encode(spec),0,'failed',str(user['Id'])]) +
-                ") ON CONFLICT(RequestKey) DO NOTHING;\nCOMMIT;\n" + request_select(bid,key))
+        fields=dict(RequestKey=key,BusinessId=bid,Method=spec['method'],AmountCents=0,Currency=str(entity['Currency']).upper(),IntentJson=encode(spec),SnapshotRefunded=0,Status='failed',CreatedBy=str(user['Id']))
+        return transaction(claim_insert(fields,check_intent=False))+request_select(bid,key)
     require(op == 'refund', 'Refund request not found. Retry the original request with its original details.')
     spec = intent(app, data)
     payments = [p for p in rows(snapshot.get('PaymentsJson')) if p['Status'] in ('succeeded', 'partially_refunded')]
@@ -182,14 +180,14 @@ def claim_sql(app, data, user, loaded):
             fields.update(PaymentRowId=payment['Id'], PaymentId=payment['ConnectPaymentId'])
         else:
             shifts = rows(snapshot.get('ShiftsJson'))
-            settings = json.loads(snapshot.get('SettingsJson') or '{}')
+            settings = {'require_shift':snapshot.get('RequireShift','1')}
             require(shifts or (admin and data.get('backOffice') is True) or settings.get('require_shift') in ('0', 'false'), 'Open a shift before recording a cash refund.')
             fields['ShiftId'] = shifts[0]['Id'] if shifts else None
     fields['AmountCents'] = amount
-    sql = 'BEGIN IMMEDIATE;\nINSERT INTO refund_requests (' + ','.join(fields) + ') VALUES (' + ','.join(quote(v) for v in fields.values()) + ') ON CONFLICT(RequestKey) DO NOTHING;\n'
+    sql = claim_insert(fields)
     if spec['method'] == 'cash':
         sql += "UPDATE refund_requests SET Status='succeeded' WHERE RequestKey=" + quote(key) + " AND Status='submitting';\n"
-    return sql + 'COMMIT;\n' + request_select(bid, key)
+    return transaction(sql) + request_select(bid, key)
 
 
 def apply_sql(app, request_row, provider):
@@ -204,8 +202,23 @@ def apply_sql(app, request_row, provider):
     rid = str(provider.get('RefundId') or '') or None
     require(status != 'succeeded' or rid, 'Confirmed refund is missing its provider reference.')
     require(not r.get('ProviderRefundId') or r['ProviderRefundId'] == rid, 'Wallet provider refund reference changed.')
-    return ('BEGIN IMMEDIATE;\nUPDATE refund_requests SET Status=' + quote(status) + ',ProviderRefundId=COALESCE(' + quote(rid) + ',ProviderRefundId),RawJson=' + quote(encode(provider)) +
-            ',UpdatedAt=CURRENT_TIMESTAMP WHERE RequestKey=' + quote(r['RequestKey']) + " AND Status NOT IN ('succeeded','failed');\nCOMMIT;\n" + request_select(r['BusinessId'], r['RequestKey']))
+    return transaction('UPDATE refund_requests SET Status=' + quote(status) + ',ProviderRefundId=COALESCE(' + quote(rid) + ',ProviderRefundId),RawJson=' + quote(encode(provider)) +
+            ',UpdatedAt=SYSUTCDATETIME() WHERE RequestKey=' + quote(r['RequestKey']) + " AND Status NOT IN ('succeeded','failed');") + request_select(r['BusinessId'], r['RequestKey'])
+
+
+def transaction(sql):
+    return ('SET NOCOUNT ON;SET XACT_ABORT ON;BEGIN TRY BEGIN TRANSACTION;\n'+sql+
+            '\nCOMMIT;END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK;THROW;END CATCH;\n')
+
+
+def claim_insert(fields,check_intent=True):
+    predicate='RequestKey='+quote(fields['RequestKey'])
+    sql=''
+    if check_intent:
+        sql=("IF EXISTS(SELECT 1 FROM refund_requests WITH(UPDLOCK,HOLDLOCK) WHERE "+predicate+
+             ' AND (BusinessId<>'+str(fields['BusinessId'])+' OR IntentJson<>'+quote(fields['IntentJson'])+
+             ")) THROW 50001,'This refund key is already bound to a different request.',1;\n")
+    return sql+'INSERT INTO refund_requests ('+','.join('['+k+']' for k in fields)+') SELECT '+','.join(quote(v) for v in fields.values())+' WHERE NOT EXISTS(SELECT 1 FROM refund_requests WITH(UPDLOCK,HOLDLOCK) WHERE '+predicate+');\n'
 
 
 def response(value, key=None):

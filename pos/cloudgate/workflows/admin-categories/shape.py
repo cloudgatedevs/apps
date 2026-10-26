@@ -1,1 +1,1 @@
-return out({'items': rows_of('''${Run}''')})
+return out({'items': rows_of(value('Run'))})

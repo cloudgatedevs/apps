@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createServer } from 'vite';
@@ -17,7 +17,7 @@ const apiOrigin = 'http://127.0.0.1:3493', origin = 'http://127.0.0.1:3492';
 const appId = '12345678-1234-4234-8234-123456789abc';
 const metadata = JSON.parse(await fs.readFile(path.join(root, 'template.json'), 'utf8'));
 const sdkVersion = JSON.parse(await fs.readFile(new URL(import.meta.resolve('@cloudgatedevs/cloudgate-client-react/package.json')), 'utf8')).version;
-const python = spawn('python', ['-B', '-X', 'utf8', 'cloudgate/local_server.py', '--db', path.join(directory, 'events.sqlite'), '--port', '3493'], { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+const python = spawn('python', ['-B', '-X', 'utf8', '../test_support/ui_server.py', 'events', '--record', path.join(directory, 'sql-server.json'), '--data-dir', directory, '--port', '3493'], { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
 let pythonOutput = '';
 python.stdout.on('data', chunk => { pythonOutput += chunk; });
 python.stderr.on('data', chunk => { pythonOutput += chunk; });
@@ -126,7 +126,7 @@ try {
   await attendee.getByRole('button', { name: 'Join the waitlist', exact: true }).click();
   await attendee.getByText('Saved successfully.', { exact: true }).waitFor();
   await attendee.goto(origin + '/account/profile');
-  await attendee.getByRole('heading', { name: 'Profile', exact: true }).waitFor();
+  await attendee.getByRole('heading', { name: 'My profile', exact: true }).waitFor();
   assert.equal(await attendee.locator('.events-ui').count(), 0);
   await attendee.goto(origin + '/admin');
   await attendee.getByRole('heading', { name: 'Back office access required' }).waitFor();
@@ -225,9 +225,12 @@ try {
       rolePermissions: grants ? BACKOFFICE_PERMISSION_KEYS.map(key => ({ key, value: 'true' })) : [] });
     if (pathname.includes('/notifications/')) return reply(pathname.endsWith('/unread-count') ? { unreadCount: 0 } : { items: [], totalCount: 0 });
     if (pathname.endsWith('/profile/cloudgate-link')) return reply({ linked: false, available: true });
+    if (pathname.endsWith('/agents/overview')) return route.fulfill({ status: 403, json: { code: 'agents-link-required', message: 'Link a Cloudgate account to use agents.' } });
+    if (pathname.endsWith('/wallet/status')) return reply({ linked: false, production: false });
     if (pathname.endsWith('/files')) return reply({ items: [], total: 0 });
     if (pathname.endsWith('/admin/appearance/details')) return reply({ values, revision: appId });
     if (pathname.includes('/admin/workflow-logs/')) return reply({ items: [], totalCount: 0, endpoints: [], stats: {} });
+    if (pathname.endsWith('/developer-workspace/sdk-status')) return reply({updateAvailable:false});
     throw new Error('Unexpected platform endpoint: ' + pathname);
   });
   await connected.route('https://hub.example.invalid/**', route => route.fulfill({ contentType: 'text/html', body: '<h1>Hosted sign in</h1>' }));
@@ -238,7 +241,7 @@ try {
   assert.equal(refreshes, 1, 'a workflow 401 should refresh the SDK session once and retry');
   assert.equal(new URL(live.url()).search, '', 'SDK consumes and removes callback tokens');
   assert.equal(await live.evaluate(() => localStorage.getItem('idp_access_token')), refreshedToken);
-  for (const [route, title] of [['profile', 'Profile'], ['media', 'Media server'], ['appearance', 'Appearance'], ['logs', 'Logs'], ['settings', 'Settings']]) {
+  for (const [route, title] of [['profile', 'My profile'], ['media', 'Media server'], ['appearance', 'Appearance'], ['logs', 'Logs'], ['settings', 'Settings']]) {
     const before = calls.filter(call => call === 'workspace').length;
     await live.goto(origin + '/admin/' + route);
     await live.getByRole('heading', { name: title, exact: true }).waitFor();
@@ -246,7 +249,7 @@ try {
     assert.equal(calls.filter(call => call === 'workspace').length, before, 'SDK pages must not load the Events workspace');
   }
   await live.goto(origin + '/account/profile');
-  await live.getByRole('heading', { name: 'Profile', exact: true }).waitFor();
+  await live.getByRole('heading', { name: 'My profile', exact: true }).waitFor();
   grants = false;
   const before = calls.filter(call => call === 'workspace').length;
   await live.goto(origin + '/admin/events');
@@ -282,5 +285,7 @@ try {
 } finally {
   await browser.close(); await server?.close();
   python.kill(); await new Promise(resolve => python.exitCode !== null ? resolve() : python.once('exit', resolve));
+  const cleanup = spawnSync('python', ['-X','utf8','../test_support/ui_server.py','events','--record',path.join(directory,'sql-server.json'),'--cleanup'], {cwd:root,windowsHide:true,encoding:'utf8'});
+  if (cleanup.status !== 0) throw new Error('SQL Server fixture cleanup failed: '+cleanup.stderr);
   if (path.dirname(directory) === os.tmpdir() && path.basename(directory).startsWith('events-sdk-')) await fs.rm(directory, { recursive: true, force: true });
 }

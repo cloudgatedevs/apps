@@ -9,7 +9,6 @@ from a live MCP export in refund-node-prototypes.json. Run after editing refunds
 """
 import copy
 import json
-import sqlite3
 import sys
 import uuid
 from pathlib import Path
@@ -25,30 +24,16 @@ REFUND_ROUTES = ['refunds', 'admin-orders', 'payment-status', 'payment-reconcile
 
 def main(routes=None):
     split_schema()
-    # The App Store updater splits at a semicolon followed by a newline. Keep
-    # each trigger on one physical line so an update executes its whole body.
-    schema_path = APP / '.template/schema.sql'
-    parts, trigger = [], ''
-    for line in schema_path.read_text(encoding='utf-8').splitlines():
-        if trigger or line.startswith('CREATE TRIGGER'):
-            trigger += line + '\n'
-            if sqlite3.complete_statement(trigger):
-                parts.append(' '.join(trigger.splitlines()))
-                trigger = ''
-        else:
-            parts.append(line)
-    if trigger:
-        raise ValueError('Incomplete schema trigger')
-    schema_path.write_text('\n'.join(parts) + '\n', encoding='utf-8')
     bundle_path = APP / '.template/workflow-template.json'
     bundle = json.loads(bundle_path.read_text(encoding='utf-8'))
     template = bundle['Projects'][0]['Template']
+    template['Keys'] = json.loads((ROOT/'email-selectors.json').read_text(encoding='utf8'))
     config = json.loads((ROOT / 'deploy.config.json').read_text(encoding='utf-8'))
     prototypes = json.loads((ROOT / 'refund-node-prototypes.json').read_text(encoding='utf-8'))
     types = {'function': 1, 'condition': 4, 'database': 5, 'idp': 9, 'walletpayment': 11, 'websocket': 8}
     by_type = {n['NodeType']: n for n in prototypes['Nodes']}
     by_type[8] = next(n for n in template['Nodes'] if n['NodeType'] == 8)
-    routes = list(routes or REFUND_ROUTES)
+    routes = list(routes or sorted(p.parent.name for p in (ROOT/'workflows').glob('*/workflow.json')))
     unknown = [r for r in routes if not (ROOT / 'workflows' / r / 'workflow.json').exists()]
     if unknown:
         raise SystemExit('Unknown workflow folder(s): ' + ', '.join(unknown))
@@ -98,6 +83,8 @@ def main(routes=None):
         graphs.append(dict(Endpoint=endpoint, Nodes=nodes))
     schema = (APP / '.template/schema.sql').read_text(encoding='utf-8')
     for db in template['Databases']:
+        db.update(Type=3,SelfHosted=False,Server='',Port=1433,Database='',Username='',Password='')
+        db.pop('Tables',None)
         db['SQLScript'] = schema
         db['SQLScriptProd'] = schema
     bundle_path.write_text(json.dumps(bundle, indent=2) + '\n', encoding='utf-8')

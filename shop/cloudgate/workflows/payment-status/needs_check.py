@@ -1,7 +1,4 @@
-# Payment Status / NeedsCheck — only ask the wallet while the payment is genuinely undecided.
-# Condition nodes must return a Python bool: a string such as 'True' is serialised with quotes
-# and the engine then falls through to the negative branch.
-rows = rows_of('''${LoadOrder}''')
+rows = rows_of(value('LoadOrder'))
 if not rows:
     fail('Order not found.')
 o = rows[0]

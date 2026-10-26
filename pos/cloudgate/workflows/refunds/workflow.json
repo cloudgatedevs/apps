@@ -20,7 +20,7 @@
       "script": "ReadPlan.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "next": "Load"
@@ -37,7 +37,7 @@
       "script": "ClaimPlan.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "next": "ClaimRun"
@@ -54,7 +54,7 @@
       "script": "NeedsWallet.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "positive": "PaymentId",
@@ -66,7 +66,7 @@
       "script": "PaymentId.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "next": "Amount"
@@ -77,7 +77,7 @@
       "script": "Amount.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "next": "RefundKey"
@@ -88,7 +88,7 @@
       "script": "RefundKey.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "next": "Operation"
@@ -99,7 +99,7 @@
       "script": "Operation.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "next": "WalletRefund"
@@ -122,7 +122,7 @@
       "script": "ApplyPlan.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "next": "ApplyRun"
@@ -139,7 +139,7 @@
       "script": "Shape.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "thread": "ShouldNotify"
@@ -149,7 +149,7 @@
       "script": "ShouldNotify.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "type": "condition",
@@ -161,7 +161,7 @@
       "script": "NotifyBody.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "type": "function",
@@ -172,7 +172,7 @@
       "script": "DoneNotify.py",
       "noLib": true,
       "libraries": [
-        "../../refund_bridge.py",
+        "../../workflow_data.py",
         "../../refunds.py"
       ],
       "type": "function"

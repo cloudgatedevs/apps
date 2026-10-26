@@ -1,19 +1,27 @@
-INSERT OR IGNORE INTO settings(key,value) VALUES
-('name','Still Studio'),('tagline','A little time. Entirely yours.'),('description','Thoughtful treatments, talented people, and a moment to slow down. Book your next massage, manicure, or reset.'),('currency','ZAR'),('timezone','Africa/Johannesburg'),('address','12 Kloof Street, Cape Town'),('phone','+27 21 555 0120'),('email','hello@example.com'),('lead_minutes','60'),('horizon_days','90'),('cancel_hours','24'),('hold_minutes','10'),('slot_minutes','15'),('website_url',''),('cancellation_policy','You can reschedule or cancel online up to 24 hours before your appointment. Eligible paid cancellations are reviewed for a refund by our team. Late cancellations: please contact the studio.'),('smtp_host',''),('smtp_port','587'),('smtp_user',''),('smtp_password',''),('smtp_from',''),('smtp_mode','starttls'),('reminder_hours','24');
-INSERT OR IGNORE INTO services(Id,name,category,description,duration,buffer,price,deposit_percent,resource_type,color,intake) VALUES
-(1,'Signature relaxation massage','Massage','Unwind with flowing, restorative massage tailored to your body.',60,15,75000,100,'treatment','#d4ddce','Any areas to avoid, allergies, or preferences we should know about?'),
-(2,'Deep tissue reset','Massage','Focused work to ease tension and help you move more freely.',90,15,105000,100,'treatment','#c9d4c1','Tell us about any injuries or areas requiring special care.'),
-(3,'The everyday manicure','Nails','Beautifully shaped nails, detailed cuticle care, and your perfect polish.',45,10,35000,100,'nail','#efd8cc','Any product allergies?'),
-(4,'Gel manicure','Nails','A glossy, lasting finish. Careful preparation, shaping, and gel colour.',60,10,45000,100,'nail','#dfcbbf','Do you need an existing gel application removed?'),
-(5,'Restore facial','Skin','A personalised cleanse, gentle exfoliation, and deeply hydrating finish.',60,15,68000,100,'treatment','#e2dfc7','Please tell us about skin sensitivities or active products you use.'),
-(6,'Express neck & shoulders','Massage','A focused half-hour to soften the tension of a busy week.',30,10,42000,100,'treatment','#c5d5cf','Any areas to avoid?');
-INSERT OR IGNORE INTO resources(Id,name,type) VALUES(1,'Treatment room 01','treatment'),(2,'Treatment room 02','treatment'),(3,'Nail station 01','nail'),(4,'Nail station 02','nail');
-INSERT OR IGNORE INTO staff(Id,name,title,bio,color,service_ids,hours) VALUES
-(1,'Maya Daniels','Massage & skin therapist','A calming approach and a gift for finding exactly where you hold tension.','#b6c6b2','[1,2,5,6]','{"0":[["09:00","13:00"],["14:00","18:00"]],"1":[["09:00","13:00"],["14:00","18:00"]],"2":[["09:00","13:00"],["14:00","18:00"]],"3":[["09:00","13:00"],["14:00","18:00"]],"4":[["09:00","13:00"],["14:00","18:00"]],"5":[["09:00","14:00"]]}'),
-(2,'Leah Jacobs','Nail artist','Considered details, beautiful colour, and nails that feel like you.','#ddc1b4','[3,4]','{"0":[["09:00","13:00"],["14:00","18:00"]],"1":[["09:00","13:00"],["14:00","18:00"]],"2":[["09:00","13:00"],["14:00","18:00"]],"3":[["09:00","13:00"],["14:00","18:00"]],"4":[["09:00","13:00"],["14:00","18:00"]],"5":[["09:00","14:00"]]}'),
-(3,'Zoe Williams','Wellness therapist','Restorative treatments with a thoughtful, personal touch.','#d6cda9','[1,2,3,4,5,6]','{"0":[["10:00","14:00"],["15:00","19:00"]],"1":[["10:00","14:00"],["15:00","19:00"]],"2":[["10:00","14:00"],["15:00","19:00"]],"3":[["10:00","14:00"],["15:00","19:00"]],"4":[["10:00","14:00"],["15:00","19:00"]],"5":[["09:00","14:00"]]}');
-
--- Preserve the original example photos as per-service data, never as category rules.
-INSERT OR IGNORE INTO service_metadata(service_id,image_url,deleted)
-SELECT Id,CASE Id WHEN 3 THEN '/images/nails.png' WHEN 4 THEN '/images/nails.png' WHEN 5 THEN '/images/facial.png' ELSE '/images/massage.png' END,0 FROM services
-WHERE (Id=1 AND name='Signature relaxation massage') OR (Id=2 AND name='Deep tissue reset') OR (Id=3 AND name='The everyday manicure') OR (Id=4 AND name='Gel manicure') OR (Id=5 AND name='Restore facial') OR (Id=6 AND name='Express neck & shoulders');
+SET IDENTITY_INSERT [services] ON;
+INSERT INTO [services] ([Id], [name], [category], [description], [duration], [buffer], [price], [deposit_percent], [resource_type], [active], [color], [intake]) VALUES (1, N'Signature relaxation massage', N'Massage', N'Unwind with flowing, restorative massage tailored to your body.', 60, 15, 75000, 100, N'treatment', 1, N'#d4ddce', N'Any areas to avoid, allergies, or preferences we should know about?');
+INSERT INTO [services] ([Id], [name], [category], [description], [duration], [buffer], [price], [deposit_percent], [resource_type], [active], [color], [intake]) VALUES (2, N'Deep tissue reset', N'Massage', N'Focused work to ease tension and help you move more freely.', 90, 15, 105000, 100, N'treatment', 1, N'#c9d4c1', N'Tell us about any injuries or areas requiring special care.');
+INSERT INTO [services] ([Id], [name], [category], [description], [duration], [buffer], [price], [deposit_percent], [resource_type], [active], [color], [intake]) VALUES (3, N'The everyday manicure', N'Nails', N'Beautifully shaped nails, detailed cuticle care, and your perfect polish.', 45, 10, 35000, 100, N'nail', 1, N'#efd8cc', N'Any product allergies?');
+INSERT INTO [services] ([Id], [name], [category], [description], [duration], [buffer], [price], [deposit_percent], [resource_type], [active], [color], [intake]) VALUES (4, N'Gel manicure', N'Nails', N'A glossy, lasting finish. Careful preparation, shaping, and gel colour.', 60, 10, 45000, 100, N'nail', 1, N'#dfcbbf', N'Do you need an existing gel application removed?');
+INSERT INTO [services] ([Id], [name], [category], [description], [duration], [buffer], [price], [deposit_percent], [resource_type], [active], [color], [intake]) VALUES (5, N'Restore facial', N'Skin', N'A personalised cleanse, gentle exfoliation, and deeply hydrating finish.', 60, 15, 68000, 100, N'treatment', 1, N'#e2dfc7', N'Please tell us about skin sensitivities or active products you use.');
+INSERT INTO [services] ([Id], [name], [category], [description], [duration], [buffer], [price], [deposit_percent], [resource_type], [active], [color], [intake]) VALUES (6, N'Express neck & shoulders', N'Massage', N'A focused half-hour to soften the tension of a busy week.', 30, 10, 42000, 100, N'treatment', 1, N'#c5d5cf', N'Any areas to avoid?');
+SET IDENTITY_INSERT [services] OFF;
+SET IDENTITY_INSERT [staff] ON;
+INSERT INTO [staff] ([Id], [name], [title], [bio], [color], [service_ids], [hours], [active]) VALUES (1, N'Maya Daniels', N'Massage & skin therapist', N'A calming approach and a gift for finding exactly where you hold tension.', N'#b6c6b2', N'[1,2,5,6]', N'{"0":[["09:00","13:00"],["14:00","18:00"]],"1":[["09:00","13:00"],["14:00","18:00"]],"2":[["09:00","13:00"],["14:00","18:00"]],"3":[["09:00","13:00"],["14:00","18:00"]],"4":[["09:00","13:00"],["14:00","18:00"]],"5":[["09:00","14:00"]]}', 1);
+INSERT INTO [staff] ([Id], [name], [title], [bio], [color], [service_ids], [hours], [active]) VALUES (2, N'Leah Jacobs', N'Nail artist', N'Considered details, beautiful colour, and nails that feel like you.', N'#ddc1b4', N'[3,4]', N'{"0":[["09:00","13:00"],["14:00","18:00"]],"1":[["09:00","13:00"],["14:00","18:00"]],"2":[["09:00","13:00"],["14:00","18:00"]],"3":[["09:00","13:00"],["14:00","18:00"]],"4":[["09:00","13:00"],["14:00","18:00"]],"5":[["09:00","14:00"]]}', 1);
+INSERT INTO [staff] ([Id], [name], [title], [bio], [color], [service_ids], [hours], [active]) VALUES (3, N'Zoe Williams', N'Wellness therapist', N'Restorative treatments with a thoughtful, personal touch.', N'#d6cda9', N'[1,2,3,4,5,6]', N'{"0":[["10:00","14:00"],["15:00","19:00"]],"1":[["10:00","14:00"],["15:00","19:00"]],"2":[["10:00","14:00"],["15:00","19:00"]],"3":[["10:00","14:00"],["15:00","19:00"]],"4":[["10:00","14:00"],["15:00","19:00"]],"5":[["09:00","14:00"]]}', 1);
+SET IDENTITY_INSERT [staff] OFF;
+SET IDENTITY_INSERT [resources] ON;
+INSERT INTO [resources] ([Id], [name], [type], [active]) VALUES (1, N'Treatment room 01', N'treatment', 1);
+INSERT INTO [resources] ([Id], [name], [type], [active]) VALUES (2, N'Treatment room 02', N'treatment', 1);
+INSERT INTO [resources] ([Id], [name], [type], [active]) VALUES (3, N'Nail station 01', N'nail', 1);
+INSERT INTO [resources] ([Id], [name], [type], [active]) VALUES (4, N'Nail station 02', N'nail', 1);
+SET IDENTITY_INSERT [resources] OFF;
+SET IDENTITY_INSERT [service_metadata] ON;
+INSERT INTO [service_metadata] ([Id], [service_id], [image_url], [deleted]) VALUES (1, 1, N'/images/massage.png', 0);
+INSERT INTO [service_metadata] ([Id], [service_id], [image_url], [deleted]) VALUES (2, 2, N'/images/massage.png', 0);
+INSERT INTO [service_metadata] ([Id], [service_id], [image_url], [deleted]) VALUES (3, 3, N'/images/nails.png', 0);
+INSERT INTO [service_metadata] ([Id], [service_id], [image_url], [deleted]) VALUES (4, 4, N'/images/nails.png', 0);
+INSERT INTO [service_metadata] ([Id], [service_id], [image_url], [deleted]) VALUES (5, 5, N'/images/facial.png', 0);
+INSERT INTO [service_metadata] ([Id], [service_id], [image_url], [deleted]) VALUES (6, 6, N'/images/massage.png', 0);
+SET IDENTITY_INSERT [service_metadata] OFF;

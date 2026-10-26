@@ -1,48 +1,31 @@
-# ---- pos shared helpers ------------------------------------------------------------
-# Prepended to every Function/Condition node script by cloudgate/deploy.py. Cloudgate runs
-# each script standalone (CPython via pythonnet) inside a `def main():` wrapper, so nothing
-# here can be imported — it is inlined. Keep it small and dependency-free.
-#
-# Cloudgate substitutes ${key} placeholders as raw text BEFORE the script runs, then doubles
-# any \" it finds (PrepLambda). Consequences for these helpers:
-#   * never write the two characters backslash+quote in a script; use \x22 in regexes.
-#   * JSON pasted into a triple-quoted string arrives with \" intact but \\ collapsed;
-#     load_json() repairs that.
 import json as _json
 import re as _re
 import datetime as _dt
+import uuid as _uuid
 
-def _fix_backslashes(s):
-    # Restore any backslash that is not followed by a valid JSON escape character.
-    return _re.sub(r'\\(?![\x22\\/bfnrtu])', r'\\\\', s)
+def value(name):
+    return _inputs.get(name, '')
 
 def load_json(raw, default=None):
-    """Parse text Cloudgate substituted into the script (a request body, a prior node's output)."""
-    if raw is None:
-        return default
-    if isinstance(raw, (list, dict)):
-        return raw  # already nested JSON (a json(...) column inside json_object)
-    raw = str(raw).strip()
-    if not raw or raw == 'No records found':
+    if isinstance(raw, (dict, list)):
+        return raw
+    if raw is None or raw == 'No records found':
         return default
     try:
-        return _json.loads(raw, strict=False)
-    except Exception:
-        try:
-            return _json.loads(_fix_backslashes(raw), strict=False)
-        except Exception:
-            return default
+        return _json.loads(str(raw))
+    except (ValueError, TypeError):
+        return default
 
 def rows_of(raw):
     """Database node output -> list of row dicts (empty list for 'No records found')."""
     data = load_json(raw, [])
     if isinstance(data, dict):
         return [data]
-    return [r for r in (data or []) if isinstance(r, dict)]
+    return [r for r in data or [] if isinstance(r, dict)]
 
 def body():
     """The JSON request body as a dict ({} when empty or malformed)."""
-    data = load_json("""${body}""", {})
+    data = load_json(value('body'), {})
     return data if isinstance(data, dict) else {}
 
 def op_of(d, default):
@@ -52,14 +35,12 @@ def out(data):
     return _json.dumps(data, ensure_ascii=False, default=str)
 
 def fail(message):
-    # A raised exception becomes an HTTP 400 with this message as the body.
     raise Exception(message)
 
-# ---- SQL fragment builders (SQLite). Values are quoted here; never interpolate raw input.
 def q(v):
     if v is None:
         return 'NULL'
-    return "'" + str(v).replace("'", "''") + "'"
+    return 'CONVERT(nvarchar(max),0x' + str(v).encode('utf-16le').hex() + ')'
 
 def qs(v, max_len=None, default=None):
     """Quoted trimmed string, NULL when empty."""
@@ -97,12 +78,11 @@ def clamp(v, lo, hi, default):
     return max(lo, min(hi, n))
 
 def like(v):
-    """'%term%' ESCAPE clause for LIKE, with wildcards in the term neutralised."""
-    s = str(v).replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_').replace("'", "''")
-    return "'%" + s + "%' ESCAPE '\\'"
+    s = str(v).replace('~', '~~').replace('%', '~%').replace('_', '~_').replace('[', '~[')
+    return q('%' + s + '%') + " ESCAPE '~'"
 
 def slugify(s):
-    s = _re.sub(r'[^a-z0-9]+', '-', str(s or '').lower()).strip('-')
+    s = _re.sub('[^a-z0-9]+', '-', str(s or '').lower()).strip('-')
     return s[:120] or 'item'
 
 def now_sql():
@@ -124,13 +104,12 @@ def cents(v, default=None):
     except Exception:
         return default
 
-# ---- identity helpers. Pass the substituted IdP node output in from the script.
 def idp_user(raw):
     """IdP Authorize (UserInfo output) -> dict or None for anonymous."""
     u = load_json(raw, None)
     if not isinstance(u, dict):
         return None
-    if not (u.get('Id') or u.get('id')) and not u.get('Email'):
+    if not (u.get('Id') or u.get('id')) and (not u.get('Email')):
         return None
     return u
 
@@ -150,7 +129,6 @@ def require_admin(raw):
         fail('Account disabled.')
     return u
 
-
 def require_teller(raw):
     """POS till actions: any signed-in IdP user, whatever their role (the default 'User' role is
     enough). Only the back office is restricted, by require_admin()."""
@@ -167,8 +145,7 @@ def user_id_of(u):
 def display_name(u):
     first = str(u.get('Name') or '').strip()
     last = str(u.get('Surname') or '').strip()
-    # Some IdP profiles keep the full name in Name; do not repeat the surname then.
-    n = first if (last and first.lower().endswith(last.lower())) else ' '.join(x for x in (first, last) if x)
+    n = first if last and first.lower().endswith(last.lower()) else ' '.join((x for x in (first, last) if x))
     return n or str(u.get('Email') or u.get('UserName') or 'teller')
 
 def qty_of(v, default=1.0):

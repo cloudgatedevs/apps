@@ -1,2 +1,2 @@
-r=obj('Shape',{}).get('request')
-return bool(r) and r['Status']=='succeeded'
+r = obj('Shape', {}).get('request')
+return bool(r) and r['Status'] == 'succeeded'

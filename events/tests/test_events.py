@@ -1,4 +1,4 @@
-import json,sqlite3,sys,unittest
+import json,sqlserver,sys,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'cloudgate'))
 from engine import Engine,plan,snapshot_sql
@@ -8,7 +8,7 @@ OTHER=dict(Id='4',Role='User',IsActive=True,Name='Other',Email='other@example.in
 NOW=1800000000
 class EventsTests(unittest.TestCase):
  def setUp(self):
-  self.db=sqlite3.connect(':memory:');self.db.executescript((Path(__file__).resolve().parents[1]/'cloudgate/schema.sql').read_text())
+  self.db=sqlserver.connect();self.db.executescript((Path(__file__).resolve().parents[1]/'cloudgate/schema.sql').read_text())
   self.event=self.runop('event-save',ADMIN,title='Test event',summary='Summary',description='Description',venue='Venue',organiser='Host',starts=NOW+3600,ends=NOW+10800,capacity=3,currency='USD')
   self.tier=self.runop('tier-save',ADMIN,event=self.event['ref'],name='Standard',price=1000,capacity=3)
   self.event=self.runop('event-publish',ADMIN,ref=self.event['ref'],version=self.event['version'])
@@ -80,7 +80,7 @@ class EventsTests(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,'Reverse check-in'):self.runop('refund-prepare',ADMIN,ref=o['ref'],request_key='refund-key-0000001')
  def test_revision_guard_prevents_concurrent_oversell(self):
   snapshot=self.snap();req=dict(op='reserve',tier=self.tier['ref'],quantity=3,attendees=['A','B','C'],request_key='reservation-key-0001');sql1,_=plan(snapshot,req,USER,NOW);sql2,_=plan(snapshot,dict(req,request_key='reservation-key-0002'),OTHER,NOW);self.db.executescript(sql1)
-  with self.assertRaises(sqlite3.IntegrityError):self.db.executescript(sql2)
+  with self.assertRaises(sqlserver.IntegrityError):self.db.executescript(sql2)
   self.db.rollback();self.assertEqual(len(self.all('order')),1)
  def test_sql_and_interpolation_literals(self):
   self.runop('settings',ADMIN,values={'name':"O'Reilly ${body} ; DROP TABLE entities;"});self.assertEqual(self.runop('catalog')['settings']['name'],"O'Reilly ${body} ; DROP TABLE entities;")

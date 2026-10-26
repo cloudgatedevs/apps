@@ -1,13 +1,10 @@
-# Admin Pages — build SQL. Requires IdP admin.
-require_admin('''${IdpAuth}''')
+require_admin(value('IdpAuth'))
 d = body()
 op = op_of(d, 'list')
-COLS = "Id, Slug, Title, Summary, BodyMarkdown, Status, ShowInNav, ShowInFooter, ShowContact, Position, IsSystem, CreatedAt, UpdatedAt"
-
+COLS = 'Id, Slug, Title, Summary, BodyMarkdown, Status, ShowInNav, ShowInFooter, ShowContact, Position, IsSystem, CreatedAt, UpdatedAt'
 
 def page_sql(where):
-    return "SELECT " + COLS + " FROM pages WHERE " + where + " LIMIT 1;"
-
+    return 'SELECT TOP 1 ' + COLS + ' FROM pages WHERE ' + where + ';'
 
 def fields(src, creating):
     cols = {}
@@ -41,25 +38,20 @@ def fields(src, creating):
     if 'position' in src:
         cols['Position'] = str(to_int(src.get('position'), 0))
     return cols
-
-
 if op == 'list':
-    return "SELECT " + COLS.replace('BodyMarkdown, ', '') + ", length(BodyMarkdown) AS BodyLength FROM pages ORDER BY Position, Title;"
-
+    return 'SELECT ' + COLS.replace('BodyMarkdown, ', '') + ', LEN(BodyMarkdown) AS BodyLength FROM pages ORDER BY Position, Title;'
 if op == 'get':
     pid = to_int(d.get('id'), 0)
     if pid <= 0:
         fail('id is required.')
     return page_sql('Id = ' + str(pid))
-
 if op == 'create':
     cols = fields(d, True)
     cols.setdefault('Status', "'published'")
     cols.setdefault('ShowInFooter', '1')
     cols.setdefault('ShowInNav', '0')
     cols.setdefault('Position', '(SELECT COALESCE(MAX(Position), 0) + 10 FROM pages)')
-    return ("INSERT INTO pages (" + ', '.join(cols.keys()) + ") VALUES (" + ', '.join(cols.values()) + ");\n" + page_sql('Id = last_insert_rowid()'))
-
+    return 'INSERT INTO pages (' + ', '.join(cols.keys()) + ') VALUES (' + ', '.join(cols.values()) + '); ' + page_sql('Id = CONVERT(bigint,SCOPE_IDENTITY())')
 if op == 'update':
     pid = to_int(d.get('id'), 0)
     if pid <= 0:
@@ -67,19 +59,15 @@ if op == 'update':
     cols = fields(d, False)
     if not cols:
         fail('Nothing to update.')
-    return ("UPDATE pages SET " + ', '.join(k + ' = ' + v for k, v in cols.items()) + ", UpdatedAt = CURRENT_TIMESTAMP WHERE Id = " + str(pid) + ";\n" + page_sql('Id = ' + str(pid)))
-
+    return 'UPDATE pages SET ' + ', '.join((k + ' = ' + v for k, v in cols.items())) + ', UpdatedAt = SYSUTCDATETIME() WHERE Id = ' + str(pid) + '; ' + page_sql('Id = ' + str(pid))
 if op == 'delete':
     pid = to_int(d.get('id'), 0)
     if pid <= 0:
         fail('id is required.')
-    return ("DELETE FROM pages WHERE Id = " + str(pid) + " AND IsSystem = 0;\n"
-            "SELECT " + str(pid) + " AS Id, (SELECT COUNT(*) FROM pages WHERE Id = " + str(pid) + ") AS StillExists;")
-
+    return 'DELETE FROM pages WHERE Id = ' + str(pid) + ' AND IsSystem = 0; SELECT ' + str(pid) + ' AS Id, (SELECT COUNT_BIG(*) FROM pages WHERE Id = ' + str(pid) + ') AS StillExists;'
 if op == 'reorder':
-    ids = [to_int(x, 0) for x in (d.get('ids') or []) if to_int(x, 0) > 0]
+    ids = [to_int(x, 0) for x in d.get('ids') or [] if to_int(x, 0) > 0]
     if not ids:
         fail('ids are required.')
-    return '\n'.join("UPDATE pages SET Position = " + str((i + 1) * 10) + " WHERE Id = " + str(pid) + ";" for i, pid in enumerate(ids)) + "\nSELECT " + COLS.replace('BodyMarkdown, ', '') + ", length(BodyMarkdown) AS BodyLength FROM pages ORDER BY Position, Title;"
-
+    return '\n'.join(('UPDATE pages SET Position = ' + str((i + 1) * 10) + ' WHERE Id = ' + str(pid) + ';' for i, pid in enumerate(ids))) + 'SELECT' + COLS.replace('BodyMarkdown, ', '') + ', length(BodyMarkdown) AS BodyLength FROM pages ORDER BY Position, Title;'
 fail('Unknown op: ' + op)

@@ -1,4 +1,4 @@
-"""Browser-test fixture: real POS scripts/SQLite, fake identity and Wallet.
+"""Browser-test fixture: real POS scripts/SQL Server, fake identity and Wallet.
 
 Only binds loopback, requires a test header, never sends email/notifications or
 contacts Cloudgate. The browser harness supplies a fresh temporary database.
@@ -6,7 +6,8 @@ contacts Cloudgate. The browser harness supplies a fresh temporary database.
 import argparse
 import json
 import re
-import sqlite3
+import sqlserver
+import workflow as python_workflow
 import sys
 import textwrap
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -22,17 +23,8 @@ WALLET = {}
 
 
 def execute(db, sql):
-    statement, result = '', []
-    for character in sql:
-        statement += character
-        if character == ';' and sqlite3.complete_statement(statement):
-            cursor = db.execute(statement)
-            if cursor.description:
-                result = [dict(row) for row in cursor.fetchall()]
-            statement = ''
-    if statement.strip():
-        raise ValueError('Incomplete SQL in test fixture')
-    return result
+    return [dict(row) for row in db.execute(sql).fetchall()]
+
 
 
 def workflow(db, route, body, role):
@@ -45,7 +37,7 @@ def workflow(db, route, body, role):
         return json.loads(refunds.response(result, body.get('requestKey')))
     graph = GRAPHS[route]
     nodes = {node['name']: node for node in graph['nodes']}
-    values = {'body': json.dumps(body), 'sessionid': '1'}
+    values = {'body': json.dumps(body), 'sessionid': '1', 'Header_Origin':'http://127.0.0.1:3596'}
     current = graph['entry']
     for _ in range(50):
         node = nodes[current]
@@ -62,13 +54,8 @@ def workflow(db, route, body, role):
             libraries = '\n'.join((directory / name).read_text(encoding='utf-8') for name in node.get('libraries', []))
             # Substitute request values as data, never as executable Python source.
             source = HELPERS + '\n' + libraries + '\n'
-            if node.get('libraries'):
-                source += '\ndef payment_request_value(name):\n    return "http://127.0.0.1:3594" if name.lower() == "header_origin" else _values.get(name, "")\n'
             source += (directory / node['script']).read_text(encoding='utf-8')
-            source = re.sub(r"('''|\"\"\")\$\{(\w+)\}\1", lambda m: '_values[' + repr(m[2]) + ']', source)
-            scope = {'_values': values}
-            exec('def run():\n' + textwrap.indent(source, '    '), scope)
-            result = scope['run']()
+            result = python_workflow.run(source,values)
         elif kind == 'database':
             sql = (WORKFLOWS / route / node['script']).read_text(encoding='utf-8')
             sql = re.sub(r'\$\{(\w+)\}', lambda m: values[m[1]], sql)
@@ -98,13 +85,10 @@ def workflow(db, route, body, role):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--db', required=True)
     parser.add_argument('--port', type=int, required=True)
     args = parser.parse_args()
-    if Path(args.db).exists():
-        parser.error('The fixture requires a new database')
-    db = sqlite3.connect(args.db, isolation_level=None)
-    db.row_factory = sqlite3.Row
+    db = sqlserver.connect()
+    db.row_factory = sqlserver.Row
     db.executescript((ROOT / 'cloudgate' / 'schema.sql').read_text(encoding='utf-8'))
     db.executescript((ROOT / '.template' / 'sample-data.sql').read_text(encoding='utf-8'))
 

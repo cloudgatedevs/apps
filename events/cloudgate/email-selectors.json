@@ -1,0 +1,51 @@
+[
+  {
+    "Name": "SMTP_HOST",
+    "Type": 2,
+    "IsGlobal": false,
+    "StaticValue": "",
+    "StaticValueProd": ""
+  },
+  {
+    "Name": "SMTP_PORT",
+    "Type": 2,
+    "IsGlobal": false,
+    "StaticValue": "587",
+    "StaticValueProd": "587"
+  },
+  {
+    "Name": "SMTP_USERNAME",
+    "Type": 2,
+    "IsGlobal": false,
+    "StaticValue": "",
+    "StaticValueProd": ""
+  },
+  {
+    "Name": "SMTP_PASSWORD",
+    "Type": 2,
+    "IsGlobal": false,
+    "StaticValue": "",
+    "StaticValueProd": ""
+  },
+  {
+    "Name": "SMTP_FROM_EMAIL",
+    "Type": 2,
+    "IsGlobal": false,
+    "StaticValue": "",
+    "StaticValueProd": ""
+  },
+  {
+    "Name": "SMTP_FROM_NAME",
+    "Type": 2,
+    "IsGlobal": false,
+    "StaticValue": "",
+    "StaticValueProd": ""
+  },
+  {
+    "Name": "SMTP_SECURITY",
+    "Type": 2,
+    "IsGlobal": false,
+    "StaticValue": "starttls",
+    "StaticValueProd": "starttls"
+  }
+]

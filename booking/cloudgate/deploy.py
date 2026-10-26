@@ -23,10 +23,10 @@ def main():
         if result.get('isError'):raise RuntimeError(result)
         blocks=result.get('content',[])
         return json.loads(next(c['text'] for c in blocks if c['type']=='text')) if blocks else result
-    config=json.loads((ROOT/'deploy.config.json').read_text())
+    config=json.loads((ROOT/'deploy.config.json').read_text(encoding='utf8'))
     current={e['Route']:e for e in call('list_endpoints',{'project_id':config['projectId']})}
     for path in sorted((ROOT/'workflows').glob('*/graph.json')):
-        source=json.loads(path.read_text());route=source['Endpoint']['Route'];entry=current.get(route)
+        source=json.loads(path.read_text(encoding='utf8'));route=source['Endpoint']['Route'];entry=current.get(route)
         if entry:
             live=call('get_workflow_graph',{'endpoint_id':entry['Id'],'include_scripts':True})
             if not live['editState']['canMutateWorkflow']:

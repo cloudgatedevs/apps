@@ -1,11 +1,12 @@
-"""Execute generated node scripts against SQLite with a stubbed Cloudgate session and Wallet.
+"""Execute generated node scripts against SQL Server with a stubbed Cloudgate session and Wallet.
 This checks the packaged scripts and wiring, in addition to engine unit tests. It does not
 replace a Cloudgate-hosted sandbox payment test after publication.
 """
 import json
 from pathlib import Path
 import secrets
-import sqlite3
+import sqlserver
+import workflow
 import sys
 import textwrap
 import time
@@ -26,9 +27,7 @@ class NativeTests(unittest.TestCase):
  def native(self,route,request,user=None,wallet=None,origin='https://studio.example'):
   graph=json.loads((ROOT/'workflows'/route/'graph.json').read_text())
   nodes={n['Id']:n for n in graph['Nodes']};self.keys={'body':json.dumps(request),'Header_Origin':origin}
-  scope=types.SimpleNamespace(GetKeys=lambda sid:[types.SimpleNamespace(Key=k,Value=v) for k,v in self.keys.items()])
-  modules={'clr':types.SimpleNamespace(AddReference=lambda name:None),'Web.Core.Shared.Services.Endpoints.Engine':types.SimpleNamespace(WorkflowSessionKeyExecutionContext=scope)}
-  old={key:sys.modules.get(key) for key in modules};sys.modules.update(modules)
+  old={}
   current=graph['Endpoint']['NodeId'];count=0;last=None
   try:
    while current:
@@ -43,15 +42,11 @@ class NativeTests(unittest.TestCase):
      result=json.dumps(wallet(params,self.keys))
     elif n['NodeType']==5:
      for k,v in self.keys.items():script=script.replace('${'+k+'}',str(v))
-     if script.startswith('BEGIN'):
-      try:
-       tail=script.rsplit('COMMIT;',1)[1].strip();self.db.executescript(script);result=json.dumps([dict(r) for r in self.db.execute(tail)])
-      except Exception:self.db.rollback();raise
-     else:result=json.dumps([dict(r) for r in self.db.execute(script)])
+     result=json.dumps([dict(r) for r in self.db.execute(script)])
     else:
      script=script.replace('${sessionid}','123');namespace={}
      exec('def main():\n'+textwrap.indent(script,'    '),namespace)
-     result=namespace['main']()
+     result=workflow.run(script,self.keys)
     self.keys[n['Name']]=result;last=result
     current=n['PositiveNodeId'] if result is True else n['NegativeNodeId'] if n['NodeType']==4 else n['NodeId']
    return json.loads(last) if isinstance(last,str) else last

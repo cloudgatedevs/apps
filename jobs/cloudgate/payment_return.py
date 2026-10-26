@@ -40,10 +40,6 @@ def payment_return_base(configured='', origin='', fallback=''):
 
 
 def payment_request_value(name):
-    # Read HTTP headers as data, never interpolate an untrusted Origin into Python.
-    import clr
-    clr.AddReference('Web.Core.Shared')
-    from Web.Core.Shared.Services.Endpoints.Engine import WorkflowSessionKeyExecutionContext
-    keys = WorkflowSessionKeyExecutionContext.GetKeys(int('${sessionid}'))
-    matches = [str(k.Value) for k in keys if str(k.Key).lower() == name.lower()]
-    return matches[-1] if matches else ''
+    # Ordinary workflow selectors provide input strings as data.
+    result = value(name)
+    return '' if result is None else str(result)

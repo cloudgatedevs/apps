@@ -1,11 +1,9 @@
+_inputs = {'IdpAuth': '${IdpAuth}', 'Prepare': '${Prepare}', 'Run': '${Run}', 'Snapshot': '${Snapshot}', 'body': '${body}'}
 import json
-import clr
-clr.AddReference('Web.Core.Shared')
-from Web.Core.Shared.Services.Endpoints.Engine import WorkflowSessionKeyExecutionContext
-session_keys = list(WorkflowSessionKeyExecutionContext.GetKeys(int('${sessionid}')))
 def value(name):
-    matches=[str(k.Value) for k in session_keys if str(k.Key).lower()==name.lower()]
-    return matches[-1] if matches else ''
+    return _inputs.get(name, '')
+
+
 def obj(name, default=None):
     raw=value(name)
     return json.loads(raw) if raw and raw != 'No records found' else default
@@ -22,7 +20,7 @@ def request():
 
 """Booking domain engine. Pure snapshot -> SQL plan; used by Cloudgate and local runner.
 
-All changes execute in a transaction. SQLite triggers are the final arbiter of availability.
+All changes execute in a transaction. SQL Server triggers are the final arbiter of availability.
 Money is integer minor units; instants are UTC epoch seconds, opening hours are business local.
 """
 import datetime as dt
@@ -35,15 +33,61 @@ from zoneinfo import ZoneInfo
 from urllib.parse import urlsplit
 
 TABLES = ('settings','services','service_metadata','staff','staff_metadata','resources','blocks','customers','bookings','allocations','payments','refund_requests','waitlist','promos','messages','audit','customer_accounts','booking_accounts')
+"""Native T-SQL builders, inlined into standalone workflow functions."""
+
 def q(value):
-    if value is None: return 'NULL'
-    if isinstance(value, bool): return str(int(value))
-    if isinstance(value, (int,float)): return str(value)
-    # Hex SQL literals keep request text out of both SQL quoting and Cloudgate's template expansion.
-    return "CAST(X'"+str(value).encode('utf-8').hex()+"' AS TEXT)"
+    if value is None:
+        return 'NULL'
+    if isinstance(value, bool):
+        return '1' if value else '0'
+    if isinstance(value, (int, float)):
+        return str(value)
+    # Unicode data never introduces SQL syntax or Cloudgate selector tokens.
+    return "CONVERT(nvarchar(max),0x" + str(value).encode('utf-16le').hex() + ")"
+
+def identifier(value):
+    import re
+    if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', value):
+        raise ValueError('Invalid SQL identifier.')
+    return '[' + value + ']'
+
+def insert(table, record, ignore_key=None):
+    target=identifier(table)
+    columns=','.join(identifier(k) for k in record)
+    values=','.join(q(v) for v in record.values())
+    sql='INSERT INTO '+target+' ('+columns+') '
+    if ignore_key:
+        sql+='SELECT '+values+' WHERE NOT EXISTS (SELECT 1 FROM '+target+' WITH (UPDLOCK,HOLDLOCK) WHERE '+identifier(ignore_key)+'='+q(record[ignore_key])+');'
+    else:
+        sql+='VALUES ('+values+');'
+    if 'Id' in record:
+        sql='SET IDENTITY_INSERT '+target+' ON; '+sql+' SET IDENTITY_INSERT '+target+' OFF;'
+    return sql
+
+def update(table, record, where):
+    return 'UPDATE '+identifier(table)+' SET '+','.join(identifier(k)+'='+q(v) for k,v in record.items())+' WHERE '+where+';'
+
+def upsert(table, record, key, columns=None):
+    changes={k:record[k] for k in (columns or record) if k!=key and k!='Id'}
+    return update(table,changes,identifier(key)+'='+q(record[key]))+' IF @@ROWCOUNT=0 BEGIN '+insert(table,record)+' END;'
+
+def transaction(statements, revision=None):
+    body='\n'.join(statements)
+    if revision is not None:
+        body=("UPDATE [settings] WITH (UPDLOCK,HOLDLOCK) SET [value]=CONVERT(nvarchar(30),CONVERT(bigint,[value])+1) "
+              "WHERE [key]=N'_revision' AND [value]="+q(str(revision))+";\n"
+              "IF @@ROWCOUNT<>1 THROW 50001, 'The calendar changed. Refresh and try again.', 1;\n"+body)
+    return ('SET NOCOUNT ON; SET XACT_ABORT ON; BEGIN TRY BEGIN TRANSACTION;\n'+body+
+            '\nCOMMIT TRANSACTION; END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK TRANSACTION; THROW; END CATCH;\n')
+
+def entity_snapshot_sql(limit):
+    return ("SELECT (SELECT JSON_QUERY((SELECT [key],[value] FROM [settings] FOR JSON PATH)) AS [settings], "
+            "JSON_QUERY(COALESCE((SELECT N'['+STRING_AGG(CONVERT(nvarchar(max),[data]),N',')+N']' "
+            "FROM (SELECT TOP ("+str(limit+1)+") [data] FROM [entities] ORDER BY [Id]) AS bounded),N'[]')) AS [entities] "
+            "FOR JSON PATH,WITHOUT_ARRAY_WRAPPER) AS [snapshot];")
+
 def encoded(value): return json.dumps(value, ensure_ascii=False, separators=(',',':'))
-def insert(table, record): return 'INSERT INTO '+table+' ('+','.join(record)+') VALUES ('+','.join(q(v) for v in record.values())+');'
-def update(table, record, where): return 'UPDATE '+table+' SET '+','.join(k+'='+q(v) for k,v in record.items())+' WHERE '+where+';'
+
 def digest(token): return hashlib.sha256(str(token).encode()).hexdigest()
 def require(ok, message):
     if not ok: raise ValueError(message)
@@ -68,11 +112,11 @@ def brand_asset(value):
     require(bool(url.hostname) and not url.username and not url.password and (url.scheme=='https' or (url.scheme=='http' and local)),'Use an HTTPS image URL or a path starting with /.')
     return value
 def snapshot_sql():
-    pairs=[]
-    # json_group_array of row JSON avoids depending on JSON aggregation column discovery at runtime.
+    fields=[]
     for table in TABLES:
-        pairs.extend([q(table),"json(COALESCE((SELECT json_group_array(json(row)) FROM (SELECT json_object("+','.join(q(c)+','+c for c in COLUMNS[table])+") AS row FROM "+table+")), '[]'))"])
-    return 'SELECT json_object('+','.join(pairs)+') AS snapshot;'
+        columns=','.join(identifier(c) for c in COLUMNS[table])
+        fields.append("JSON_QUERY(COALESCE((SELECT "+columns+' FROM '+identifier(table)+" FOR JSON PATH,INCLUDE_NULL_VALUES),N'[]')) AS "+identifier(table))
+    return 'SELECT (SELECT '+','.join(fields)+' FOR JSON PATH,WITHOUT_ARRAY_WRAPPER) AS snapshot;'
 
 COLUMNS = {
  'staff_metadata':'Id staff_id image_url',
@@ -116,7 +160,7 @@ class Engine:
         uid=self.customer_id(True);name=text(d.get('name'),120);phone=text(d.get('phone'),40)
         require(len(name)>=2,'Enter your full name.')
         record=dict(user_id=uid,name=name,phone=phone,created=self.now,updated=self.now)
-        self.sql.append(insert('customer_accounts',record).rstrip(';')+' ON CONFLICT(user_id) DO UPDATE SET name=excluded.name,phone=excluded.phone,updated=excluded.updated;')
+        self.sql.append(upsert('customer_accounts',record,'user_id',['name','phone','updated']))
         return dict(profile=dict(name=name,phone=phone,email=self.user.get('Email','')))
     def link_account(self,b,token):
         uid=self.customer_id(True)
@@ -134,7 +178,7 @@ class Engine:
         when=dt.datetime.fromtimestamp(b['starts'],self.tz).strftime('%A %d %B %Y at %H:%M')
         subject={'confirmed':'Your appointment is confirmed','reminder':'A little reminder: your appointment','cancelled':'Your appointment has been cancelled','rescheduled':'Your appointment has moved'}.get(kind,'Appointment update')
         rec=dict(booking_ref=b['reference'],recipient=customer['email'],subject=subject,body=f"Hello {customer['name']},\n\n{subject}.\n{when} ({self.tz.key})\nReference: {b['reference']}\n{self.settings.get('address','')}\n\n{self.settings.get('name','Studio')}\n{self.settings.get('phone','')}",due=due or self.now,dedupe=f"{b['reference']}:{kind}:{b.get('version',1)}")
-        self.sql.append(insert('messages',rec).replace('INSERT INTO','INSERT OR IGNORE INTO',1))
+        self.sql.append(insert('messages',rec,'dedupe'))
     def public_settings(self): return {k:v for k,v in self.settings.items() if not k.startswith(('smtp_','_'))}
     def services(self):
         metadata={r['service_id']:r for r in self.s['service_metadata']}
@@ -247,7 +291,7 @@ class Engine:
         if d.get('quote') is not None:
             require(isinstance(d['quote'],dict) and all(d['quote'].get(k)==quote[k] for k in ('total','due','currency','promo')),'The price has changed. Refresh the quote and review it before paying.')
         ref='ST-'+secrets.token_hex(5).upper(); cid=next((c['Id'] for c in self.s['customers'] if c['email']==mail),None)
-        self.sql.append("INSERT INTO customers(email,name,phone,marketing,created) VALUES ("+','.join(map(q,[mail,name,text(d.get('phone'),40),int(bool(d.get('marketing'))),self.now]))+") ON CONFLICT(email) DO UPDATE SET name=excluded.name,phone=excluded.phone;")
+        self.sql.append(upsert('customers',dict(email=mail,name=name,phone=text(d.get('phone'),40),marketing=int(bool(d.get('marketing'))),created=self.now),'email',['name','phone']))
         customer_expr='(SELECT Id FROM customers WHERE email='+q(mail)+')'
         b=dict(reference=ref,token_hash=digest(token),request_key=key,customer_id=0,starts=start,ends=parts[-1]['ends'],status='held',expires=self.now+int(self.settings['hold_minutes'])*60,total=total,due=due,currency=self.settings['currency'],notes=text(d.get('notes'),2000),intake=encoded(d.get('intake') or {}),created=self.now,updated=self.now)
         stmt=insert('bookings',b); columns=list(b); vals=[customer_expr if k=='customer_id' else q(v) for k,v in b.items()]
@@ -272,7 +316,7 @@ class Engine:
             if status_code in (2,3) and b['status']=='held':
                 self.sql.append(update('bookings',dict(status='expired',updated=self.now),'reference='+q(b['reference'])))
                 self.sql.append(update('allocations',dict(active=0),'booking_ref='+q(b['reference'])))
-                self.sql.append(insert('payments',dict(booking_ref=b['reference'],external_id=ext,kind='payment',amount=b['due'],status='failed',created=self.now)).replace('INSERT INTO','INSERT OR IGNORE INTO',1))
+                self.sql.append(insert('payments',dict(booking_ref=b['reference'],external_id=ext,kind='payment',amount=b['due'],status='failed',created=self.now),'external_id'))
                 return {'status':'expired','reference':b['reference']}
             self.sql.append(update('bookings',dict(updated=self.now),'reference='+q(b['reference'])))
             return {'status':b['status'],'reference':b['reference']}
@@ -280,10 +324,10 @@ class Engine:
         amount=integer(d.get('amount'),1,1000000000,'Payment amount')
         require(amount==b['due'] and d.get('currency')==b['currency'],'Payment amount or currency does not match.')
         if any(p['external_id']==ext and p['status']=='succeeded' for p in self.s['payments']):return self.detail(b)
-        self.sql.append(insert('payments',dict(booking_ref=b['reference'],external_id=ext,kind='payment',amount=amount,status='succeeded',created=self.now)).replace('INSERT INTO','INSERT OR IGNORE INTO',1))
+        self.sql.append(insert('payments',dict(booking_ref=b['reference'],external_id=ext,kind='payment',amount=amount,status='succeeded',created=self.now),'external_id'))
         valid=b['status']=='held' and b['expires']>self.now
         status='confirmed' if valid else 'payment_review'
-        self.sql.append("UPDATE bookings SET paid=paid+"+str(amount)+",status="+q(status)+",updated="+str(self.now)+",version=version+1 WHERE reference="+q(b['reference'])+" AND changes()=1;")
+        self.sql.append("UPDATE bookings SET paid=paid+"+str(amount)+",status="+q(status)+",updated="+str(self.now)+",version=version+1 WHERE reference="+q(b['reference'])+" AND @@ROWCOUNT=1;")
         if not valid:self.sql.append(update('allocations',{'active':0},'booking_ref='+q(b['reference'])))
         if valid:
             self.sql.append(update('messages',dict(status='queued'),"booking_ref="+q(b['reference'])+" AND status='awaiting_payment'"))
@@ -337,7 +381,7 @@ class Engine:
         require(isinstance(staff_ids,list) and all(type(i)==int and any(p['Id']==i for p in self.s['staff']) for i in staff_ids),'Choose valid team members.')
         require(not row['active'] or any(p['active'] and p['Id'] in staff_ids for p in self.s['staff']),'Assign at least one active team member before publishing this service.')
         self.sql.append(update('services',row,'Id='+str(ident)) if existing else insert('services',dict(Id=ident,**row)))
-        self.sql.append(insert('service_metadata',dict(service_id=ident,image_url=photo,deleted=0)).rstrip(';')+' ON CONFLICT(service_id) DO UPDATE SET image_url=excluded.image_url;')
+        self.sql.append(upsert('service_metadata',dict(service_id=ident,image_url=photo,deleted=0),'service_id',['image_url']))
         for person in self.s['staff']:
             ids=json.loads(person['service_ids']);new_ids=[i for i in ids if i!=ident]
             if person['Id'] in staff_ids:new_ids.append(ident)
@@ -351,7 +395,7 @@ class Engine:
         if service['deleted']:return {'ok':True}
         # Retain referenced rows and staff qualifications for existing appointments and reports.
         self.sql.append(update('services',dict(active=0),'Id='+str(ident)))
-        self.sql.append(insert('service_metadata',dict(service_id=ident,image_url=service['image_url'],deleted=1)).rstrip(';')+' ON CONFLICT(service_id) DO UPDATE SET deleted=1;')
+        self.sql.append(upsert('service_metadata',dict(service_id=ident,image_url=service['image_url'],deleted=1),'service_id',['deleted']))
         self.event(None,'delete_service',str(ident)+': '+service['name'])
         return {'ok':True}
     def save(self,d):
@@ -389,7 +433,7 @@ class Engine:
                 row=dict(row,Id=ident)
             self.sql.append(insert(entity,row))
         if photo is not None:
-            self.sql.append(insert('staff_metadata',dict(staff_id=ident,image_url=photo)).rstrip(';')+' ON CONFLICT(staff_id) DO UPDATE SET image_url=excluded.image_url;')
+            self.sql.append(upsert('staff_metadata',dict(staff_id=ident,image_url=photo),'staff_id',['image_url']))
         self.event(None,'save_'+entity)
         return {'ok':True}
     def dispatch(self,d):
@@ -412,7 +456,7 @@ class Engine:
             b=next((b for b in self.s['bookings'] if b['request_key']==key),None)
             if b and b['status'] not in ('held','cancelled','expired'):
                 raise ValueError('This appointment has a payment or is confirmed. Manage it from Appointments.')
-            self.sql.append(insert('abandoned_booking_requests',dict(request_key=key,created=self.now)).replace('INSERT INTO','INSERT OR IGNORE INTO',1))
+            self.sql.append(insert('abandoned_booking_requests',dict(request_key=key,created=self.now),'request_key'))
             if b and b['status']=='held':self.cancel(dict(reference=b['reference']),True)
             self.event(b['reference'] if b else None,'front_desk_request_released')
             return {'ok':True}
@@ -515,19 +559,17 @@ class Engine:
                 if key in bounds:integer(value,*bounds[key],key)
                 if key=='smtp_mode':require(value in ('starttls','ssl'),'Use STARTTLS or SSL.')
                 if key=='website_url':require(not value or re.fullmatch(r'https://[^\s]+',value),'Use an HTTPS website URL.')
-                self.sql.append(update('settings',dict(value=text(value,3000)),'key='+q(key)))
+                self.sql.append(update('settings',dict(value=text(value,3000)),'[key]='+q(key)))
             self.event(None,'settings_updated');return {'ok':True}
         if op=='maintenance':
             require(self.internal,'Internal operation.');self.expire();return {'ok':True}
         raise ValueError('Unknown operation.')
 
 def plan(snapshot, request, identity=None, now=None, internal=False):
-    engine=Engine(snapshot,identity,now,internal);result=engine.dispatch(request)
-    guards=[]
-    if engine.sql:
-        guards=[insert('write_guard',dict(expected=engine.settings.get('_revision','0'))),"UPDATE settings SET value=CAST(value AS INTEGER)+1 WHERE key='_revision';",'DELETE FROM write_guard;']
-    sql='BEGIN IMMEDIATE;\n'+'\n'.join(guards+engine.sql)+'\nCOMMIT;\nSELECT '+q(encoded(result))+' AS payload;'
-    return sql,result
+    engine=Engine(snapshot,identity,now,internal)
+    result=engine.dispatch(request)
+    sql=transaction(engine.sql,engine.settings.get('_revision','0')) if engine.sql else ''
+    return sql+'SELECT '+q(encoded(result))+' AS payload;',result
 
 d=request();b=obj('Prepare')
 sql,result=plan(snapshot(),dict(d,op='refund-claim',amount=b['refund_amount']),obj('IdpAuth',{}),internal=True)
