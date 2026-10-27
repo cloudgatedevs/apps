@@ -10,7 +10,6 @@
       "framework": "React",
       "devCommand": "npm install && npm run dev",
       "devPort": 3000,
-      "demoUrl": "https://shop.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/shop/banner.png",
       "adminPath": "/admin",
       "tags": [
@@ -120,7 +119,6 @@
       "framework": "React",
       "devCommand": "npm install && npm run dev",
       "devPort": 3001,
-      "demoUrl": "https://pos.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/pos/banner.png",
       "adminPath": "/admin",
       "tags": [
@@ -232,7 +230,6 @@
       "framework": "React",
       "devCommand": "npm install && npm run dev",
       "devPort": 3002,
-      "demoUrl": "https://booking.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/booking/banner.png",
       "adminPath": "/admin",
       "tags": [
@@ -338,7 +335,6 @@
       "framework": "React",
       "devCommand": "npm install && npm run dev",
       "devPort": 3010,
-      "demoUrl": "https://jobs.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/jobs/banner.png",
       "adminPath": "/admin",
       "tags": [
@@ -436,7 +432,6 @@
       "framework": "React",
       "devCommand": "npm install && npm run dev",
       "devPort": 3004,
-      "demoUrl": "https://academy.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/courses/banner.png",
       "adminPath": "/admin",
       "tags": [
@@ -525,7 +520,6 @@
       "framework": "React",
       "devCommand": "npm install && npm run dev",
       "devPort": 3006,
-      "demoUrl": "https://events.app.cloudgate.dev/",
       "thumbnail": "https://raw.githubusercontent.com/cloudgatedevs/apps/main/events/banner.png",
       "adminPath": "/admin",
       "tags": [
