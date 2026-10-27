@@ -12,6 +12,7 @@ import { fmtCents, fromCents, toCents } from '@/shared/lib/money';
 import { errorMessage } from '@/shared/lib/errors';
 import { productStatusTone } from '@/admin/pages/Products';
 import { ExternalLink, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { generateVariants, parseOptionValues, variantSignature } from '../lib/product-variants.js';
 
 // ---------------------------------------------------------------- helpers
 const emptyProduct = {
@@ -33,25 +34,6 @@ const variantsFromServer = (p) => (p.Variants ?? []).map((v) => ({
   price: fromCents(v.PriceCents), compareAt: fromCents(v.CompareAtCents), cost: fromCents(v.CostCents),
   stockQty: v.StockQty ?? 0, lowStockThreshold: v.LowStockThreshold ?? 5, isDefault: !!v.IsDefault, isActive: v.IsActive !== 0 && v.IsActive !== false,
 }));
-
-const signature = (options) => JSON.stringify(Object.entries(options ?? {}).sort(([a], [b]) => a.localeCompare(b)));
-
-/** Cartesian product of option values -> variant rows, keeping existing rows with the same combination. */
-function generateVariants(options, existing) {
-  const axes = options.filter((o) => o.name.trim() && o.values.length);
-  if (!axes.length) return existing.length ? existing : [{ title: 'Default', sku: '', options: {}, price: '', compareAt: '', cost: '', stockQty: 0, lowStockThreshold: 5, isDefault: true, isActive: true }];
-  let combos = [{}];
-  for (const axis of axes) {
-    combos = combos.flatMap((c) => axis.values.map((v) => ({ ...c, [axis.name.trim()]: v })));
-  }
-  const bySig = new Map(existing.map((v) => [signature(v.options), v]));
-  return combos.map((opts, i) => {
-    const prev = bySig.get(signature(opts));
-    return prev
-      ? { ...prev, options: opts, title: Object.values(opts).join(' / ') }
-      : { title: Object.values(opts).join(' / '), sku: '', options: opts, price: '', compareAt: '', cost: '', stockQty: 0, lowStockThreshold: 5, isDefault: i === 0, isActive: true };
-  });
-}
 
 const toPayload = (form, options, variants, creating) => ({
   name: form.name, slug: form.slug || undefined, sku: form.sku, brand: form.brand,
@@ -133,6 +115,12 @@ const ProductEdit = () => {
     e?.preventDefault();
     if (!form.name.trim()) return toast.error('Give the product a name.');
     if (toCents(form.price) == null || toCents(form.price) < 0) return toast.error('Enter a valid price.');
+    const optionalPrices = [['Compare-at price', form.compareAt], ['Cost', form.cost],
+      ...variants.flatMap(v => [[`${v.title} price`, v.price], [`${v.title} compare-at price`, v.compareAt], [`${v.title} cost`, v.cost]])];
+    for (const [label, value] of optionalPrices) {
+      if (String(value ?? '').trim() && (toCents(value) == null || toCents(value) < 0))
+        return toast.error(`${label}: enter a valid, non-negative amount.`);
+    }
     setSaving(true);
     try {
       const payload = toPayload(form, options, variants, creating);
@@ -287,11 +275,12 @@ const ProductEdit = () => {
 
             {options.map((o, i) => (
               <div key={i} className="grid grid-cols-1 gap-3 rounded-xl border border-ink-700 p-3 sm:grid-cols-[10rem_1fr_auto]">
-                <input value={o.name} onChange={(e) => updateOption(i, { name: e.target.value })} className="input" placeholder="Option (e.g. Size)" />
+                <input value={o.name} onChange={(e) => updateOption(i, { name: e.target.value })} className="input" placeholder="Option (e.g. Size)" aria-label={`Option ${i + 1} name`} />
                 <input
-                  value={o.values.join(', ')}
-                  onChange={(e) => updateOption(i, { values: e.target.value.split(',').map((v) => v.trim()).filter(Boolean) })}
+                  value={o.valuesText ?? o.values.join(', ')}
+                  onChange={(e) => updateOption(i, { valuesText: e.target.value, values: parseOptionValues(e.target.value) })}
                   className="input"
+                  aria-label={`Option ${i + 1} values`}
                   placeholder="Values, comma separated (S, M, L)"
                 />
                 <button type="button" onClick={() => removeOption(i)} className="btn-ghost btn-sm">Remove</button>
@@ -315,7 +304,7 @@ const ProductEdit = () => {
                 </thead>
                 <tbody className="divide-y divide-ink-700/70">
                   {variants.map((v, i) => (
-                    <tr key={v.id ?? signature(v.options) ?? i}>
+                    <tr key={v.id ?? variantSignature(v.options) ?? i}>
                       <td className="py-2 pr-3"><input value={v.title} onChange={(e) => updateVariant(i, { title: e.target.value })} className="input w-36 py-1.5" disabled={hasVariants} /></td>
                       <td className="py-2 pr-3"><input value={v.sku} onChange={(e) => updateVariant(i, { sku: e.target.value })} className="input w-36 py-1.5 font-mono" /></td>
                       <td className="py-2 pr-3"><input value={v.price} onChange={(e) => updateVariant(i, { price: e.target.value })} className="input w-24 py-1.5 tabular-nums" placeholder={form.price || 'inherit'} inputMode="decimal" /></td>

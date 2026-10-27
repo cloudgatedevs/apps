@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { shopApi } from '@/storefront/services/shopApi';
 import { useStore } from '@/storefront/store/StoreProvider';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { useAsync } from '@/shared/ui/ui';
 import { Skeleton, SkeletonText } from '@/shared/ui/skeleton';
 import { renderMarkdown } from '@/shared/lib/markdown';
@@ -13,11 +14,11 @@ import { Breadcrumb } from '@/storefront/components/Breadcrumb';
 /** Editable content page: /pages/{slug}. Body is Markdown written in the back office. */
 const Page = () => {
   const { slug } = useParams();
-  const { storeName, pages } = useStore();
+  const { pages } = useStore();
   const res = useAsync(() => shopApi.pages.get(slug), [slug]);
   const page = res.data;
   const html = useMemo(() => renderMarkdown(page?.BodyMarkdown), [page?.BodyMarkdown]);
-  useEffect(() => { if (page?.Title) document.title = `${page.Title} · ${storeName}`; }, [page?.Title, storeName]);
+  usePageTitle(page?.Title || 'Page');
   const others = (pages.footer ?? []).filter((p) => p.Slug !== slug).slice(0, 6);
 
   if (res.loading) {

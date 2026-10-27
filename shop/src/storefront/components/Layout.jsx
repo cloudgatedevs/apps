@@ -10,6 +10,7 @@ import { CartDrawer } from '@/storefront/components/CartDrawer';
 import { CookieConsent } from '@/storefront/components/CookieConsent';
 import { VerifiedBadge } from '@/storefront/components/VerifiedBadge';
 import { PoweredByCloudgate, usePermissions } from '@cloudgatedevs/cloudgate-client-react/react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const icon = (paths) => (p) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>{paths}</svg>
@@ -47,7 +48,10 @@ const AccountMenu = ({ user, isAdmin, onLogout }) => {
   );
 };
 
-const Layout = ({ children }) => {
+const SCREEN_TITLES = { Home: '', Catalog: 'All products', Cart: 'Your cart', Checkout: 'Checkout',
+  CheckoutReturn: 'Order status', CheckoutCancel: 'Payment cancelled', Account: 'Your orders', NotFound: 'Page not found' };
+
+const Layout = ({ children, screen }) => {
   const { can } = usePermissions();
   const { storeName, categories, settings, pages, social } = useStore();
   const { count, setOpen } = useCart();
@@ -60,6 +64,8 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Data-driven pages supply their own labels after loading.
+  usePageTitle(SCREEN_TITLES[screen]);
   useEffect(() => { setMenu(false); setSearchOpen(false); }, [location.pathname]);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [location.pathname]);
   useEffect(() => { if (searchOpen) setTimeout(() => searchRef.current?.focus(), 30); }, [searchOpen]);

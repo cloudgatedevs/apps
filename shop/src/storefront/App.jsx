@@ -19,5 +19,5 @@ const screens = { Home, Catalog, Product, Cart, Checkout, CheckoutReturn, Checko
 export function Storefront({ screen = 'Home' }) {
   const { settings } = useSettings();
   const Screen = screens[screen] || NotFound;
-  return <UiScopeProvider value="shop-store"><div className="shop-store" style={{ '--secondary-fg': foreground(settings.theme_secondary) }}><StoreProvider><CartProvider><Layout><Screen /></Layout></CartProvider></StoreProvider></div></UiScopeProvider>;
+  return <UiScopeProvider value="shop-store"><div className="shop-store" style={{ '--secondary-fg': foreground(settings.theme_secondary) }}><StoreProvider><CartProvider><Layout screen={screen}><Screen /></Layout></CartProvider></StoreProvider></div></UiScopeProvider>;
 }

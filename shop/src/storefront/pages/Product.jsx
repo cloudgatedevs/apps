@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { shopApi } from '@/storefront/services/shopApi';
 import { useStore } from '@/storefront/store/StoreProvider';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { useCart } from '@/storefront/cart/CartProvider';
 import { useAsync } from '@/shared/ui/ui';
 import { Skeleton, SkeletonText } from '@/shared/ui/skeleton';
@@ -117,8 +118,9 @@ const Product = () => {
     setChoice(def?.Options ?? {});
     setQty(1);
     setImageIdx(0);
-    document.title = `${p.Name} · ${document.title.split(' · ').pop()}`;
   }, [p]);
+
+  usePageTitle(p?.Name || 'Product');
 
   // Sticky buy bar on phones once the main button scrolls out of view.
   useEffect(() => {

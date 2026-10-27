@@ -16,11 +16,22 @@ Shop retains its storefront, catalogue and product variants, cart, hosted Wallet
 ```sh
 npm install
 npm run dev         # http://127.0.0.1:3000 and /admin
+npm run dev:sdk     # same app, using the local client-react SDK source
 npm run build:dev   # development build with source maps for sandbox rollouts
 npm run build       # minified production build
 npm test
 npm run test:ui
 ```
+
+`npm run dev:sdk` uses `../../client-react` (normally `D:/repos/GitHub/client-react`).
+Run `npm install` in that SDK checkout once, then SDK JS, JSX and CSS edits update through Vite
+without rebuilding, packing or reinstalling the SDK. Shop's theme and development env files still apply.
+Stop any existing Shop dev server before starting this command; both use port 3000.
+Ordinary `npm run dev` and builds continue to use the installed SDK package.
+
+For a checkout elsewhere, use `npm run dev:sdk -- --sdk "path/to/client-react"` or set
+`CLOUDGATE_SDK_PATH`. `--port` and `--host` override the server address. Restart the dev server
+after changing dependencies or Tailwind configuration.
 
 Copy `.env.example` to `.env` for manual setup and replace its placeholders. The App Store fills these values during installation. In particular, `VITE_CLOUDGATE_WEB_APP_ID` must be the Shop website ID, not the tenant or workflow controller ID. It scopes native appearance, website settings, media and developer tools. Restart Vite after changing environment values.
 

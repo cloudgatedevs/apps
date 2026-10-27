@@ -26,12 +26,21 @@ export function fmtRange(fromCents, toCents, currency) {
   return `${fmtCents(fromCents, currency)} – ${fmtCents(toCents, currency)}`;
 }
 
-/** "349.00" (form input, major units) -> 34900. Returns null for blank/invalid. */
+/** Major units -> integer cents. Accept decimal dots/commas; never discard unknown characters. */
 export function toCents(input) {
-  if (input === '' || input === null || input === undefined) return null;
-  const n = Number(String(input).replace(/[^0-9.-]/g, ''));
-  if (!Number.isFinite(n)) return null;
-  return Math.round(n * 100);
+  if (input === null || input === undefined) return null;
+  let value = String(input).trim();
+  // Mixed separators are unambiguous only with correctly grouped thousands and decimal cents.
+  if (/^-?\d{1,3}(?:,\d{3})+\.\d{1,2}$/.test(value)) value = value.replaceAll(',', '');
+  else if (/^-?\d{1,3}(?:\.\d{3})+,\d{1,2}$/.test(value)) value = value.replaceAll('.', '').replace(',', '.');
+  else if (/^-?(?:\d+|\d{1,3}(?:[ \u00a0\u202f]\d{3})+)(?:[.,]\d{1,2})?$/.test(value))
+    value = value.replace(/[ \u00a0\u202f]/g, '').replace(',', '.');
+  else return null;
+  const negative = value.startsWith('-');
+  const [whole, fraction = ''] = value.replace(/^-/, '').split('.');
+  const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
+  if (!Number.isSafeInteger(cents)) return null;
+  return cents === 0 ? 0 : negative ? -cents : cents;
 }
 
 /** 34900 -> "349.00" for form inputs. */

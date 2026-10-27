@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useAuthContext } from '@/shared/auth';
 import { shopApi } from '@/storefront/services/shopApi';
 import { useStore } from '@/storefront/store/StoreProvider';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { errorMessage } from '@/shared/lib/errors';
 import { Check } from 'lucide-react';
 import { Breadcrumb } from '@/storefront/components/Breadcrumb';
@@ -17,12 +18,12 @@ const Field = ({ label, children, hint }) => (
 );
 
 const Contact = () => {
-  const { storeName, settings, pages } = useStore();
+  const { settings, pages } = useStore();
   const { currentUser } = useAuthContext();
   const [form, setForm] = useState({ name: '', email: '', subject: '', orderReference: '', message: '', website: '' });
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
-  useEffect(() => { document.title = `Contact · ${storeName}`; }, [storeName]);
+  usePageTitle('Contact');
   useEffect(() => {
     const u = currentUser?.user;
     if (u) setForm((f) => ({ ...f, name: f.name || [u.name, u.surname].filter(Boolean).join(' '), email: f.email || u.emailAddress || '' }));
